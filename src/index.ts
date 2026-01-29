@@ -20,4 +20,4 @@ export { DEFAULT_NAVIGATION_POST_PRIORITY } from './consts';
 /**
  * Main factory
  */
-export { createNavigationCitadel } from './createNavigationCitadel';
+export { createNavigationCitadel } from './navigationCitadel';

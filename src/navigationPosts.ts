@@ -8,11 +8,7 @@ import type {
   NavigationPostRef,
   NavigationHook,
 } from './types';
-import {
-  NavigationHooks,
-  NavigationPostVerdicts,
-  type NavigationPostVerdict,
-} from './types';
+import { NavigationHooks, NavigationPostVerdicts, type NavigationPostVerdict } from './types';
 import { DEFAULT_NAVIGATION_POST_PRIORITY } from './consts';
 
 /**
@@ -187,7 +183,7 @@ export const normalizeNavigationPostVerdict = (
   /**
    * Valid verdicts
    */
-  if ((Object.values(NavigationPostVerdicts)).includes(outcome as NavigationPostVerdict)) {
+  if (Object.values(NavigationPostVerdicts).includes(outcome as NavigationPostVerdict)) {
     return outcome;
   }
 

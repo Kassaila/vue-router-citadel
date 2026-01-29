@@ -1,0 +1,63 @@
+{
+  "name": "vue-router-citadel",
+  "version": "0.1.0",
+  "description": "Type-safe Vue Router guard system with return-based API",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky",
+    "prepublishOnly": "npm run build"
+  },
+  "lint-staged": {
+    "*.{ts,js,json,md}": "prettier --write"
+  },
+  "keywords": [
+    "vue",
+    "vue-router",
+    "router",
+    "guard",
+    "middleware",
+    "navigation",
+    "typescript"
+  ],
+  "author": "Kassaila",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kassaila/vue-router-citadel.git"
+  },
+  "peerDependencies": {
+    "vue-router": "^4.0.0"
+  },
+  "devDependencies": {
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vue-router": "^4.0.0"
+  }
+}

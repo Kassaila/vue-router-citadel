@@ -1,8 +1,4 @@
-import type {
-  NavigationPostRegistry,
-  NavigationPostScope,
-  PlacedNavigationPost,
-} from './types';
+import type { NavigationPostRegistry, NavigationPostScope, PlacedNavigationPost } from './types';
 
 /**
  * Creates a new navigation post registry
