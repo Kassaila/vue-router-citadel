@@ -1,6 +1,12 @@
 # Vue Router Citadel
 
-Type-safe Vue Router guard system with return-based API. Features: global & route-scoped posts, parent route inheritance, priority ordering, multiple hook support (beforeEach, beforeResolve, afterEach). Guards return verdicts: ALLOW, BLOCK, or redirect. Zero boilerplate, full control.
+[![npm version](https://img.shields.io/npm/v/vue-router-citadel.svg)](https://www.npmjs.com/package/vue-router-citadel)
+[![license](https://img.shields.io/npm/l/vue-router-citadel.svg)](https://github.com/Kassaila/vue-router-citadel/blob/main/LICENSE)
+[![npm downloads](https://img.shields.io/npm/dm/vue-router-citadel.svg)](https://www.npmjs.com/package/vue-router-citadel)
+
+Type-safe Vue Router guard system with return-based API. Features: global & route-scoped posts,
+parent route inheritance, priority ordering, multiple hook support (beforeEach, beforeResolve,
+afterEach). Guards return verdicts: ALLOW, BLOCK, or redirect. Zero boilerplate, full control.
 
 ## Setup
 
@@ -171,14 +177,14 @@ createApp(App).use(router).mount('#app');
 
 ## Post Return Values
 
-| Return                        | Result                 |
-| ----------------------------- | ---------------------- |
-| `verdicts.ALLOW`              | Continue to next post  |
-| `verdicts.BLOCK`              | Cancel navigation      |
-| `{ name: 'route' }`           | Redirect               |
-| `{ path: '/path' }`           | Redirect               |
-| `'/path'`                     | Redirect (string path) |
-| `throw Error`                 | Handled by `onError`   |
+| Return              | Result                 |
+| ------------------- | ---------------------- |
+| `verdicts.ALLOW`    | Continue to next post  |
+| `verdicts.BLOCK`    | Cancel navigation      |
+| `{ name: 'route' }` | Redirect               |
+| `{ path: '/path' }` | Redirect               |
+| `'/path'`           | Redirect (string path) |
+| `throw Error`       | Handled by `onError`   |
 
 Returning `null`, `undefined`, or any other invalid value will throw an error.
 
@@ -230,7 +236,7 @@ citadel.destroy();
 
 ```typescript
 interface RouteMeta {
-  navigationPosts?: string[];  // registered post names
+  navigationPosts?: string[]; // registered post names
 }
 ```
 

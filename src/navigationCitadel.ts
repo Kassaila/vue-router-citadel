@@ -74,7 +74,8 @@ export const createNavigationCitadel = (
    * Factory to create guard handler for beforeEach/beforeResolve
    */
   const createNavigationGuardHandler =
-    (hook: NavigationHook) => async (to: RouteLocationNormalized, from: RouteLocationNormalized) => {
+    (hook: NavigationHook) =>
+    async (to: RouteLocationNormalized, from: RouteLocationNormalized) => {
       if (debug) {
         console.warn(`[NavigationCitadel] ${hook}: ${from.path} -> ${to.path}`);
       }
@@ -103,7 +104,9 @@ export const createNavigationCitadel = (
   /**
    * Register beforeResolve hook
    */
-  cleanupFns.push(router.beforeResolve(createNavigationGuardHandler(NavigationHooks.BEFORE_RESOLVE)));
+  cleanupFns.push(
+    router.beforeResolve(createNavigationGuardHandler(NavigationHooks.BEFORE_RESOLVE)),
+  );
 
   /**
    * Register afterEach hook
@@ -121,7 +124,9 @@ export const createNavigationCitadel = (
     }
 
     if (debug) {
-      console.warn(`[NavigationCitadel] Patrolling ${posts.length} posts for ${NavigationHooks.AFTER_EACH}`);
+      console.warn(
+        `[NavigationCitadel] Patrolling ${posts.length} posts for ${NavigationHooks.AFTER_EACH}`,
+      );
     }
 
     /**
@@ -140,7 +145,7 @@ export const createNavigationCitadel = (
        */
     }
   });
-  
+
   cleanupFns.push(removeAfterEach);
 
   /**

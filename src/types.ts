@@ -30,8 +30,7 @@ export const NavigationPostScopes = {
   ROUTE: 'route',
 } as const;
 
-export type NavigationPostScope =
-  (typeof NavigationPostScopes)[keyof typeof NavigationPostScopes];
+export type NavigationPostScope = (typeof NavigationPostScopes)[keyof typeof NavigationPostScopes];
 
 /**
  * Context passed to navigation post functions
