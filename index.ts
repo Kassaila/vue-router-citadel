@@ -2,41 +2,22 @@
  * Types
  */
 export type {
-  MiddlewareContext,
-  MiddlewareResult,
-  MiddlewareActionType,
-  Middleware,
-  MiddlewareOptions,
-  NamedMiddleware,
-  RouteMiddlewareRef,
-  MiddlewarePipelineOptions,
-  MiddlewarePipelineAPI,
-  MiddlewareRegistry,
-  RouterHookType,
-  MiddlewareTypeValue,
+  NavigationPostContext,
+  NavigationPost,
+  NavigationPostOptions,
+  NavigationCitadelOptions,
+  NavigationCitadelAPI,
+  NavigationHook,
+  NavigationPostScope,
 } from './types';
 
-export { RouterHook, MiddlewareAction, MiddlewareType } from './types';
+/**
+ * Constants
+ */
+export { NavigationHooks, NavigationPostVerdicts, NavigationPostScopes } from './types';
+export { DEFAULT_NAVIGATION_POST_PRIORITY } from './consts';
 
 /**
  * Main factory
  */
-export { createMiddlewarePipeline } from './createMiddlewarePipeline';
-
-/**
- * Pipeline utilities
- */
-export { collectMiddlewares, runPipeline, normalizeResult, toNavigationGuardReturn } from './pipeline';
-
-/**
- * Registry utilities
- */
-export {
-  createMiddlewareRegistry,
-  addGlobalMiddleware,
-  removeGlobalMiddleware,
-  addRouteMiddleware,
-  removeRouteMiddleware,
-  getGlobalMiddlewareNames,
-  getRouteMiddlewareNames,
-} from './registry';
+export { createNavigationCitadel } from './createNavigationCitadel';
