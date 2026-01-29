@@ -1,44 +1,46 @@
 import type { RouteLocationNormalized, RouteLocationRaw, Router } from 'vue-router';
 
 /**
- * Router hooks supported by the middleware pipeline
+ * Navigation hooks supported by the citadel
  */
-export const RouterHook = {
+export const NavigationHooks = {
   BEFORE_EACH: 'beforeEach',
   BEFORE_RESOLVE: 'beforeResolve',
   AFTER_EACH: 'afterEach',
 } as const;
 
-export type RouterHookType = (typeof RouterHook)[keyof typeof RouterHook];
+export type NavigationHook = (typeof NavigationHooks)[keyof typeof NavigationHooks];
 
 /**
- * Middleware action constants
+ * Navigation post verdict constants
  */
-export const MiddlewareAction = {
+export const NavigationPostVerdicts = {
   ALLOW: 'allow',
   BLOCK: 'block',
 } as const;
 
-export type MiddlewareActionType = (typeof MiddlewareAction)[keyof typeof MiddlewareAction];
+export type NavigationPostVerdict =
+  (typeof NavigationPostVerdicts)[keyof typeof NavigationPostVerdicts];
 
 /**
- * Middleware type constants
+ * Navigation post scope constants
  */
-export const MiddlewareType = {
+export const NavigationPostScopes = {
   GLOBAL: 'global',
   ROUTE: 'route',
 } as const;
 
-export type MiddlewareTypeValue = (typeof MiddlewareType)[keyof typeof MiddlewareType];
+export type NavigationPostScope =
+  (typeof NavigationPostScopes)[keyof typeof NavigationPostScopes];
 
 /**
- * Context passed to middleware functions
+ * Context passed to navigation post functions
  */
-export interface MiddlewareContext {
+export interface NavigationPostContext {
   /**
-   * Action constants for middleware return
+   * Verdict constants for post return
    */
-  action: typeof MiddlewareAction;
+  verdicts: typeof NavigationPostVerdicts;
   /**
    * Target route
    */
@@ -54,58 +56,60 @@ export interface MiddlewareContext {
   /**
    * Current hook being executed
    */
-  hook: RouterHookType;
+  hook: NavigationHook;
 }
 
 /**
- * Result returned from middleware
- * - MiddlewareAction.ALLOW: continue to next middleware
- * - MiddlewareAction.BLOCK: cancel navigation
+ * Outcome returned from navigation post
+ * - NavigationPostVerdicts.ALLOW: continue to next post
+ * - NavigationPostVerdicts.BLOCK: cancel navigation
  * - RouteLocationRaw: redirect to specified route
  * - Error: throw error (will be caught by onError handler)
  */
-export type MiddlewareResult = void | MiddlewareActionType | RouteLocationRaw | Error;
+export type NavigationPostOutcome = NavigationPostVerdict | RouteLocationRaw | Error;
 
 /**
- * Middleware function signature
+ * Navigation post function signature
  */
-export type Middleware = (ctx: MiddlewareContext) => MiddlewareResult | Promise<MiddlewareResult>;
+export type NavigationPost = (
+  ctx: NavigationPostContext,
+) => NavigationPostOutcome | Promise<NavigationPostOutcome>;
 
 /**
- * Middleware registration options
+ * Navigation post registration options
  */
-export interface MiddlewareOptions {
+export interface NavigationPostOptions {
   /**
-   * Middleware type
+   * Post scope
    */
-  type: MiddlewareTypeValue;
+  scope: NavigationPostScope;
   /**
-   * Unique middleware name
+   * Unique post name
    */
   name: string;
   /**
-   * Middleware handler function
+   * Post handler function
    */
-  handler: Middleware;
+  handler: NavigationPost;
   /**
-   * Priority for global middlewares (lower = earlier execution). Default: 100
+   * Priority for global posts (lower = earlier execution). Default: 100
    */
   priority?: number;
   /**
-   * Hooks this middleware should run on. Default: ['beforeEach']
+   * Hooks this post should run on. Default: ['beforeEach']
    */
-  hooks?: RouterHookType[];
+  hooks?: NavigationHook[];
 }
 
 /**
- * Route middleware reference (can be name string or inline middleware)
+ * Navigation post reference (registered post name)
  */
-export type RouteMiddlewareRef = string | Middleware;
+export type NavigationPostRef = NavigationPostOptions['name'];
 
 /**
- * Options for creating middleware pipeline
+ * Options for creating navigation citadel
  */
-export interface MiddlewarePipelineOptions {
+export interface NavigationCitadelOptions {
   /**
    * Enable debug logging
    */
@@ -113,79 +117,65 @@ export interface MiddlewarePipelineOptions {
   /**
    * Global error handler
    */
-  onError?: (error: Error, ctx: MiddlewareContext) => MiddlewareResult | Promise<MiddlewareResult>;
+  onError?: (
+    error: Error,
+    ctx: NavigationPostContext,
+  ) => NavigationPostOutcome | Promise<NavigationPostOutcome>;
   /**
-   * Default priority for global middlewares
+   * Default priority for global posts
    */
   defaultPriority?: number;
 }
 
 /**
- * Internal named middleware structure
+ * Placed navigation post structure
  */
-export interface NamedMiddleware {
-  /**
-   * Unique middleware name
-   */
-  name: string;
-  /**
-   * Middleware handler function
-   */
-  handler: Middleware;
-  /**
-   * Priority for global middlewares (lower = earlier execution). Default: 100
-   */
-  priority?: number;
-  /**
-   * Hooks this middleware should run on. Default: ['beforeEach']
-   */
-  hooks?: RouterHookType[];
-}
+export type PlacedNavigationPost = Omit<NavigationPostOptions, 'scope'>;
 
 /**
- * Public API returned by createMiddlewarePipeline
+ * Public API returned by createNavigationCitadel
  */
-export interface MiddlewarePipelineAPI {
+export interface NavigationCitadelAPI {
   /**
-   * Register one or multiple middlewares
+   * Register one or multiple posts
    */
-  register: (options: MiddlewareOptions | MiddlewareOptions[]) => void;
+  register: (options: NavigationPostOptions | NavigationPostOptions[]) => void;
   /**
-   * Remove one or multiple middlewares by type and name(s)
+   * Remove one or multiple posts by scope and name(s)
    */
-  delete: (type: MiddlewareTypeValue, name: string | string[]) => boolean;
+  delete: (scope: NavigationPostScope, name: string | string[]) => boolean;
   /**
-   * Get all registered middleware names by type
+   * Get all registered post names by scope
    */
-  getMiddlewares: (type: MiddlewareTypeValue) => string[];
+  getPosts: (scope: NavigationPostScope) => string[];
   /**
-   * Destroy the pipeline and remove router hooks
+   * Destroy the citadel and remove router hooks
    */
   destroy: () => void;
 }
 
 /**
- * Internal middleware registry structure
+ * Navigation citadel registry structure
  */
-export interface MiddlewareRegistry {
+export interface NavigationPostRegistry {
   /**
-   * Global middlewares (executed for all routes)
+   * Global posts (executed for all routes)
    */
-  global: Map<string, NamedMiddleware>;
+  global: Map<string, PlacedNavigationPost>;
   /**
-   * Route middlewares (executed when referenced in route meta)
+   * Route posts (executed when referenced in route meta)
    */
-  route: Map<string, NamedMiddleware>;
+  route: Map<string, PlacedNavigationPost>;
 }
 
 /**
- * Extended route meta with middleware support
+ * Extended route meta with navigation post support
  */
 declare module 'vue-router' {
   interface RouteMeta {
     /**
-     * Middleware to execute for this route
+     * Navigation posts to execute for this route
      */
-    middleware?: RouteMiddlewareRef[];
+    navigationPosts?: NavigationPostRef[];
   }
 }

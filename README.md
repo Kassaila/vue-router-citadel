@@ -1,236 +1,239 @@
-# Router Middleware Pipeline
+# Vue Router Citadel
 
-Vue Router middleware plugin with return-based API and parent route inheritance.
+Type-safe Vue Router guard system with return-based API. Features: global & route-scoped posts, parent route inheritance, priority ordering, multiple hook support (beforeEach, beforeResolve, afterEach). Guards return verdicts: ALLOW, BLOCK, or redirect. Zero boilerplate, full control.
 
 ## Setup
 
-### 1. Create pipeline
+### 1. Create citadel
 
 ```typescript
-// src/router/middleware.ts
-import { createMiddlewarePipeline } from '@/plugin/router-middleware-pipeline';
+import { createNavigationCitadel } from 'vue-router-citadel';
 import router from '@/router';
 
-export const middleware = createMiddlewarePipeline(router, {
-    debug: true,
-    onError: (error, ctx) => {
-        console.error(error);
-        return { name: 'error' };
-    },
+export const citadel = createNavigationCitadel(router, {
+  debug: true,
+  defaultPriority: 100,
+  onError: (error, ctx) => {
+    console.error(error);
+    return { name: 'error' };
+  },
 });
 ```
 
-### 2. Register global middlewares
+### 2. Register global posts
 
-Global middlewares run on every route navigation.
+Global posts run on every route navigation.
 
 ```typescript
-// src/router/middleware.ts
-import { RouterHook, MiddlewareType } from '@/plugin/router-middleware-pipeline';
+import { NavigationHooks, NavigationPostScopes } from 'vue-router-citadel';
 
-// Auth middleware - runs first (priority: 10)
-middleware.register({
-    type: MiddlewareType.GLOBAL,
-    name: 'auth',
-    priority: 10,
-    handler: async ({ action: { ALLOW }, to }) => {
-        const isAuthenticated = !!localStorage.getItem('token');
+// Auth post - runs first (priority: 10)
+citadel.register({
+  scope: NavigationPostScopes.GLOBAL,
+  name: 'auth',
+  priority: 10,
+  handler: async ({ verdicts, to }) => {
+    const isAuthenticated = !!localStorage.getItem('token');
 
-        if (to.meta.requiresAuth && !isAuthenticated) {
-            return { name: 'login', query: { redirect: to.fullPath } };
-        }
+    if (to.meta.requiresAuth && !isAuthenticated) {
+      return { name: 'login', query: { redirect: to.fullPath } };
+    }
 
-        if (to.meta.guestOnly && isAuthenticated) {
-            return { name: 'dashboard' };
-        }
+    if (to.meta.guestOnly && isAuthenticated) {
+      return { name: 'dashboard' };
+    }
 
-        return ALLOW;
-    },
+    return verdicts.ALLOW;
+  },
 });
 
-// Page title middleware - runs after navigation
-middleware.register({
-    type: MiddlewareType.GLOBAL,
-    name: 'page-title',
-    hooks: [RouterHook.AFTER_EACH],
-    handler: ({ to }) => {
-        document.title = to.meta.title || 'My App';
-    },
+// Page title post - runs after navigation
+citadel.register({
+  scope: NavigationPostScopes.GLOBAL,
+  name: 'page-title',
+  hooks: [NavigationHooks.AFTER_EACH],
+  handler: ({ verdicts, to }) => {
+    document.title = to.meta.title || 'My App';
+
+    return verdicts.ALLOW;
+  },
 });
 ```
 
-### 3. Register route middlewares
+### 3. Register route posts
 
-Route middlewares run only when specified in route's `meta.middleware`.
+Route posts run only when specified in route's `meta.navigationPosts`.
 
 ```typescript
-// src/router/middleware.ts
-import { MiddlewareType } from '@/plugin/router-middleware-pipeline';
+import { NavigationPostScopes } from 'vue-router-citadel';
 
-middleware.register({
-    type: MiddlewareType.ROUTE,
-    name: 'admin',
-    handler: async ({ action: { ALLOW } }) => {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
+citadel.register({
+  scope: NavigationPostScopes.ROUTE,
+  name: 'admin',
+  handler: async ({ verdicts }) => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-        if (user.role !== 'admin') {
-            return { name: 'forbidden' };
-        }
+    if (user.role !== 'admin') {
+      return { name: 'forbidden' };
+    }
 
-        return ALLOW;
-    },
+    return verdicts.ALLOW;
+  },
 });
 
-middleware.register({
-    type: MiddlewareType.ROUTE,
-    name: 'verified',
-    handler: async ({ action: { ALLOW } }) => {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
+citadel.register({
+  scope: NavigationPostScopes.ROUTE,
+  name: 'verified',
+  handler: async ({ verdicts }) => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-        if (!user.emailVerified) {
-            return { name: 'verify-email' };
-        }
+    if (!user.emailVerified) {
+      return { name: 'verify-email' };
+    }
 
-        return ALLOW;
-    },
+    return verdicts.ALLOW;
+  },
 });
 ```
 
 ### 4. Define routes
 
 ```typescript
-// src/router/routes.ts
 const routes = [
-    // Public routes
-    {
-        path: '/login',
-        name: 'login',
-        component: () => import('@/pages/Login.vue'),
-        meta: {
-            title: 'Login',
-        },
+  // Public routes
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/pages/Login.vue'),
+    meta: {
+      title: 'Login',
     },
+  },
 
-    // Protected routes
-    {
-        path: '/dashboard',
-        name: 'dashboard',
-        component: () => import('@/pages/Dashboard.vue'),
-        meta: {
-            title: 'Dashboard',
-        },
+  // Protected routes
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('@/pages/Dashboard.vue'),
+    meta: {
+      title: 'Dashboard',
     },
+  },
 
-    // Route with specific middleware
-    {
-        path: '/admin',
-        name: 'admin',
-        component: () => import('@/pages/Admin.vue'),
-        meta: {
-            middleware: ['admin'],
-            title: 'Admin Panel',
-        },
+  // Route with specific posts
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('@/pages/Admin.vue'),
+    meta: {
+      navigationPosts: ['admin'],
+      title: 'Admin Panel',
     },
+  },
 
-    // Nested routes - children inherit parent middlewares
-    {
-        path: '/account',
-        component: () => import('@/layouts/AccountLayout.vue'),
-        meta: {
-            middleware: ['verified'],
-        },
-        children: [
-            {
-                path: 'profile',
-                name: 'profile',
-                component: () => import('@/pages/Profile.vue'),
-                // inherits: requiresAuth + verified
-            },
-            {
-                path: 'settings',
-                name: 'settings',
-                component: () => import('@/pages/Settings.vue'),
-                meta: {
-                    middleware: ['admin'], // inherits verified, adds admin
-                },
-            },
-        ],
+  // Nested routes - children inherit parent posts
+  {
+    path: '/account',
+    component: () => import('@/layouts/AccountLayout.vue'),
+    meta: {
+      navigationPosts: ['verified'],
     },
+    children: [
+      {
+        path: 'profile',
+        name: 'profile',
+        component: () => import('@/pages/Profile.vue'),
+        // inherits: verified
+      },
+      {
+        path: 'settings',
+        name: 'settings',
+        component: () => import('@/pages/Settings.vue'),
+        meta: {
+          navigationPosts: ['admin'], // inherits verified, adds admin
+        },
+      },
+    ],
+  },
 ];
 ```
 
-### 5. Import middleware in main
+### 5. Import citadel in main
 
 ```typescript
-// src/main.ts
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-import './router/middleware'; // Initialize middleware
+import './router/citadel'; // Initialize citadel
 
 createApp(App).use(router).mount('#app');
 ```
 
-## Middleware Return Values
+## Post Return Values
 
-| Return                 | Result                      |
-| ---------------------- | --------------------------- |
-| MiddlewareAction.ALLOW | Continue to next middleware |
-| MiddlewareAction.BLOCK | Cancel navigation           |
-| `{ name: 'route' }`    | Redirect                    |
-| `{ path: '/path' }`    | Redirect                    |
-| `throw Error`          | Handled by `onError`        |
+| Return                        | Result                 |
+| ----------------------------- | ---------------------- |
+| `verdicts.ALLOW`              | Continue to next post  |
+| `verdicts.BLOCK`              | Cancel navigation      |
+| `{ name: 'route' }`           | Redirect               |
+| `{ path: '/path' }`           | Redirect               |
+| `'/path'`                     | Redirect (string path) |
+| `throw Error`                 | Handled by `onError`   |
+
+Returning `null`, `undefined`, or any other invalid value will throw an error.
 
 ## Execution Order
 
 ```
 Navigation: /account/settings
 
-1. Global middlewares (by priority)
+1. Global posts (by priority)
    └── auth (priority: 10)
 
-2. Parent route middlewares
+2. Parent route posts
    └── verified (from /account)
 
-3. Current route middlewares
+3. Current route posts
    └── admin (from /account/settings)
 ```
 
 ## API
 
 ```typescript
-import { MiddlewareType } from '@/plugin/router-middleware-pipeline';
+import { NavigationPostScopes } from 'vue-router-citadel';
 
-// Add single middleware
-middleware.register({ type: MiddlewareType.GLOBAL, name, handler, priority?, hooks? });
+// Add single post
+citadel.register({ scope: NavigationPostScopes.GLOBAL, name, handler, priority?, hooks? });
 
-// Add multiple middlewares
-middleware.register([
-    { type: MiddlewareType.GLOBAL, name: 'auth', handler: authHandler, priority: 10 },
-    { type: MiddlewareType.ROUTE, name: 'admin', handler: adminHandler },
-    { type: MiddlewareType.ROUTE, name: 'verified', handler: verifiedHandler },
+// Add multiple posts
+citadel.register([
+  { scope: NavigationPostScopes.GLOBAL, name: 'auth', handler: authHandler, priority: 10 },
+  { scope: NavigationPostScopes.ROUTE, name: 'admin', handler: adminHandler },
+  { scope: NavigationPostScopes.ROUTE, name: 'verified', handler: verifiedHandler },
 ]);
 
-// Remove single middleware
-middleware.delete(MiddlewareType.ROUTE, 'admin');
+// Remove single post
+citadel.delete(NavigationPostScopes.ROUTE, 'admin');
 
-// Remove multiple middlewares (same type)
-middleware.delete(MiddlewareType.ROUTE, ['admin', 'verified']); // returns true if all deleted
+// Remove multiple posts (same scope)
+citadel.delete(NavigationPostScopes.ROUTE, ['admin', 'verified']);
 
 // List registered
-middleware.getMiddlewares(MiddlewareType.GLOBAL); // ['auth', 'page-title']
-middleware.getMiddlewares(MiddlewareType.ROUTE);  // ['admin', 'verified']
+citadel.getPosts(NavigationPostScopes.GLOBAL); // ['auth', 'page-title']
+citadel.getPosts(NavigationPostScopes.ROUTE);  // ['admin', 'verified']
 
 // Cleanup
-middleware.destroy();
+citadel.destroy();
 ```
 
 ## Route Meta Types
 
-Available in `to.meta`:
-
 ```typescript
 interface RouteMeta {
-    middleware?: (string | Middleware)[];
+  navigationPosts?: string[];  // registered post names
 }
 ```
+
+## License
+
+MIT
