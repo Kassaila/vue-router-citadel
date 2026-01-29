@@ -2,20 +2,20 @@
  * Types
  */
 export type {
-  NavigationPostContext,
-  NavigationPost,
-  NavigationPostOptions,
+  NavigationOutpostContext,
+  NavigationOutpost,
+  NavigationOutpostOptions,
   NavigationCitadelOptions,
   NavigationCitadelAPI,
   NavigationHook,
-  NavigationPostScope,
+  NavigationOutpostScope,
 } from './types';
 
 /**
  * Constants
  */
-export { NavigationHooks, NavigationPostVerdicts, NavigationPostScopes } from './types';
-export { DEFAULT_NAVIGATION_POST_PRIORITY } from './consts';
+export { NavigationHooks, NavigationOutpostVerdicts, NavigationOutpostScopes } from './types';
+export { DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
 
 /**
  * Main factory

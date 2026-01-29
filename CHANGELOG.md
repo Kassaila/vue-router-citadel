@@ -13,10 +13,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Initial release
 - `createNavigationCitadel` factory function
-- Global and route-scoped navigation posts
+- Global and route-scoped navigation outposts
 - Support for `beforeEach`, `beforeResolve`, `afterEach` hooks
-- Priority-based execution order for global posts
-- Parent route inheritance for route posts
+- Priority-based execution order for global outposts
+- Parent route inheritance for route outposts
 - Verdict system: `ALLOW`, `BLOCK`, redirect
 - TypeScript support with full type definitions
-- Validation for post return values
+- Validation for outpost return values

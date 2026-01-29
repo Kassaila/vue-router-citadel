@@ -12,34 +12,35 @@ export const NavigationHooks = {
 export type NavigationHook = (typeof NavigationHooks)[keyof typeof NavigationHooks];
 
 /**
- * Navigation post verdict constants
+ * Navigation outpost verdict constants
  */
-export const NavigationPostVerdicts = {
+export const NavigationOutpostVerdicts = {
   ALLOW: 'allow',
   BLOCK: 'block',
 } as const;
 
-export type NavigationPostVerdict =
-  (typeof NavigationPostVerdicts)[keyof typeof NavigationPostVerdicts];
+export type NavigationOutpostVerdict =
+  (typeof NavigationOutpostVerdicts)[keyof typeof NavigationOutpostVerdicts];
 
 /**
- * Navigation post scope constants
+ * Navigation outpost scope constants
  */
-export const NavigationPostScopes = {
+export const NavigationOutpostScopes = {
   GLOBAL: 'global',
   ROUTE: 'route',
 } as const;
 
-export type NavigationPostScope = (typeof NavigationPostScopes)[keyof typeof NavigationPostScopes];
+export type NavigationOutpostScope =
+  (typeof NavigationOutpostScopes)[keyof typeof NavigationOutpostScopes];
 
 /**
- * Context passed to navigation post functions
+ * Context passed to navigation outpost functions
  */
-export interface NavigationPostContext {
+export interface NavigationOutpostContext {
   /**
-   * Verdict constants for post return
+   * Verdict constants for outpost return
    */
-  verdicts: typeof NavigationPostVerdicts;
+  verdicts: typeof NavigationOutpostVerdicts;
   /**
    * Target route
    */
@@ -59,51 +60,51 @@ export interface NavigationPostContext {
 }
 
 /**
- * Outcome returned from navigation post
- * - NavigationPostVerdicts.ALLOW: continue to next post
- * - NavigationPostVerdicts.BLOCK: cancel navigation
+ * Outcome returned from navigation outpost
+ * - NavigationOutpostVerdicts.ALLOW: continue to next outpost
+ * - NavigationOutpostVerdicts.BLOCK: cancel navigation
  * - RouteLocationRaw: redirect to specified route
  * - Error: throw error (will be caught by onError handler)
  */
-export type NavigationPostOutcome = NavigationPostVerdict | RouteLocationRaw | Error;
+export type NavigationOutpostOutcome = NavigationOutpostVerdict | RouteLocationRaw | Error;
 
 /**
- * Navigation post function signature
+ * Navigation outpost function signature
  */
-export type NavigationPost = (
-  ctx: NavigationPostContext,
-) => NavigationPostOutcome | Promise<NavigationPostOutcome>;
+export type NavigationOutpost = (
+  ctx: NavigationOutpostContext,
+) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
 
 /**
- * Navigation post registration options
+ * Navigation outpost registration options
  */
-export interface NavigationPostOptions {
+export interface NavigationOutpostOptions {
   /**
-   * Post scope
+   * Outpost scope
    */
-  scope: NavigationPostScope;
+  scope: NavigationOutpostScope;
   /**
-   * Unique post name
+   * Unique outpost name
    */
   name: string;
   /**
-   * Post handler function
+   * Outpost handler function
    */
-  handler: NavigationPost;
+  handler: NavigationOutpost;
   /**
-   * Priority for global posts (lower = earlier execution). Default: 100
+   * Priority for global outposts (lower = earlier execution). Default: 100
    */
   priority?: number;
   /**
-   * Hooks this post should run on. Default: ['beforeEach']
+   * Hooks this outpost should run on. Default: ['beforeEach']
    */
   hooks?: NavigationHook[];
 }
 
 /**
- * Navigation post reference (registered post name)
+ * Navigation outpost reference (registered outpost name)
  */
-export type NavigationPostRef = NavigationPostOptions['name'];
+export type NavigationOutpostRef = NavigationOutpostOptions['name'];
 
 /**
  * Options for creating navigation citadel
@@ -118,8 +119,8 @@ export interface NavigationCitadelOptions {
    */
   onError?: (
     error: Error,
-    ctx: NavigationPostContext,
-  ) => NavigationPostOutcome | Promise<NavigationPostOutcome>;
+    ctx: NavigationOutpostContext,
+  ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
   /**
    * Default priority for global posts
    */
@@ -127,28 +128,28 @@ export interface NavigationCitadelOptions {
 }
 
 /**
- * Placed navigation post structure
+ * Placed navigation outpost structure
  */
-export type PlacedNavigationPost = Omit<NavigationPostOptions, 'scope'>;
+export type PlacedNavigationOutpost = Omit<NavigationOutpostOptions, 'scope'>;
 
 /**
  * Public API returned by createNavigationCitadel
  */
 export interface NavigationCitadelAPI {
   /**
-   * Register one or multiple posts
+   * Register one or multiple outposts
    */
-  register: (options: NavigationPostOptions | NavigationPostOptions[]) => void;
+  deploy: (options: NavigationOutpostOptions | NavigationOutpostOptions[]) => void;
   /**
-   * Remove one or multiple posts by scope and name(s)
+   * Remove one or multiple outposts by scope and name(s)
    */
-  delete: (scope: NavigationPostScope, name: string | string[]) => boolean;
+  abandon: (scope: NavigationOutpostScope, name: string | string[]) => boolean;
   /**
-   * Get all registered post names by scope
+   * Get all registered outpost names by scope
    */
-  getPosts: (scope: NavigationPostScope) => string[];
+  getOutposts: (scope: NavigationOutpostScope) => string[];
   /**
-   * Destroy the citadel and remove router hooks
+   * Destroy the citadel and remove navigation hooks
    */
   destroy: () => void;
 }
@@ -156,25 +157,25 @@ export interface NavigationCitadelAPI {
 /**
  * Navigation citadel registry structure
  */
-export interface NavigationPostRegistry {
+export interface NavigationOutpostRegistry {
   /**
-   * Global posts (executed for all routes)
+   * Global outposts (executed for all routes)
    */
-  global: Map<string, PlacedNavigationPost>;
+  global: Map<string, PlacedNavigationOutpost>;
   /**
-   * Route posts (executed when referenced in route meta)
+   * Route outposts (executed when referenced in route meta)
    */
-  route: Map<string, PlacedNavigationPost>;
+  route: Map<string, PlacedNavigationOutpost>;
 }
 
 /**
- * Extended route meta with navigation post support
+ * Extended route meta with navigation outpost support
  */
 declare module 'vue-router' {
   interface RouteMeta {
     /**
-     * Navigation posts to execute for this route
+     * Navigation outposts to execute for this route
      */
-    navigationPosts?: NavigationPostRef[];
+    navigationOutposts?: NavigationOutpostRef[];
   }
 }
