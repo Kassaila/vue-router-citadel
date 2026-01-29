@@ -1,24 +1,25 @@
 import type { Router, RouteLocationNormalized } from 'vue-router';
+
 import type {
-  NavigationPostContext,
+  NavigationOutpostContext,
   NavigationCitadelAPI,
   NavigationCitadelOptions,
-  NavigationPostOptions,
-  NavigationPostScope,
+  NavigationOutpostOptions,
+  NavigationOutpostScope,
   NavigationHook,
 } from './types';
-import { NavigationHooks, NavigationPostVerdicts } from './types';
+import { NavigationHooks, NavigationOutpostVerdicts } from './types';
 import {
-  createNavigationPostRegistry,
-  addNavigationPost,
-  removeNavigationPost,
-  getNavigationPostNames,
+  createNavigationOutpostRegistry,
+  addNavigationOutpost,
+  removeNavigationOutpost,
+  getNavigationOutpostNames,
 } from './navigationRegistry';
 import {
-  collectNavigationPosts,
+  collectNavigationOutposts,
   patrolNavigationCitadel,
   toNavigationGuardReturn,
-} from './navigationPosts';
+} from './navigationOutposts';
 
 /**
  * Creates a navigation citadel for Vue Router
@@ -30,8 +31,8 @@ import {
  *   onError: (error, ctx) => ({ name: 'error' }),
  * });
  *
- * citadel.register({
- *   scope: NavigationPostScopes.GLOBAL,
+ * citadel.deploy({
+ *   scope: NavigationOutpostScopes.GLOBAL,
  *   name: 'auth',
  *   priority: 10,
  *   handler: async ({ verdicts, to }) => {
@@ -48,22 +49,22 @@ export const createNavigationCitadel = (
   options: NavigationCitadelOptions = {},
 ): NavigationCitadelAPI => {
   const { debug = false, defaultPriority } = options;
-  const registry = createNavigationPostRegistry();
+  const registry = createNavigationOutpostRegistry();
 
   /**
-   * Store cleanup functions for router hooks
+   * Store cleanup functions for navigation hooks
    */
   const cleanupFns: Array<() => void> = [];
 
   /**
-   * Helper to create navigation post context
+   * Helper to create navigation outpost context
    */
   const createContext = (
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
     hook: NavigationHook,
-  ): NavigationPostContext => ({
-    verdicts: NavigationPostVerdicts,
+  ): NavigationOutpostContext => ({
+    verdicts: NavigationOutpostVerdicts,
     to,
     from,
     router,
@@ -81,17 +82,17 @@ export const createNavigationCitadel = (
       }
 
       const ctx = createContext(to, from, hook);
-      const posts = collectNavigationPosts(registry, to, hook, defaultPriority);
+      const outposts = collectNavigationOutposts(registry, to, hook, defaultPriority);
 
-      if (posts.length === 0) {
+      if (outposts.length === 0) {
         return true;
       }
 
       if (debug) {
-        console.warn(`[NavigationCitadel] Patrolling ${posts.length} posts for ${hook}`);
+        console.warn(`[NavigationCitadel] Patrolling ${outposts.length} outposts for ${hook}`);
       }
 
-      const outcome = await patrolNavigationCitadel(posts, ctx, options);
+      const outcome = await patrolNavigationCitadel(outposts, ctx, options);
 
       return toNavigationGuardReturn(outcome);
     };
@@ -117,15 +118,20 @@ export const createNavigationCitadel = (
     }
 
     const ctx = createContext(to, from, NavigationHooks.AFTER_EACH);
-    const posts = collectNavigationPosts(registry, to, NavigationHooks.AFTER_EACH, defaultPriority);
+    const outposts = collectNavigationOutposts(
+      registry,
+      to,
+      NavigationHooks.AFTER_EACH,
+      defaultPriority,
+    );
 
-    if (posts.length === 0) {
+    if (outposts.length === 0) {
       return;
     }
 
     if (debug) {
       console.warn(
-        `[NavigationCitadel] Patrolling ${posts.length} posts for ${NavigationHooks.AFTER_EACH}`,
+        `[NavigationCitadel] Patrolling ${outposts.length} outposts for ${NavigationHooks.AFTER_EACH}`,
       );
     }
 
@@ -134,10 +140,10 @@ export const createNavigationCitadel = (
      * Errors are handled by onError or thrown
      */
     try {
-      await patrolNavigationCitadel(posts, ctx, options);
+      await patrolNavigationCitadel(outposts, ctx, options);
     } catch (error) {
       if (debug) {
-        console.error(`[NavigationCitadel] Error in afterEach post:`, error);
+        console.error(`[NavigationCitadel] Error in afterEach outpost:`, error);
       }
       /**
        * afterEach can't prevent navigation, so we just log the error
@@ -149,34 +155,34 @@ export const createNavigationCitadel = (
   cleanupFns.push(removeAfterEach);
 
   /**
-   * Internal helper to register a single post
+   * Internal helper to deploy a single outpost
    */
-  const registerOne = (opts: NavigationPostOptions): void => {
+  const registerOne = (opts: NavigationOutpostOptions): void => {
     const { scope, name, handler, priority, hooks } = opts;
 
     if (debug) {
-      console.warn(`[NavigationCitadel] Registering ${scope} post: ${name}`);
+      console.warn(`[NavigationCitadel] Registering ${scope} outpost: ${name}`);
     }
 
-    addNavigationPost(registry, scope, { name, handler, priority, hooks });
+    addNavigationOutpost(registry, scope, { name, handler, priority, hooks });
   };
 
   /**
-   * Internal helper to delete a single post
+   * Internal helper to abandon a single outpost
    */
-  const deleteOne = (scope: NavigationPostScope, name: string): boolean => {
+  const deleteOne = (scope: NavigationOutpostScope, name: string): boolean => {
     if (debug) {
-      console.warn(`[NavigationCitadel] Deleting ${scope} post: ${name}`);
+      console.warn(`[NavigationCitadel] Deleting ${scope} outpost: ${name}`);
     }
 
-    return removeNavigationPost(registry, scope, name);
+    return removeNavigationOutpost(registry, scope, name);
   };
 
   /**
    * Public API
    */
   const api: NavigationCitadelAPI = {
-    register(opts: NavigationPostOptions | NavigationPostOptions[]): void {
+    deploy(opts: NavigationOutpostOptions | NavigationOutpostOptions[]): void {
       if (Array.isArray(opts)) {
         for (const opt of opts) {
           registerOne(opt);
@@ -186,7 +192,7 @@ export const createNavigationCitadel = (
       }
     },
 
-    delete(scope: NavigationPostScope, name: string | string[]): boolean {
+    abandon(scope: NavigationOutpostScope, name: string | string[]): boolean {
       if (Array.isArray(name)) {
         let allDeleted = true;
 
@@ -202,8 +208,8 @@ export const createNavigationCitadel = (
       return deleteOne(scope, name);
     },
 
-    getPosts(scope: NavigationPostScope): string[] {
-      return getNavigationPostNames(registry, scope);
+    getOutposts(scope: NavigationOutpostScope): string[] {
+      return getNavigationOutpostNames(registry, scope);
     },
 
     destroy(): void {

@@ -1,245 +1,217 @@
-# Vue Router Citadel
+# 🏰 Vue Router Citadel
+
+> _Place guards at the gates. Outposts along the way._
 
 [![npm version](https://img.shields.io/npm/v/vue-router-citadel.svg)](https://www.npmjs.com/package/vue-router-citadel)
 [![license](https://img.shields.io/npm/l/vue-router-citadel.svg)](https://github.com/Kassaila/vue-router-citadel/blob/main/LICENSE)
-[![npm downloads](https://img.shields.io/npm/dm/vue-router-citadel.svg)](https://www.npmjs.com/package/vue-router-citadel)
 
-Type-safe Vue Router guard system with return-based API. Features: global & route-scoped posts,
-parent route inheritance, priority ordering, multiple hook support (beforeEach, beforeResolve,
-afterEach). Guards return verdicts: ALLOW, BLOCK, or redirect. Zero boilerplate, full control.
+**Structured navigation defense for Vue Router 4.**
 
-## Setup
+Citadel is a middleware-driven navigation control system for Vue Router that lets you build
+**layered, predictable, and scalable route protection**.
 
-### 1. Create citadel
+Where Vue Router gives you guards at the entrance, Citadel introduces **navigation outposts** ---
+internal checkpoints that control access, preload data, enforce permissions, and orchestrate complex
+navigation flows.
+
+Think of it as turning your router into a fortress.
+
+<!-- TOC -->
+
+- [🧱 The Fortress Philosophy](#-the-fortress-philosophy)
+- [✨ Designed for scalable apps](#-designed-for-scalable-apps)
+- [📦 Installation](#-installation)
+- [🚀 Quick Start](#-quick-start)
+- [📚 API](#-api)
+  - [createNavigationCitadel(router, options?)](#createnavigationcitadelrouter-options)
+  - [citadel.deploy(options)](#citadeldeployoptions)
+  - [citadel.abandon(scope, name)](#citadelabandonscope-name)
+  - [citadel.getOutposts(scope)](#citadelgetoutpostsscope)
+  - [citadel.destroy()](#citadeldestroy)
+- [↩️ Handler Return Values](#️-handler-return-values)
+- [🎯 Outpost Scopes](#-outpost-scopes)
+- [🪝 Navigation Hooks](#-navigation-hooks)
+- [🏷️ Route Meta](#️-route-meta)
+- [💡 Examples](#-examples)
+- [📄 License](#-license)
+
+<!-- /TOC -->
+
+## 🧱 The Fortress Philosophy
+
+Multiple layers of control --- just like a real fortress.
+
+    🏰 Citadel → 🗼 Outposts (🛡 Guards) → 🎯 Final point
+
+## ✨ Designed for scalable apps
+
+Citadel is built for:
+
+- Role-Based Access Control (RBAC) systems
+- multi-tenant apps
+- complex authorization flows
+- data preloading pipelines
+
+## 📦 Installation
+
+```bash
+npm install vue-router-citadel
+```
+
+## 🚀 Quick Start
 
 ```typescript
-import { createNavigationCitadel } from 'vue-router-citadel';
-import router from '@/router';
+import { createRouter, createWebHistory } from 'vue-router';
+import { createNavigationCitadel, NavigationOutpostScopes } from 'vue-router-citadel';
 
-export const citadel = createNavigationCitadel(router, {
-  debug: true,
-  defaultPriority: 100,
+const routes = [
+  { path: '/', name: 'home', component: () => import('./pages/Home.vue') },
+  { path: '/login', name: 'login', component: () => import('./pages/Login.vue') },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('./pages/Dashboard.vue'),
+    meta: { requiresAuth: true },
+  },
+];
+
+// 1. Create router
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+});
+
+// 2. Create citadel
+const citadel = createNavigationCitadel(router);
+
+// 3. Register outpost
+citadel.deploy({
+  scope: NavigationOutpostScopes.GLOBAL,
+  name: 'auth',
+  handler: ({ verdicts, to }) => {
+    const isAuthenticated = Boolean(localStorage.getItem('token'));
+
+    if (to.meta.requiresAuth && !isAuthenticated) {
+      return { name: 'login' };
+    }
+
+    return verdicts.ALLOW;
+  },
+});
+
+export { router, citadel };
+```
+
+## 📚 API
+
+### createNavigationCitadel(router, options?)
+
+Creates a navigation citadel instance.
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  debug: false, // Enable debug logging
+  defaultPriority: 100, // Default priority for global outposts
   onError: (error, ctx) => {
-    console.error(error);
+    // Global error handler
     return { name: 'error' };
   },
 });
 ```
 
-### 2. Register global posts
+### citadel.deploy(options)
 
-Global posts run on every route navigation.
-
-```typescript
-import { NavigationHooks, NavigationPostScopes } from 'vue-router-citadel';
-
-// Auth post - runs first (priority: 10)
-citadel.register({
-  scope: NavigationPostScopes.GLOBAL,
-  name: 'auth',
-  priority: 10,
-  handler: async ({ verdicts, to }) => {
-    const isAuthenticated = !!localStorage.getItem('token');
-
-    if (to.meta.requiresAuth && !isAuthenticated) {
-      return { name: 'login', query: { redirect: to.fullPath } };
-    }
-
-    if (to.meta.guestOnly && isAuthenticated) {
-      return { name: 'dashboard' };
-    }
-
-    return verdicts.ALLOW;
-  },
-});
-
-// Page title post - runs after navigation
-citadel.register({
-  scope: NavigationPostScopes.GLOBAL,
-  name: 'page-title',
-  hooks: [NavigationHooks.AFTER_EACH],
-  handler: ({ verdicts, to }) => {
-    document.title = to.meta.title || 'My App';
-
-    return verdicts.ALLOW;
-  },
-});
-```
-
-### 3. Register route posts
-
-Route posts run only when specified in route's `meta.navigationPosts`.
+Registers one or multiple navigation outposts.
 
 ```typescript
-import { NavigationPostScopes } from 'vue-router-citadel';
-
-citadel.register({
-  scope: NavigationPostScopes.ROUTE,
-  name: 'admin',
-  handler: async ({ verdicts }) => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-    if (user.role !== 'admin') {
-      return { name: 'forbidden' };
-    }
-
+citadel.deploy({
+  scope: NavigationOutpostScopes.GLOBAL, // or NavigationOutpostScopes.ROUTE
+  name: 'outpost-name',
+  handler: ({ verdicts, to, from, router, hook }) => {
     return verdicts.ALLOW;
   },
+  priority: 10, // Optional, for global outposts (lower = earlier)
+  hooks: [NavigationHooks.BEFORE_EACH], // Optional, default: ['beforeEach']
 });
 
-citadel.register({
-  scope: NavigationPostScopes.ROUTE,
-  name: 'verified',
-  handler: async ({ verdicts }) => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-    if (!user.emailVerified) {
-      return { name: 'verify-email' };
-    }
-
-    return verdicts.ALLOW;
-  },
-});
+// Register multiple
+citadel.deploy([outpost1, outpost2, outpost3]);
 ```
 
-### 4. Define routes
+### citadel.abandon(scope, name)
+
+Removes outpost(s) by scope and name.
+
+```typescript
+citadel.abandon(NavigationOutpostScopes.ROUTE, 'outpost-name');
+citadel.abandon(NavigationOutpostScopes.ROUTE, ['name1', 'name2']);
+```
+
+### citadel.getOutposts(scope)
+
+Returns array of registered outpost names.
+
+```typescript
+citadel.getOutposts(NavigationOutpostScopes.GLOBAL); // ['auth', 'analytics']
+```
+
+### citadel.destroy()
+
+Removes all navigation hooks and clears registry.
+
+## ↩️ Handler Return Values
+
+| Return              | Result                    |
+| ------------------- | ------------------------- |
+| `verdicts.ALLOW`    | Continue navigation       |
+| `verdicts.BLOCK`    | Cancel navigation         |
+| `{ name: 'route' }` | Redirect to named route   |
+| `{ path: '/path' }` | Redirect to path          |
+| `'/path'`           | Redirect to path (string) |
+
+## 🎯 Outpost Scopes
+
+| Scope    | Description                                            |
+| -------- | ------------------------------------------------------ |
+| `GLOBAL` | Runs on every navigation, sorted by priority           |
+| `ROUTE`  | Runs only when referenced in `meta.navigationOutposts` |
+
+## 🪝 Navigation Hooks
+
+| Hook             | Description                     |
+| ---------------- | ------------------------------- |
+| `BEFORE_EACH`    | Before navigation (default)     |
+| `BEFORE_RESOLVE` | After async components resolved |
+| `AFTER_EACH`     | After navigation completed      |
+
+> for best understanding you can read
+> [Navigation Guards](https://router.vuejs.org/guide/advanced/navigation-guards.html#Navigation-Guards)
+> and
+> [The Full Navigation Resolution Flow](https://router.vuejs.org/guide/advanced/navigation-guards.html#The-Full-Navigation-Resolution-Flow)
+
+## 🏷️ Route Meta
 
 ```typescript
 const routes = [
-  // Public routes
-  {
-    path: '/login',
-    name: 'login',
-    component: () => import('@/pages/Login.vue'),
-    meta: {
-      title: 'Login',
-    },
-  },
-
-  // Protected routes
-  {
-    path: '/dashboard',
-    name: 'dashboard',
-    component: () => import('@/pages/Dashboard.vue'),
-    meta: {
-      title: 'Dashboard',
-    },
-  },
-
-  // Route with specific posts
   {
     path: '/admin',
-    name: 'admin',
-    component: () => import('@/pages/Admin.vue'),
+    component: AdminPage,
     meta: {
-      navigationPosts: ['admin'],
-      title: 'Admin Panel',
+      navigationOutposts: ['admin-only'], // Route outpost names
     },
-  },
-
-  // Nested routes - children inherit parent posts
-  {
-    path: '/account',
-    component: () => import('@/layouts/AccountLayout.vue'),
-    meta: {
-      navigationPosts: ['verified'],
-    },
-    children: [
-      {
-        path: 'profile',
-        name: 'profile',
-        component: () => import('@/pages/Profile.vue'),
-        // inherits: verified
-      },
-      {
-        path: 'settings',
-        name: 'settings',
-        component: () => import('@/pages/Settings.vue'),
-        meta: {
-          navigationPosts: ['admin'], // inherits verified, adds admin
-        },
-      },
-    ],
   },
 ];
 ```
 
-### 5. Import citadel in main
+## 💡 Examples
 
-```typescript
-import { createApp } from 'vue';
-import App from './App.vue';
-import router from './router';
-import './router/citadel'; // Initialize citadel
+See [examples](./examples) directory for more usage patterns:
 
-createApp(App).use(router).mount('#app');
-```
+- [auth.ts](./examples/auth.ts) — Global outposts with BLOCK and redirect
+- [global-different-hooks.ts](./examples/global-different-hooks.ts) — Using different hooks
+- [nested-routes.ts](./examples/nested-routes.ts) — Route outposts inheritance
+- [route-multiple-hooks.ts](./examples/route-multiple-hooks.ts) — Single outpost with multiple hooks
 
-## Post Return Values
-
-| Return              | Result                 |
-| ------------------- | ---------------------- |
-| `verdicts.ALLOW`    | Continue to next post  |
-| `verdicts.BLOCK`    | Cancel navigation      |
-| `{ name: 'route' }` | Redirect               |
-| `{ path: '/path' }` | Redirect               |
-| `'/path'`           | Redirect (string path) |
-| `throw Error`       | Handled by `onError`   |
-
-Returning `null`, `undefined`, or any other invalid value will throw an error.
-
-## Execution Order
-
-```
-Navigation: /account/settings
-
-1. Global posts (by priority)
-   └── auth (priority: 10)
-
-2. Parent route posts
-   └── verified (from /account)
-
-3. Current route posts
-   └── admin (from /account/settings)
-```
-
-## API
-
-```typescript
-import { NavigationPostScopes } from 'vue-router-citadel';
-
-// Add single post
-citadel.register({ scope: NavigationPostScopes.GLOBAL, name, handler, priority?, hooks? });
-
-// Add multiple posts
-citadel.register([
-  { scope: NavigationPostScopes.GLOBAL, name: 'auth', handler: authHandler, priority: 10 },
-  { scope: NavigationPostScopes.ROUTE, name: 'admin', handler: adminHandler },
-  { scope: NavigationPostScopes.ROUTE, name: 'verified', handler: verifiedHandler },
-]);
-
-// Remove single post
-citadel.delete(NavigationPostScopes.ROUTE, 'admin');
-
-// Remove multiple posts (same scope)
-citadel.delete(NavigationPostScopes.ROUTE, ['admin', 'verified']);
-
-// List registered
-citadel.getPosts(NavigationPostScopes.GLOBAL); // ['auth', 'page-title']
-citadel.getPosts(NavigationPostScopes.ROUTE);  // ['admin', 'verified']
-
-// Cleanup
-citadel.destroy();
-```
-
-## Route Meta Types
-
-```typescript
-interface RouteMeta {
-  navigationPosts?: string[]; // registered post names
-}
-```
-
-## License
+## 📄 License
 
 MIT

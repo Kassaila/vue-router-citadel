@@ -1,43 +1,49 @@
-import type { NavigationPostRegistry, NavigationPostScope, PlacedNavigationPost } from './types';
+import type {
+  NavigationOutpostRegistry,
+  NavigationOutpostScope,
+  PlacedNavigationOutpost,
+} from './types';
 
 /**
- * Creates a new navigation post registry
+ * Creates a new navigation outpost registry
  */
-export const createNavigationPostRegistry = (): NavigationPostRegistry => ({
+export const createNavigationOutpostRegistry = (): NavigationOutpostRegistry => ({
   global: new Map(),
   route: new Map(),
 });
 
 /**
- * Adds a navigation post to the registry
+ * Adds a navigation outpost to the registry
  */
-export const addNavigationPost = (
-  registry: NavigationPostRegistry,
-  scope: NavigationPostScope,
-  post: PlacedNavigationPost,
+export const addNavigationOutpost = (
+  registry: NavigationOutpostRegistry,
+  scope: NavigationOutpostScope,
+  outpost: PlacedNavigationOutpost,
 ): void => {
-  if (registry[scope].has(post.name)) {
-    console.warn(`[NavigationCitadel] ${scope} post "${post.name}" already exists, replacing...`);
+  if (registry[scope].has(outpost.name)) {
+    console.warn(
+      `[NavigationCitadel] ${scope} outpost "${outpost.name}" already exists, replacing...`,
+    );
   }
 
-  registry[scope].set(post.name, post);
+  registry[scope].set(outpost.name, outpost);
 };
 
 /**
- * Removes a navigation post from the registry by name
+ * Removes a navigation outpost from the registry by name
  *
- * @returns true if post was found and removed
+ * @returns true if outpost was found and removed
  */
-export const removeNavigationPost = (
-  registry: NavigationPostRegistry,
-  scope: NavigationPostScope,
+export const removeNavigationOutpost = (
+  registry: NavigationOutpostRegistry,
+  scope: NavigationOutpostScope,
   name: string,
 ): boolean => registry[scope].delete(name);
 
 /**
- * Gets all navigation post names by scope
+ * Gets all navigation outpost names by scope
  */
-export const getNavigationPostNames = (
-  registry: NavigationPostRegistry,
-  scope: NavigationPostScope,
+export const getNavigationOutpostNames = (
+  registry: NavigationOutpostRegistry,
+  scope: NavigationOutpostScope,
 ): string[] => Array.from(registry[scope].keys());
