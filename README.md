@@ -26,6 +26,9 @@ Think of it as turning your router into a fortress.
 - [✨ Designed for scalable apps](#-designed-for-scalable-apps)
 - [📦 Installation](#-installation)
 - [🚀 Quick Start](#-quick-start)
+- [🎯 Outpost Scopes](#-outpost-scopes)
+- [🪝 Navigation Hooks](#-navigation-hooks)
+- [↩️ Outpost Handler Return Values](#️-outpost-handler-return-values)
 - [📚 API](#-api)
   - [Citadel](#citadel)
   - [deploy](#deploy)
@@ -33,12 +36,9 @@ Think of it as turning your router into a fortress.
   - [getOutposts](#getoutposts)
   - [assignOutpostToRoute](#assignoutposttoroute)
   - [destroy](#destroy)
-- [📤 Exported Constants](#-exported-constants)
-- [↩️ Handler Return Values](#️-handler-return-values)
-- [🎯 Outpost Scopes](#-outpost-scopes)
-- [🪝 Navigation Hooks](#-navigation-hooks)
 - [🔍 Logging & Debug](#-logging--debug)
 - [💡 Examples](#-examples)
+- [📤 Exported Constants](#-exported-constants)
 - [📄 License](#-license)
 
 <!-- /TOC -->
@@ -109,6 +109,53 @@ citadel.deploy({
 
 export { router, citadel };
 ```
+
+## 🎯 Outpost Scopes
+
+| Scope    | Description                                                                     |
+| -------- | ------------------------------------------------------------------------------- |
+| `GLOBAL` | Calls on every navigation, sorted by priority                                   |
+| `ROUTE`  | Calls only when referenced in `meta.outposts`, sorted by priority, deduplicated |
+
+```typescript
+// Route outposts usage
+const routes = [
+  {
+    path: '/admin',
+    component: AdminPage,
+    meta: { outposts: ['admin-only'] },
+  },
+];
+```
+
+> Route outposts from nested routes are automatically deduplicated. If the same outpost is
+> referenced in parent and child routes, it will only be processed once. A warning is logged when
+> duplicates are detected.
+
+## 🪝 Navigation Hooks
+
+| Hook             | Description                     |
+| ---------------- | ------------------------------- |
+| `BEFORE_EACH`    | Before navigation (default)     |
+| `BEFORE_RESOLVE` | After async components resolved |
+| `AFTER_EACH`     | After navigation completed      |
+
+> For best understanding you can read
+> [Navigation Guards](https://router.vuejs.org/guide/advanced/navigation-guards.html#Navigation-Guards)
+> and
+> [The Full Navigation Resolution Flow](https://router.vuejs.org/guide/advanced/navigation-guards.html#The-Full-Navigation-Resolution-Flow)
+
+## ↩️ Outpost Handler Return Values
+
+| Return              | Result                    |
+| ------------------- | ------------------------- |
+| `verdicts.ALLOW`    | Continue navigation       |
+| `verdicts.BLOCK`    | Cancel navigation         |
+| `{ name: 'route' }` | Redirect to named route   |
+| `{ path: '/path' }` | Redirect to path          |
+| `'/path'`           | Redirect to path (string) |
+
+> Redirect routes are validated against the router. If route is not found, an error is thrown.
 
 ## 📚 API
 
@@ -203,64 +250,6 @@ citadel.destroy();
 
 Removes all navigation hooks and clears registry.
 
-## 📤 Exported Constants
-
-```typescript
-import {
-  NavigationOutpostScopes, // { GLOBAL, ROUTE }
-  NavigationHooks, // { BEFORE_EACH, BEFORE_RESOLVE, AFTER_EACH }
-  NavigationOutpostVerdicts, // { ALLOW, BLOCK }
-  DEFAULT_NAVIGATION_OUTPOST_PRIORITY, // 100
-} from 'vue-router-citadel';
-```
-
-## ↩️ Handler Return Values
-
-| Return              | Result                    |
-| ------------------- | ------------------------- |
-| `verdicts.ALLOW`    | Continue navigation       |
-| `verdicts.BLOCK`    | Cancel navigation         |
-| `{ name: 'route' }` | Redirect to named route   |
-| `{ path: '/path' }` | Redirect to path          |
-| `'/path'`           | Redirect to path (string) |
-
-> Redirect routes are validated against the router. If route is not found, an error is thrown.
-
-## 🎯 Outpost Scopes
-
-| Scope    | Description                                                                     |
-| -------- | ------------------------------------------------------------------------------- |
-| `GLOBAL` | Calls on every navigation, sorted by priority                                   |
-| `ROUTE`  | Calls only when referenced in `meta.outposts`, sorted by priority, deduplicated |
-
-```typescript
-// Route outposts usage
-const routes = [
-  {
-    path: '/admin',
-    component: AdminPage,
-    meta: { outposts: ['admin-only'] },
-  },
-];
-```
-
-> Route outposts from nested routes are automatically deduplicated. If the same outpost is
-> referenced in parent and child routes, it will only be processed once. A warning is logged when
-> duplicates are detected.
-
-## 🪝 Navigation Hooks
-
-| Hook             | Description                     |
-| ---------------- | ------------------------------- |
-| `BEFORE_EACH`    | Before navigation (default)     |
-| `BEFORE_RESOLVE` | After async components resolved |
-| `AFTER_EACH`     | After navigation completed      |
-
-> For best understanding you can read
-> [Navigation Guards](https://router.vuejs.org/guide/advanced/navigation-guards.html#Navigation-Guards)
-> and
-> [The Full Navigation Resolution Flow](https://router.vuejs.org/guide/advanced/navigation-guards.html#The-Full-Navigation-Resolution-Flow)
-
 ## 🔍 Logging & Debug
 
 Citadel provides two options for development insights:
@@ -289,6 +278,17 @@ See [examples](./examples) directory for more usage patterns:
 - [global-different-hooks.ts](./examples/global-different-hooks.ts) — Using different hooks
 - [nested-routes.ts](./examples/nested-routes.ts) — Route outposts inheritance
 - [route-multiple-hooks.ts](./examples/route-multiple-hooks.ts) — Single outpost with multiple hooks
+
+## 📤 Exported Constants
+
+```typescript
+import {
+  NavigationOutpostScopes, // { GLOBAL, ROUTE }
+  NavigationHooks, // { BEFORE_EACH, BEFORE_RESOLVE, AFTER_EACH }
+  NavigationOutpostVerdicts, // { ALLOW, BLOCK }
+  DEFAULT_NAVIGATION_OUTPOST_PRIORITY, // 100
+} from 'vue-router-citadel';
+```
 
 ## 📄 License
 
