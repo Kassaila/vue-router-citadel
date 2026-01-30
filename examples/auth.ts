@@ -8,7 +8,7 @@ import { createNavigationCitadel, NavigationOutpostScopes } from 'vue-router-cit
 const maintenanceNavigationOutpost = {
   scope: NavigationOutpostScopes.GLOBAL,
   name: 'maintenance',
-  priority: 1, // highest priority, executes before other outposts
+  priority: 1, // highest priority, processed before other outposts
   handler: ({ verdicts }) => {
     const isMaintenanceMode = localStorage.getItem('maintenance') === 'true';
 
@@ -58,7 +58,7 @@ const router = createRouter({
 // 2. Create navigation citadel
 const citadel = createNavigationCitadel(router);
 
-// 3. Register navigation outposts
+// 3. Deploy navigation outposts
 citadel.deploy(outposts);
 
 export { router, citadel };

@@ -18,72 +18,338 @@
 
 - [x] `src/index.ts` — entry point, exports
 - [x] `src/types.ts` — TypeScript types and interfaces
-- [x] `src/consts.ts` — constants
+- [x] `src/consts.ts` — constants (LOG_PREFIX, DEFAULT_PRIORITY)
+- [x] `src/helpers.ts` — utility functions (debugPoint)
 - [x] `src/navigationCitadel.ts` — main factory
 - [x] `src/navigationRegistry.ts` — outposts registry
-- [x] `src/navigationOutposts.ts` — collection and patrol logic
+- [x] `src/navigationOutposts.ts` — patrol logic
 
 ### Documentation
 
 - [x] `README.md` — full documentation
+- [x] `CHANGELOG.md` — release notes
 - [x] Usage examples (`examples/`)
 - [x] Exported constants section
-- [x] Logging & Debug section with tables
-- [x] Route validation note
+- [x] Logging & Debug section
 
 ### Features
 
-- [x] **Extend debug functionality**
-  - `log: boolean` — enables console logging (`console.info`)
-  - `debug: boolean` — enables logging + `debugger` breakpoints
-  - Key breakpoint locations: navigation start, before outpost, patrol stopped, error
-- [x] **Default error handler** — `console.error` + `BLOCK`
-- [x] **Route validation** — redirect routes are validated against router
-- [x] **assignOutpostToRoute** — dynamically assign outposts to existing routes
-- [x] **Route outposts optimization**
-  - Sorting by priority at `deploy` (not every navigation)
-  - Deduplication with warning log
-  - Direct execution from registry (no intermediate array)
+- [x] Global and route-scoped outposts
+- [x] Priority-based processing (global + route)
+- [x] Route outposts deduplication with warning
+- [x] Route validation for redirects
+- [x] `log` / `debug` options with colored output (🔵 info, 🟡 warn, 🔴 error, 🟣 debug)
+- [x] Named debug breakpoints (navigation-start, before-outpost, patrol-stopped, error-caught)
+- [x] Default error handler (`console.error` + `BLOCK`)
+- [x] `assignOutpostToRoute()` method
+- [x] Optimized processing (sorting at deploy, direct registry calls)
 
-### Build Optimization
+### Build
 
-- [x] `tsup` config with treeshake, external, target
-- [x] `npm run build` — minified, no sourcemap (production)
-- [x] `npm run build:dev` — not minified, with sourcemap (development)
+- [x] `npm run build` — production (minified)
+- [x] `npm run build:dev` — development (sourcemap)
 
 ---
 
 ## TODO
 
-### Documentation
+### Priority 1 — Before Release
 
-- [ ] **Improve API section in README.md**
-  - Add tables with parameters and types
-  - Describe Handler Context (ctx) as separate block
-  - Add return values for methods
-  - Make it more structured and readable
+#### Timeout for Outposts
 
-### Testing
+**Problem:** Outpost can hang forever (e.g., API request without timeout), blocking navigation.
 
-- [ ] Install `vitest`
-- [ ] Create `src/__tests__/`
-- [ ] Write tests for:
-  - `createNavigationCitadel`
-  - `deploy` / `abandon` / `getOutposts`
-  - `patrolNavigationCitadel`
-  - Route outposts deduplication
-  - Error handling (`onError`)
+**Solution:** Global `defaultTimeout` option with `onTimeout` handler.
 
-### CI/CD
+```typescript
+// Usage
+const citadel = createNavigationCitadel(router, {
+  defaultTimeout: 10000, // 10 seconds
+  onTimeout: (outpostName, ctx) => {
+    console.warn(`Outpost "${outpostName}" timed out`);
+    return { name: 'error' }; // or verdicts.BLOCK
+  },
+});
 
-- [ ] `.github/workflows/ci.yml` — run tests on PR
-- [ ] `.github/workflows/release.yml` — publish to npm
+// Per-outpost override
+citadel.deploy({
+  name: 'slow-outpost',
+  timeout: 30000, // override global timeout
+  handler: async ({ verdicts }) => { ... },
+});
+```
 
-### Publishing
+**Implementation:**
 
-- [ ] Verify build (`npm run build`)
-- [ ] Verify package (`npm pack --dry-run`)
-- [ ] Publish (`npm publish`)
+1. Add to `NavigationCitadelOptions`:
+   - `defaultTimeout?: number` — default timeout in ms (undefined = no timeout)
+   - `onTimeout?: (outpostName: string, ctx: NavigationOutpostContext) => NavigationOutpostOutcome`
+2. Add to `NavigationOutpostOptions`:
+   - `timeout?: number` — per-outpost override
+3. In `processOutpost()`:
+   - Wrap handler call with `Promise.race([handler(), timeoutPromise])`
+   - If timeout wins, call `onTimeout` or default to `BLOCK`
+4. Log: `[🏰 NavigationCitadel] Outpost "name" timed out after Xms`
+
+---
+
+#### Testing
+
+**Setup:**
+
+1. Install: `npm install -D vitest @vue/test-utils vue vue-router happy-dom`
+2. Add to `package.json`: `"test": "vitest"`, `"test:coverage": "vitest --coverage"`
+3. Create `vitest.config.ts`
+
+**Test files:**
+
+```
+src/__tests__/
+├── navigationCitadel.test.ts    # createNavigationCitadel, destroy
+├── navigationRegistry.test.ts   # deploy, abandon, getOutposts, sorting
+├── navigationOutposts.test.ts   # patrolNavigationCitadel, deduplication
+├── timeout.test.ts              # timeout functionality
+└── integration.test.ts          # full navigation flow
+```
+
+**Test cases:**
+
+- `createNavigationCitadel` — returns API, registers hooks
+- `deploy` — single, multiple, priority sorting, duplicate warning
+- `abandon` — single, multiple, returns boolean
+- `getOutposts` — returns names by scope
+- `assignOutpostToRoute` — assigns, returns false if not found
+- `patrolNavigationCitadel` — ALLOW/BLOCK/redirect flow
+- Deduplication — warning logged, outpost runs once
+- `onError` — custom handler called, default BLOCK
+- Timeout — handler times out, onTimeout called
+
+---
+
+#### CI/CD
+
+**`.github/workflows/ci.yml`:**
+
+```yaml
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+```
+
+**`.github/workflows/release.yml`:**
+
+```yaml
+name: Release
+on:
+  push:
+    tags: ['v*']
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, registry-url: 'https://registry.npmjs.org' }
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+```
+
+---
+
+#### Type-safe meta.outposts
+
+**Problem:** No autocomplete for outpost names in `meta.outposts`.
+
+**Solution:** Declaration merging with generic registry.
+
+```typescript
+// User defines their outpost names
+declare module 'vue-router-citadel' {
+  interface OutpostRegistry {
+    'auth': true;
+    'admin-only': true;
+    'verified': true;
+  }
+}
+
+// Now meta.outposts has autocomplete
+const routes = [
+  {
+    path: '/admin',
+    meta: {
+      outposts: ['auth', 'admin-only'], // ✓ autocomplete works
+      // outposts: ['typo'],            // ✗ TypeScript error
+    },
+  },
+];
+```
+
+**Implementation:**
+
+1. Add to `types.ts`:
+   ```typescript
+   export interface OutpostRegistry {}
+   export type RegisteredOutpostName = keyof OutpostRegistry extends never
+     ? string
+     : keyof OutpostRegistry;
+   ```
+2. Update `NavigationOutpostRef` to use `RegisteredOutpostName`
+3. Update `RouteMeta.outposts` type
+
+---
+
+### Priority 2 — Post-Release
+
+#### DevTools Integration
+
+Vue DevTools plugin for visualizing outposts and navigation flow.
+
+**Features:**
+
+- List of deployed outposts (global/route, priority, hooks)
+- Navigation timeline with outpost processing
+- Outpost processing time
+- Click to see outpost source location
+
+**Implementation:**
+
+- Use `@vue/devtools-api`
+- Create `src/devtools.ts`
+- Register on `createNavigationCitadel` if devtools available
+- Export `setupDevtools(citadel)` for manual setup
+
+---
+
+#### Metrics
+
+Performance metrics for outpost execution.
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  metrics: true,
+});
+
+// Get metrics
+citadel.getMetrics(); // { 'auth': { calls: 42, avgTime: 12, maxTime: 45 }, ... }
+citadel.resetMetrics();
+```
+
+**Implementation:**
+
+- Track in `processOutpost`: start time, end time, success/fail
+- Store in registry alongside outpost
+- Add `getMetrics()` and `resetMetrics()` to API
+
+---
+
+#### Lazy Outposts
+
+Dynamic import of outpost handlers for code splitting.
+
+```typescript
+citadel.deploy({
+  name: 'heavy-outpost',
+  handler: () => import('./outposts/heavy').then((m) => m.default),
+  // or
+  handler: lazy(() => import('./outposts/heavy')),
+});
+```
+
+**Implementation:**
+
+- Detect if handler returns Promise with `handler` property
+- Cache resolved handler after first load
+- Add `lazy()` helper function
+
+---
+
+#### JSON Schema for Config
+
+Validate citadel and outpost configuration.
+
+**Files:**
+
+- `schemas/citadel-options.json`
+- `schemas/outpost-options.json`
+
+**Usage:**
+
+- IDE validation in JSON/YAML configs
+- Runtime validation with `ajv` (optional)
+
+---
+
+#### Playground
+
+Interactive demo for trying the library.
+
+**Options:**
+
+1. StackBlitz template
+2. GitHub Pages with Vue app
+3. Link in README
+
+**Content:**
+
+- Basic auth example
+- Nested routes example
+- All features demonstrated
+
+---
+
+### Priority 3 — Documentation
+
+#### Restructure docs: README.md → API reference, internals.md → deep dive
+
+**Problem:** Duplication between README.md and flow.md:
+
+- Handler Return Values / Valid Outcomes — identical tables
+- Debug Breakpoints — identical tables
+- Console Methods / Logging Summary — similar content
+
+**Solution:** Clear separation of concerns.
+
+**README.md** — concise API reference:
+
+- [x] Remove "Console Methods" section (table with console.info/warn/error)
+- [x] Remove "Debugger Breakpoints" section (table with names)
+- [x] Simplify "🔍 Logging & Debug" section to:
+  - Only Options table (log/debug)
+  - Link: "> See [Internals](./docs/internals.md) for detailed logging and debug info"
+- [x] Update link from flow.md → internals.md
+
+**docs/flow.md → docs/internals.md:**
+
+- [x] Rename file
+- [x] Update title: "# Internals"
+- [x] Add intro text about contents (diagrams + logging + debug)
+- [x] Remove "Valid Outcomes" section (duplicate from README)
+- [x] Keep:
+  - Legend (colors)
+  - All Mermaid diagrams
+  - Logging Summary (detailed table)
+  - Debug Breakpoints (detailed table)
+
+---
+
+#### Improve API section in README.md
+
+- [ ] Add tables with parameters and types for each method
+- [ ] Describe Handler Context (ctx) as separate block
+- [ ] Add return values for methods
 
 ---
 
@@ -94,15 +360,28 @@ src/
 ├── index.ts
 ├── types.ts
 ├── consts.ts
+├── helpers.ts
 ├── navigationCitadel.ts
 ├── navigationOutposts.ts
-└── navigationRegistry.ts
+├── navigationRegistry.ts
+└── __tests__/
+    ├── navigationCitadel.test.ts
+    ├── navigationRegistry.test.ts
+    ├── navigationOutposts.test.ts
+    └── integration.test.ts
+
+docs/
+└── internals.md          # diagrams + logging + debug
 
 examples/
 ├── auth.ts
 ├── global-different-hooks.ts
 ├── nested-routes.ts
 └── route-multiple-hooks.ts
+
+.github/workflows/
+├── ci.yml
+└── release.yml
 ```
 
 ---
@@ -111,9 +390,11 @@ examples/
 
 ```bash
 npm install          # Install dependencies
-npm run build        # Build for production (minified, no sourcemap)
-npm run build:dev    # Build for development (sourcemap, no minify)
+npm run build        # Build for production
+npm run build:dev    # Build for development
 npm run format       # Format code
+npm test             # Run tests
+npm run test:coverage # Run tests with coverage
 npm pack --dry-run   # Check package contents
 npm publish          # Publish to npm
 ```

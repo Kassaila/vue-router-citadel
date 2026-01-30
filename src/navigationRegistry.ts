@@ -44,7 +44,9 @@ export const addNavigationOutpost = (
   defaultPriority: number = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
 ): void => {
   if (registry[scope].has(outpost.name)) {
-    console.warn(`${LOG_PREFIX} ${scope} outpost "${outpost.name}" already exists, replacing...`);
+    console.warn(
+      `🟡 ${LOG_PREFIX} ${scope} outpost "${outpost.name}" already exists, replacing...`,
+    );
   }
 
   registry[scope].set(outpost.name, outpost);

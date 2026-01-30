@@ -34,6 +34,18 @@ export type NavigationOutpostScope =
   (typeof NavigationOutpostScopes)[keyof typeof NavigationOutpostScopes];
 
 /**
+ * Debug point names for debugger breakpoints
+ */
+export const DebugPoints = {
+  NAVIGATION_START: 'navigation-start',
+  BEFORE_OUTPOST: 'before-outpost',
+  PATROL_STOPPED: 'patrol-stopped',
+  ERROR_CAUGHT: 'error-caught',
+} as const;
+
+export type DebugPoint = (typeof DebugPoints)[keyof typeof DebugPoints];
+
+/**
  * Context passed to navigation outpost functions
  */
 export interface NavigationOutpostContext {
@@ -54,7 +66,7 @@ export interface NavigationOutpostContext {
    */
   router: Router;
   /**
-   * Current hook being executed
+   * Current hook being processed
    */
   hook: NavigationHook;
 }
@@ -92,7 +104,7 @@ export interface NavigationOutpostOptions {
    */
   handler: NavigationOutpost;
   /**
-   * Priority for outposts (lower = earlier execution). Default: 100
+   * Priority for outposts (lower = processed first). Default: 100
    */
   priority?: number;
   /**
@@ -102,7 +114,7 @@ export interface NavigationOutpostOptions {
 }
 
 /**
- * Navigation outpost reference (registered outpost name)
+ * Navigation outpost reference (deployed outpost name)
  */
 export type NavigationOutpostRef = NavigationOutpostOptions['name'];
 
@@ -141,7 +153,7 @@ export type PlacedNavigationOutpost = Omit<NavigationOutpostOptions, 'scope'>;
  */
 export interface NavigationCitadelAPI {
   /**
-   * Register one or multiple outposts
+   * Deploy one or multiple outposts
    */
   deploy: (options: NavigationOutpostOptions | NavigationOutpostOptions[]) => void;
   /**
@@ -149,7 +161,7 @@ export interface NavigationCitadelAPI {
    */
   abandon: (scope: NavigationOutpostScope, name: string | string[]) => boolean;
   /**
-   * Get all registered outpost names by scope
+   * Get all deployed outpost names by scope
    */
   getOutposts: (scope: NavigationOutpostScope) => string[];
   /**
@@ -167,11 +179,11 @@ export interface NavigationCitadelAPI {
  */
 export interface NavigationOutpostRegistry {
   /**
-   * Global outposts (executed for all routes)
+   * Global outposts (processed for all routes)
    */
   global: Map<string, PlacedNavigationOutpost>;
   /**
-   * Route outposts (executed when referenced in route meta)
+   * Route outposts (processed when referenced in route meta)
    */
   route: Map<string, PlacedNavigationOutpost>;
   /**
@@ -190,7 +202,7 @@ export interface NavigationOutpostRegistry {
 declare module 'vue-router' {
   interface RouteMeta {
     /**
-     * Navigation outposts to execute for this route
+     * Navigation outposts to process for this route
      */
     outposts?: NavigationOutpostRef[];
   }
