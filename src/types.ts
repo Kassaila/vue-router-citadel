@@ -123,7 +123,7 @@ export type NavigationOutpostRef = NavigationOutpostOptions['name'];
  */
 export interface NavigationCitadelOptions {
   /**
-   * Enable console logging (console.info for navigation flow). Default: true
+   * Enable console logging (console.info for navigation flow). Default: __DEV__
    */
   log?: boolean;
   /**

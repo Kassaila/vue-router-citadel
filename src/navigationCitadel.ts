@@ -9,7 +9,7 @@ import type {
   NavigationHook,
 } from './types';
 import { NavigationHooks, NavigationOutpostVerdicts, DebugPoints } from './types';
-import { LOG_PREFIX } from './consts';
+import { __DEV__, LOG_PREFIX } from './consts';
 import { debugPoint } from './helpers';
 import {
   createNavigationOutpostRegistry,
@@ -46,7 +46,7 @@ export const createNavigationCitadel = (
   router: Router,
   options: NavigationCitadelOptions = {},
 ): NavigationCitadelAPI => {
-  const { log = true, debug = false, defaultPriority } = options;
+  const { log = __DEV__, debug = false, defaultPriority } = options;
   const enableLog = log || debug;
   const registry = createNavigationOutpostRegistry();
 

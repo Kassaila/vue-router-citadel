@@ -176,7 +176,7 @@ Creates a navigation citadel instance.
 
 ```typescript
 const citadel = createNavigationCitadel(router, {
-  log: true, // Enable console logging (default: true)
+  log: true, // Enable console logging (default: __DEV__)
   debug: false, // Enable logging + debugger breakpoints (default: false)
   defaultPriority: 100, // Default priority for outposts
   onError: (error, ctx) => {
@@ -266,15 +266,18 @@ Citadel provides two options for development insights:
 
 ```typescript
 const citadel = createNavigationCitadel(router, {
-  log: true, // Console logging (default: true)
+  log: true, // Console logging (default: __DEV__)
   debug: false, // Logging + debugger breakpoints (default: false)
 });
 ```
 
-| Option  | Default | Description                                 |
-| ------- | ------- | ------------------------------------------- |
-| `log`   | `true`  | Enables console logging for navigation flow |
-| `debug` | `false` | Enables logging + `debugger` breakpoints    |
+| Option  | Default   | Description                                 |
+| ------- | --------- | ------------------------------------------- |
+| `log`   | `__DEV__` | Enables console logging for navigation flow |
+| `debug` | `false`   | Enables logging + `debugger` breakpoints    |
+
+> `__DEV__` is `true` in development (`import.meta.env.DEV` or `NODE_ENV !== 'production'`), `false`
+> in production.
 
 > `debug: true` automatically enables logging.
 >

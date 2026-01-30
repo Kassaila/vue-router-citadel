@@ -443,6 +443,7 @@ import {
   NavigationHooks,
   NavigationOutpostVerdicts,
   DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
+  __DEV__,
 } from 'vue-router-citadel';
 ```
 
@@ -452,6 +453,7 @@ import {
 | `NavigationHooks`                     | `BEFORE_EACH`, `BEFORE_RESOLVE`, `AFTER_EACH` | Vue Router navigation hooks                   |
 | `NavigationOutpostVerdicts`           | `ALLOW`, `BLOCK`                              | Handler return verdicts                       |
 | `DEFAULT_NAVIGATION_OUTPOST_PRIORITY` | `100`                                         | Default priority for outposts                 |
+| `__DEV__`                             | `true` / `false`                              | Development mode detection (Vite / Node.js)   |
 
 ### Types
 
@@ -511,7 +513,7 @@ Options for creating citadel:
 
 ```typescript
 interface NavigationCitadelOptions {
-  log?: boolean; // Default: true
+  log?: boolean; // Default: __DEV__
   debug?: boolean; // Default: false
   defaultPriority?: number; // Default: 100
   onError?: (error: Error, ctx: NavigationOutpostContext) => NavigationOutpostOutcome;
