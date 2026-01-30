@@ -29,7 +29,7 @@ import { patrolNavigationCitadel, toNavigationGuardReturn } from './navigationOu
  *   onError: (error, ctx) => ({ name: 'error' }),
  * });
  *
- * citadel.deploy({
+ * citadel.deployOutpost({
  *   scope: NavigationOutpostScopes.GLOBAL,
  *   name: 'auth',
  *   priority: 10,
@@ -154,7 +154,7 @@ export const createNavigationCitadel = (
    * Public API
    */
   const api: NavigationCitadelAPI = {
-    deploy(opts: NavigationOutpostOptions | NavigationOutpostOptions[]): void {
+    deployOutpost(opts: NavigationOutpostOptions | NavigationOutpostOptions[]): void {
       if (Array.isArray(opts)) {
         for (const opt of opts) {
           deployOne(opt);
@@ -164,7 +164,7 @@ export const createNavigationCitadel = (
       }
     },
 
-    abandon(scope: NavigationOutpostScope, name: string | string[]): boolean {
+    abandonOutpost(scope: NavigationOutpostScope, name: string | string[]): boolean {
       if (Array.isArray(name)) {
         let allDeleted = true;
 
@@ -180,7 +180,7 @@ export const createNavigationCitadel = (
       return abandonOne(scope, name);
     },
 
-    getOutposts(scope: NavigationOutpostScope): string[] {
+    getOutpostNames(scope: NavigationOutpostScope): string[] {
       return getNavigationOutpostNames(registry, scope);
     },
 

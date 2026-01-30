@@ -92,6 +92,6 @@ const router = createRouter({
 const citadel = createNavigationCitadel(router, { debug: true });
 
 // 3. Deploy navigation outposts
-citadel.deploy(outposts);
+citadel.deployOutpost(outposts);
 
 export { router, citadel };

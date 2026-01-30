@@ -29,9 +29,9 @@ Think of it as turning your router into a fortress.
 - [↩️ Outpost Handler Return Values](#️-outpost-handler-return-values)
 - [📚 API](#-api)
   - [Citadel](#citadel)
-  - [deploy](#deploy)
-  - [abandon](#abandon)
-  - [getOutposts](#getoutposts)
+  - [deployOutpost](#deployoutpost)
+  - [abandonOutpost](#abandonoutpost)
+  - [getOutpostNames](#getoutpostnames)
   - [assignOutpostToRoute](#assignoutposttoroute)
   - [destroy](#destroy)
 - [🔍 Logging & Debug](#-logging--debug)
@@ -92,7 +92,7 @@ const router = createRouter({
 const citadel = createNavigationCitadel(router);
 
 // 3. Deploy outpost
-citadel.deploy({
+citadel.deployOutpost({
   scope: NavigationOutpostScopes.GLOBAL,
   name: 'auth',
   handler: ({ verdicts, to }) => {
@@ -186,16 +186,16 @@ const citadel = createNavigationCitadel(router, {
 });
 ```
 
-### deploy
+### deployOutpost
 
 ```typescript
-citadel.deploy(options);
+citadel.deployOutpost(options);
 ```
 
 Deploys one or multiple navigation outposts.
 
 ```typescript
-citadel.deploy({
+citadel.deployOutpost({
   scope: NavigationOutpostScopes.GLOBAL, // or NavigationOutpostScopes.ROUTE
   name: 'outpost-name',
   handler: ({ verdicts, to, from, router, hook }) => {
@@ -206,32 +206,32 @@ citadel.deploy({
 });
 
 // Deploy multiple
-citadel.deploy([outpost1, outpost2, outpost3]);
+citadel.deployOutpost([outpost1, outpost2, outpost3]);
 ```
 
-### abandon
+### abandonOutpost
 
 ```typescript
-citadel.abandon(scope, name);
+citadel.abandonOutpost(scope, name);
 ```
 
 Removes outpost(s) by scope and name.
 
 ```typescript
-citadel.abandon(NavigationOutpostScopes.ROUTE, 'outpost-name');
-citadel.abandon(NavigationOutpostScopes.ROUTE, ['name1', 'name2']);
+citadel.abandonOutpost(NavigationOutpostScopes.ROUTE, 'outpost-name');
+citadel.abandonOutpost(NavigationOutpostScopes.ROUTE, ['name1', 'name2']);
 ```
 
-### getOutposts
+### getOutpostNames
 
 ```typescript
-citadel.getOutposts(scope);
+citadel.getOutpostNames(scope);
 ```
 
 Returns array of deployed outpost names.
 
 ```typescript
-citadel.getOutposts(NavigationOutpostScopes.GLOBAL); // ['auth', 'analytics']
+citadel.getOutpostNames(NavigationOutpostScopes.GLOBAL); // ['auth', 'analytics']
 ```
 
 ### assignOutpostToRoute
