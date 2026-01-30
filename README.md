@@ -118,7 +118,7 @@ Creates a navigation citadel instance.
 const citadel = createNavigationCitadel(router, {
   log: true, // Enable console logging (default: true)
   debug: false, // Enable logging + debugger breakpoints (default: false)
-  defaultPriority: 100, // Default priority for global outposts
+  defaultPriority: 100, // Default priority for outposts
   onError: (error, ctx) => {
     // Custom error handler (default: console.error + BLOCK)
     return { name: 'error' };
@@ -137,7 +137,7 @@ citadel.deploy({
   handler: ({ verdicts, to, from, router, hook }) => {
     return verdicts.ALLOW;
   },
-  priority: 10, // Optional, for global outposts (lower = earlier)
+  priority: 10, // Optional, lower = earlier execution
   hooks: [NavigationHooks.BEFORE_EACH], // Optional, default: ['beforeEach']
 });
 
@@ -202,10 +202,10 @@ import {
 
 ## 🎯 Outpost Scopes
 
-| Scope    | Description                                   |
-| -------- | --------------------------------------------- |
-| `GLOBAL` | Calls on every navigation, sorted by priority |
-| `ROUTE`  | Calls only when referenced in `meta.outposts` |
+| Scope    | Description                                                                     |
+| -------- | ------------------------------------------------------------------------------- |
+| `GLOBAL` | Calls on every navigation, sorted by priority                                   |
+| `ROUTE`  | Calls only when referenced in `meta.outposts`, sorted by priority, deduplicated |
 
 ```typescript
 // Route outposts usage
@@ -217,6 +217,10 @@ const routes = [
   },
 ];
 ```
+
+> **Note:** Route outposts from nested routes are automatically deduplicated. If the same outpost is
+> referenced in parent and child routes, it will only execute once. A warning is logged when
+> duplicates are detected.
 
 ## 🪝 Navigation Hooks
 
@@ -253,11 +257,11 @@ const citadel = createNavigationCitadel(router, {
 
 ### Console Methods
 
-| Method          | Usage                                                      |
-| --------------- | ---------------------------------------------------------- |
-| `console.info`  | Navigation flow, patrolling, running outposts, registering |
-| `console.warn`  | Outpost not found, already exists, patrol stopped          |
-| `console.error` | Outpost errors, unhandled exceptions                       |
+| Method          | Usage                                                                 |
+| --------------- | --------------------------------------------------------------------- |
+| `console.info`  | Navigation flow, patrolling, running outposts, registering            |
+| `console.warn`  | Outpost not found, already exists, patrol stopped, duplicate outposts |
+| `console.error` | Outpost errors, unhandled exceptions                                  |
 
 ### Debugger Breakpoints
 

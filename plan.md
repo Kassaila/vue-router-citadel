@@ -40,6 +40,10 @@
 - [x] **Default error handler** — `console.error` + `BLOCK`
 - [x] **Route validation** — redirect routes are validated against router
 - [x] **assignOutpostToRoute** — dynamically assign outposts to existing routes
+- [x] **Route outposts optimization**
+  - Sorting by priority at `deploy` (not every navigation)
+  - Deduplication with warning log
+  - Direct execution from registry (no intermediate array)
 
 ### Build Optimization
 
@@ -66,8 +70,8 @@
 - [ ] Write tests for:
   - `createNavigationCitadel`
   - `deploy` / `abandon` / `getOutposts`
-  - `collectNavigationOutposts`
   - `patrolNavigationCitadel`
+  - Route outposts deduplication
   - Error handling (`onError`)
 
 ### CI/CD

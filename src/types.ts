@@ -92,7 +92,7 @@ export interface NavigationOutpostOptions {
    */
   handler: NavigationOutpost;
   /**
-   * Priority for global outposts (lower = earlier execution). Default: 100
+   * Priority for outposts (lower = earlier execution). Default: 100
    */
   priority?: number;
   /**
@@ -126,7 +126,7 @@ export interface NavigationCitadelOptions {
     ctx: NavigationOutpostContext,
   ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
   /**
-   * Default priority for global posts
+   * Default priority for outposts. Default: 100
    */
   defaultPriority?: number;
 }
@@ -174,6 +174,14 @@ export interface NavigationOutpostRegistry {
    * Route outposts (executed when referenced in route meta)
    */
   route: Map<string, PlacedNavigationOutpost>;
+  /**
+   * Sorted global outpost names by priority (updated on deploy/abandon)
+   */
+  globalSorted: string[];
+  /**
+   * Sorted route outpost names by priority (updated on deploy/abandon)
+   */
+  routeSorted: string[];
 }
 
 /**
