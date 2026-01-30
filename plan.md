@@ -73,7 +73,7 @@ const citadel = createNavigationCitadel(router, {
 });
 
 // Per-outpost override
-citadel.deploy({
+citadel.deployOutpost({
   name: 'slow-outpost',
   timeout: 30000, // override global timeout
   handler: async ({ verdicts }) => { ... },
@@ -116,9 +116,9 @@ src/__tests__/
 **Test cases:**
 
 - `createNavigationCitadel` — returns API, registers hooks
-- `deploy` — single, multiple, priority sorting, duplicate warning
-- `abandon` — single, multiple, returns boolean
-- `getOutposts` — returns names by scope
+- `deployOutpost` — single, multiple, priority sorting, duplicate warning
+- `abandonOutpost` — single, multiple, returns boolean
+- `getOutpostNames` — returns names by scope
 - `assignOutpostToRoute` — assigns, returns false if not found
 - `patrolNavigationCitadel` — ALLOW/BLOCK/redirect flow
 - Deduplication — warning logged, outpost runs once
@@ -261,7 +261,7 @@ citadel.resetMetrics();
 Dynamic import of outpost handlers for code splitting.
 
 ```typescript
-citadel.deploy({
+citadel.deployOutpost({
   name: 'heavy-outpost',
   handler: () => import('./outposts/heavy').then((m) => m.default),
   // or
@@ -319,7 +319,7 @@ Interactive demo for trying the library.
 
 - [x] Logical section order (concepts before API)
 - [x] Section-specific links to internals.md
-- [x] Simplified API headers (Citadel, deploy, abandon, etc.)
+- [x] Simplified API headers (Citadel, deployOutpost, abandonOutpost, etc.)
 - [x] "📦 Exports" section with link to detailed reference
 - [x] "📖 Internals" section at the end
 

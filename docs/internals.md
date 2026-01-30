@@ -10,18 +10,18 @@ breakpoints.
 - [🎨 Legend](#-legend)
 - [🪝 Navigation Hooks](#-navigation-hooks)
   - [Navigation Flow Overview](#navigation-flow-overview)
-  - [Hook Patrol Flow](#hook-patrol-flow)
+  - [Navigation Hook Patrol Flow](#navigation-hook-patrol-flow)
 - [🎯 Outpost Scopes](#-outpost-scopes)
   - [Global vs Route Scopes](#global-vs-route-scopes)
   - [Nested Routes & Deduplication](#nested-routes--deduplication)
 - [↩️ Outpost Handler Return Values](#️-outpost-handler-return-values)
-  - [Verdict Decision Flow](#verdict-decision-flow)
+  - [Outpost Verdict Decision Flow](#outpost-verdict-decision-flow)
   - [Handler Context (ctx)](#handler-context-ctx)
 - [🔄 Complete Navigation Example](#-complete-navigation-example)
 - [⚙️ API Internals](#️-api-internals)
   - [Registry Structure](#registry-structure)
   - [Outpost Processing](#outpost-processing)
-  - [Error Handling](#error-handling)
+  - [Outpost Error Handling](#outpost-error-handling)
 - [📋 Logging Reference](#-logging-reference)
 - [🐛 Debug Reference](#-debug-reference)
 - [📦 Exports Reference](#-exports-reference)
@@ -67,7 +67,7 @@ flowchart LR
 Each hook (`beforeEach`, `beforeResolve`, `afterEach`) triggers `patrolNavigationCitadel` which
 processes all applicable outposts in priority order.
 
-### Hook Patrol Flow
+### Navigation Hook Patrol Flow
 
 What happens when a navigation hook is triggered:
 
@@ -152,7 +152,7 @@ flowchart TD
         F["🟡 log.warn: duplicates detected"]
     end
 
-    subgraph Execution["Patrol Processing"]
+    subgraph Execution["Processing"]
         G["Get deployed outposts"]
         H["Filter assigned outposts"]
         I["🟢 Process by priority"]
@@ -185,7 +185,7 @@ Outpost handlers must return a verdict that determines how navigation proceeds.
 | `'/path'`           | Redirect (string) | Redirects          |
 | `throw Error`       | Error             | Handled by onError |
 
-### Verdict Decision Flow
+### Outpost Verdict Decision Flow
 
 ```mermaid
 flowchart TD
@@ -194,7 +194,7 @@ flowchart TD
     B -->|Pass| C[🟢 return verdicts.ALLOW]
     B -->|Fail| D{Need Redirect?}
 
-    D -->|Yes| E["🟡 return { name: 'login' }"]
+    D -->|Yes| E["🟡 return { name: 'route-name' }"]
     D -->|No| F[🔴 return verdicts.BLOCK]
 
     C --> G[Next Outpost]
@@ -305,7 +305,7 @@ sequenceDiagram
 ### Registry Structure
 
 The citadel maintains a registry with separate maps for global and route outposts. Sorted arrays are
-pre-computed on every `deploy` / `abandon` for efficient navigation processing.
+pre-computed on every `deployOutpost` / `abandonOutpost` for efficient navigation processing.
 
 ```mermaid
 flowchart LR
@@ -317,10 +317,10 @@ flowchart LR
     end
 
     subgraph Operations
-        E[deploy] --> F[addNavigationOutpost]
+        E[deployOutpost] --> F[addNavigationOutpost]
         F --> LOG1["🔵 log.info: Deploying outpost"]
         LOG1 --> G[updateSortedKeys]
-        H[abandon] --> I[removeNavigationOutpost]
+        H[abandonOutpost] --> I[removeNavigationOutpost]
         I --> LOG2["🔵 log.info: Abandoning outpost"]
         LOG2 --> G
     end
@@ -363,7 +363,7 @@ flowchart TD
     DBG3 --> K[🔴 Return BLOCK]
 ```
 
-### Error Handling
+### Outpost Error Handling
 
 When an outpost handler throws an error, the citadel handles it gracefully:
 
@@ -524,9 +524,9 @@ Public API returned by `createNavigationCitadel`:
 
 ```typescript
 interface NavigationCitadelAPI {
-  deploy: (options: NavigationOutpostOptions | NavigationOutpostOptions[]) => void;
-  abandon: (scope: NavigationOutpostScope, name: string | string[]) => boolean;
-  getOutposts: (scope: NavigationOutpostScope) => string[];
+  deployOutpost: (options: NavigationOutpostOptions | NavigationOutpostOptions[]) => void;
+  abandonOutpost: (scope: NavigationOutpostScope, name: string | string[]) => boolean;
+  getOutpostNames: (scope: NavigationOutpostScope) => string[];
   assignOutpostToRoute: (routeName: string, outpostNames: string | string[]) => boolean;
   destroy: () => void;
 }

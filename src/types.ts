@@ -155,15 +155,15 @@ export interface NavigationCitadelAPI {
   /**
    * Deploy one or multiple outposts
    */
-  deploy: (options: NavigationOutpostOptions | NavigationOutpostOptions[]) => void;
+  deployOutpost: (options: NavigationOutpostOptions | NavigationOutpostOptions[]) => void;
   /**
    * Remove one or multiple outposts by scope and name(s)
    */
-  abandon: (scope: NavigationOutpostScope, name: string | string[]) => boolean;
+  abandonOutpost: (scope: NavigationOutpostScope, name: string | string[]) => boolean;
   /**
    * Get all deployed outpost names by scope
    */
-  getOutposts: (scope: NavigationOutpostScope) => string[];
+  getOutpostNames: (scope: NavigationOutpostScope) => string[];
   /**
    * Assign outpost(s) to an existing route by route name
    */
