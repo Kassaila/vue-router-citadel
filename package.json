@@ -23,6 +23,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "build:dev": "NODE_ENV=development tsup",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
