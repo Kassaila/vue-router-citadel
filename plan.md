@@ -39,6 +39,7 @@
   - Key breakpoint locations: navigation start, before outpost, patrol stopped, error
 - [x] **Default error handler** — `console.error` + `BLOCK`
 - [x] **Route validation** — redirect routes are validated against router
+- [x] **assignOutpostToRoute** — dynamically assign outposts to existing routes
 
 ### Build Optimization
 

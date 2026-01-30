@@ -29,6 +29,7 @@ Think of it as turning your router into a fortress.
   - [citadel.deploy(options)](#citadeldeployoptions)
   - [citadel.abandon(scope, name)](#citadelabandonscope-name)
   - [citadel.getOutposts(scope)](#citadelgetoutpostsscope)
+  - [citadel.assignOutpostToRoute(routeName, outpostNames)](#citadelassignoutposttorouteroutename-outpostnames)
   - [citadel.destroy()](#citadeldestroy)
 - [📤 Exported Constants](#-exported-constants)
 - [↩️ Handler Return Values](#️-handler-return-values)
@@ -160,6 +161,17 @@ Returns array of registered outpost names.
 ```typescript
 citadel.getOutposts(NavigationOutpostScopes.GLOBAL); // ['auth', 'analytics']
 ```
+
+### citadel.assignOutpostToRoute(routeName, outpostNames)
+
+Assigns outpost(s) to an existing route dynamically.
+
+```typescript
+citadel.assignOutpostToRoute('admin', 'admin-only');
+citadel.assignOutpostToRoute('settings', ['auth', 'verified']);
+```
+
+Returns `true` if route was found and outposts assigned, `false` otherwise.
 
 ### citadel.destroy()
 

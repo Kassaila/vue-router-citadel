@@ -153,6 +153,10 @@ export interface NavigationCitadelAPI {
    */
   getOutposts: (scope: NavigationOutpostScope) => string[];
   /**
+   * Assign outpost(s) to an existing route by route name
+   */
+  assignOutpostToRoute: (routeName: string, outpostNames: string | string[]) => boolean;
+  /**
    * Destroy the citadel and remove navigation hooks
    */
   destroy: () => void;
