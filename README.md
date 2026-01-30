@@ -16,6 +16,8 @@ navigation flows.
 
 Think of it as turning your router into a fortress.
 
+---
+
 <!-- TOC -->
 
 - [🧱 The Fortress Philosophy](#-the-fortress-philosophy)
@@ -28,14 +30,17 @@ Think of it as turning your router into a fortress.
   - [citadel.abandon(scope, name)](#citadelabandonscope-name)
   - [citadel.getOutposts(scope)](#citadelgetoutpostsscope)
   - [citadel.destroy()](#citadeldestroy)
+- [📤 Exported Constants](#-exported-constants)
 - [↩️ Handler Return Values](#️-handler-return-values)
 - [🎯 Outpost Scopes](#-outpost-scopes)
 - [🪝 Navigation Hooks](#-navigation-hooks)
-- [🏷️ Route Meta](#️-route-meta)
+- [🔍 Logging & Debug](#-logging--debug)
 - [💡 Examples](#-examples)
 - [📄 License](#-license)
 
 <!-- /TOC -->
+
+---
 
 ## 🧱 The Fortress Philosophy
 
@@ -81,7 +86,7 @@ const router = createRouter({
   routes,
 });
 
-// 2. Create citadel
+// 2. Create navigation citadel
 const citadel = createNavigationCitadel(router);
 
 // 3. Register outpost
@@ -110,10 +115,11 @@ Creates a navigation citadel instance.
 
 ```typescript
 const citadel = createNavigationCitadel(router, {
-  debug: false, // Enable debug logging
+  log: true, // Enable console logging (default: true)
+  debug: false, // Enable logging + debugger breakpoints (default: false)
   defaultPriority: 100, // Default priority for global outposts
   onError: (error, ctx) => {
-    // Global error handler
+    // Custom error handler (default: console.error + BLOCK)
     return { name: 'error' };
   },
 });
@@ -159,6 +165,17 @@ citadel.getOutposts(NavigationOutpostScopes.GLOBAL); // ['auth', 'analytics']
 
 Removes all navigation hooks and clears registry.
 
+## 📤 Exported Constants
+
+```typescript
+import {
+  NavigationOutpostScopes, // { GLOBAL, ROUTE }
+  NavigationHooks, // { BEFORE_EACH, BEFORE_RESOLVE, AFTER_EACH }
+  NavigationOutpostVerdicts, // { ALLOW, BLOCK }
+  DEFAULT_NAVIGATION_OUTPOST_PRIORITY, // 100
+} from 'vue-router-citadel';
+```
+
 ## ↩️ Handler Return Values
 
 | Return              | Result                    |
@@ -169,12 +186,25 @@ Removes all navigation hooks and clears registry.
 | `{ path: '/path' }` | Redirect to path          |
 | `'/path'`           | Redirect to path (string) |
 
+> Redirect routes are validated against the router. If route is not found, an error is thrown.
+
 ## 🎯 Outpost Scopes
 
-| Scope    | Description                                            |
-| -------- | ------------------------------------------------------ |
-| `GLOBAL` | Runs on every navigation, sorted by priority           |
-| `ROUTE`  | Runs only when referenced in `meta.navigationOutposts` |
+| Scope    | Description                                   |
+| -------- | --------------------------------------------- |
+| `GLOBAL` | Calls on every navigation, sorted by priority |
+| `ROUTE`  | Calls only when referenced in `meta.outposts` |
+
+```typescript
+// Route outposts usage
+const routes = [
+  {
+    path: '/admin',
+    component: AdminPage,
+    meta: { outposts: ['admin-only'] },
+  },
+];
+```
 
 ## 🪝 Navigation Hooks
 
@@ -184,24 +214,49 @@ Removes all navigation hooks and clears registry.
 | `BEFORE_RESOLVE` | After async components resolved |
 | `AFTER_EACH`     | After navigation completed      |
 
-> for best understanding you can read
+> For best understanding you can read
 > [Navigation Guards](https://router.vuejs.org/guide/advanced/navigation-guards.html#Navigation-Guards)
 > and
 > [The Full Navigation Resolution Flow](https://router.vuejs.org/guide/advanced/navigation-guards.html#The-Full-Navigation-Resolution-Flow)
 
-## 🏷️ Route Meta
+## 🔍 Logging & Debug
+
+Citadel provides two options for development insights:
 
 ```typescript
-const routes = [
-  {
-    path: '/admin',
-    component: AdminPage,
-    meta: {
-      navigationOutposts: ['admin-only'], // Route outpost names
-    },
-  },
-];
+const citadel = createNavigationCitadel(router, {
+  log: true, // Console logging (default: true)
+  debug: false, // Logging + debugger breakpoints (default: false)
+});
 ```
+
+### Options
+
+| Option  | Default | Description                                 |
+| ------- | ------- | ------------------------------------------- |
+| `log`   | `true`  | Enables console logging for navigation flow |
+| `debug` | `false` | Enables logging + `debugger` breakpoints    |
+
+> `debug: true` automatically enables logging.
+
+### Console Methods
+
+| Method          | Usage                                                      |
+| --------------- | ---------------------------------------------------------- |
+| `console.info`  | Navigation flow, patrolling, running outposts, registering |
+| `console.warn`  | Outpost not found, already exists, patrol stopped          |
+| `console.error` | Outpost errors, unhandled exceptions                       |
+
+### Debugger Breakpoints
+
+When `debug: true`, breakpoints are triggered at:
+
+| Location         | Description                                     |
+| ---------------- | ----------------------------------------------- |
+| Navigation start | Before `beforeEach`/`beforeResolve`/`afterEach` |
+| Before outpost   | Before each outpost handler execution           |
+| Patrol stopped   | When outpost returns `BLOCK` or redirect        |
+| Error caught     | When outpost throws an error                    |
 
 ## 💡 Examples
 

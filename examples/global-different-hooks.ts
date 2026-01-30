@@ -60,7 +60,7 @@ const pageTitleNavigationOutpost = {
   },
 };
 
-const navigationOutposts = [
+const outposts = [
   authNavigationOutpost,
   dataLoaderNavigationOutpost,
   analyticsNavigationOutpost,
@@ -88,10 +88,10 @@ const router = createRouter({
   routes,
 });
 
-// 2. Create citadel
+// 2. Create navigation citadel
 const citadel = createNavigationCitadel(router, { debug: true });
 
 // 3. Register navigation outposts
-citadel.deploy(navigationOutposts);
+citadel.deploy(outposts);
 
 export { router, citadel };
