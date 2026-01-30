@@ -25,8 +25,26 @@
 
 ### Documentation
 
-- [x] `README.md` — basic documentation
+- [x] `README.md` — full documentation
 - [x] Usage examples (`examples/`)
+- [x] Exported constants section
+- [x] Logging & Debug section with tables
+- [x] Route validation note
+
+### Features
+
+- [x] **Extend debug functionality**
+  - `log: boolean` — enables console logging (`console.info`)
+  - `debug: boolean` — enables logging + `debugger` breakpoints
+  - Key breakpoint locations: navigation start, before outpost, patrol stopped, error
+- [x] **Default error handler** — `console.error` + `BLOCK`
+- [x] **Route validation** — redirect routes are validated against router
+
+### Build Optimization
+
+- [x] `tsup` config with treeshake, external, target
+- [x] `npm run build` — minified, no sourcemap (production)
+- [x] `npm run build:dev` — not minified, with sourcemap (development)
 
 ---
 
@@ -39,14 +57,6 @@
   - Describe Handler Context (ctx) as separate block
   - Add return values for methods
   - Make it more structured and readable
-
-### Features
-
-- [x] **Extend debug functionality**
-  - Replace single `debug` option with two separate options:
-  - `log: boolean` — enables console logging only (console.warn/error)
-  - `debug: boolean` — enables logging + `debugger` breakpoints at key points
-  - Key breakpoint locations: before patrol, after outpost execution, on error
 
 ### Testing
 
@@ -96,7 +106,8 @@ examples/
 
 ```bash
 npm install          # Install dependencies
-npm run build        # Build package
+npm run build        # Build for production (minified, no sourcemap)
+npm run build:dev    # Build for development (sourcemap, no minify)
 npm run format       # Format code
 npm pack --dry-run   # Check package contents
 npm publish          # Publish to npm
