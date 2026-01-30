@@ -56,41 +56,9 @@
 
 ### Priority 1 — Before Release
 
-#### Timeout for Outposts
+#### ~~Timeout for Outposts~~ ✅
 
-**Problem:** Outpost can hang forever (e.g., API request without timeout), blocking navigation.
-
-**Solution:** Global `defaultTimeout` option with `onTimeout` handler.
-
-```typescript
-// Usage
-const citadel = createNavigationCitadel(router, {
-  defaultTimeout: 10000, // 10 seconds
-  onTimeout: (outpostName, ctx) => {
-    console.warn(`Outpost "${outpostName}" timed out`);
-    return { name: 'error' }; // or verdicts.BLOCK
-  },
-});
-
-// Per-outpost override
-citadel.deployOutpost({
-  name: 'slow-outpost',
-  timeout: 30000, // override global timeout
-  handler: async ({ verdicts }) => { ... },
-});
-```
-
-**Implementation:**
-
-1. Add to `NavigationCitadelOptions`:
-   - `defaultTimeout?: number` — default timeout in ms (undefined = no timeout)
-   - `onTimeout?: (outpostName: string, ctx: NavigationOutpostContext) => NavigationOutpostOutcome`
-2. Add to `NavigationOutpostOptions`:
-   - `timeout?: number` — per-outpost override
-3. In `processOutpost()`:
-   - Wrap handler call with `Promise.race([handler(), timeoutPromise])`
-   - If timeout wins, call `onTimeout` or default to `BLOCK`
-4. Log: `[🏰 NavigationCitadel] Outpost "name" timed out after Xms`
+Implemented: `defaultTimeout`, `timeout`, `onTimeout`
 
 ---
 

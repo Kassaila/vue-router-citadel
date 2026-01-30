@@ -89,6 +89,31 @@ const shouldRunOnHook = (outpost: RegisteredNavigationOutpost, hook: string): bo
 };
 
 /**
+ * Symbol to identify timeout errors
+ */
+const TIMEOUT_SYMBOL = Symbol('timeout');
+
+/**
+ * Creates a timeout promise that rejects after specified milliseconds
+ */
+const createTimeoutPromise = (ms: number): Promise<never> =>
+  new Promise((_, reject) => {
+    setTimeout(() => {
+      const error = new Error(`Timeout after ${ms}ms`);
+
+      (error as Error & { [TIMEOUT_SYMBOL]: boolean })[TIMEOUT_SYMBOL] = true;
+
+      reject(error);
+    }, ms);
+  });
+
+/**
+ * Checks if error is a timeout error
+ */
+const isTimeoutError = (error: unknown): boolean =>
+  error instanceof Error && TIMEOUT_SYMBOL in error;
+
+/**
  * Processes a single outpost and returns normalized outcome
  */
 const processOutpost = async (
@@ -96,16 +121,38 @@ const processOutpost = async (
   ctx: NavigationOutpostContext,
   options: NavigationCitadelOptions,
 ): Promise<NavigationOutpostOutcome> => {
-  const { debug = false, onError } = options;
+  const { debug = false, onError, defaultTimeout, onTimeout } = options;
   const { router } = ctx;
+  const timeout = outpost.timeout ?? defaultTimeout;
 
   debugPoint(DebugPoints.BEFORE_OUTPOST, debug);
 
   try {
-    const outcome = await outpost.handler(ctx);
+    /**
+     * Run handler with optional timeout
+     */
+    const outcome = timeout
+      ? await Promise.race([outpost.handler(ctx), createTimeoutPromise(timeout)])
+      : await outpost.handler(ctx);
 
     return normalizeOutcome(outcome, router);
   } catch (error) {
+    /**
+     * Handle timeout
+     */
+    if (isTimeoutError(error)) {
+      console.warn(`🟡 ${LOG_PREFIX} Outpost "${outpost.name}" timed out after ${timeout}ms`);
+      debugPoint(DebugPoints.TIMEOUT, debug);
+
+      if (onTimeout) {
+        const timeoutOutcome = await onTimeout(outpost.name, ctx);
+
+        return normalizeOutcome(timeoutOutcome, router);
+      }
+
+      return NavigationOutpostVerdicts.BLOCK;
+    }
+
     /**
      * Handle error with custom handler or default behavior
      */

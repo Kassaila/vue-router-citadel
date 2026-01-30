@@ -21,6 +21,7 @@ breakpoints.
 - [⚙️ API Internals](#️-api-internals)
   - [Registry Structure](#registry-structure)
   - [Outpost Processing](#outpost-processing)
+  - [Outpost Timeout](#outpost-timeout)
   - [Outpost Error Handling](#outpost-error-handling)
 - [📋 Logging Reference](#-logging-reference)
 - [🐛 Debug Reference](#-debug-reference)
@@ -339,9 +340,25 @@ How a single outpost is processed during patrol:
 ```mermaid
 flowchart TD
     A[processOutpost called] --> DBG1[🟣 debugger: before-outpost]
-    DBG1 --> B[Process handler]
+    DBG1 --> T{Timeout configured?}
+
+    T -->|Yes| RACE["Promise.race([handler, timeout])"]
+    T -->|No| B[handler]
+
+    RACE --> TO{Timeout?}
+    TO -->|Yes| TOH{Custom onTimeout?}
+    TO -->|No| C
 
     B --> C[normalizeOutcome]
+
+    TOH -->|Yes| TOC["onTimeout(name, ctx)"]
+    TOH -->|No| TOLOG[🟡 log.warn: timed out]
+    TOLOG --> TODBG[🟣 debugger: timeout]
+    TODBG --> TOK[🔴 Return BLOCK]
+
+    TOC --> TON[normalizeOutcome]
+    TON --> F
+
     C --> D{Valid outcome?}
 
     D -->|ALLOW| E[🟢 Return ALLOW]
@@ -362,6 +379,128 @@ flowchart TD
     LOG2 --> DBG3[🟣 debugger: error-caught]
     DBG3 --> K[🔴 Return BLOCK]
 ```
+
+### Outpost Timeout
+
+How timeout is determined for an outpost:
+
+```mermaid
+flowchart TD
+    A[Get timeout value] --> B{outpost.timeout<br/>defined?}
+
+    B -->|Yes| C{outpost.timeout}
+    B -->|No| D{defaultTimeout<br/>defined?}
+
+    C -->|"> 0"| E[Use outpost.timeout]
+    C -->|"0 or Infinity"| F[No timeout]
+
+    D -->|Yes| G[Use defaultTimeout]
+    D -->|No| F
+
+    E --> H["Promise.race([handler, timeoutPromise])"]
+    G --> H
+    F --> I[await handler]
+```
+
+**Timeout configuration:**
+
+| `outpost.timeout` | `defaultTimeout` | Result                |
+| ----------------- | ---------------- | --------------------- |
+| `undefined`       | `undefined`      | No timeout            |
+| `undefined`       | `5000`           | 5 seconds             |
+| `10000`           | `5000`           | 10 seconds (override) |
+| `0`               | `5000`           | No timeout (disabled) |
+
+**Example 1: No timeout (default)**
+
+```typescript
+const citadel = createNavigationCitadel(router);
+// defaultTimeout = undefined — no timeouts
+
+citadel.deployOutpost({
+  name: 'slow-api',
+  handler: async () => {
+    await fetch('/api/slow'); // can hang forever
+    return verdicts.ALLOW;
+  },
+});
+```
+
+Result: If API doesn't respond — navigation hangs indefinitely.
+
+**Example 2: Global timeout**
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  defaultTimeout: 5000, // 5 seconds for all outposts
+});
+
+citadel.deployOutpost({
+  name: 'slow-api',
+  handler: async () => {
+    await fetch('/api/slow'); // takes 10 seconds
+    return verdicts.ALLOW;
+  },
+});
+```
+
+Result after 5 seconds:
+
+```
+🟡 [🏰 NavigationCitadel] Outpost "slow-api" timed out after 5000ms
+```
+
+→ Navigation blocked (`BLOCK`)
+
+**Example 3: Global timeout + custom handler**
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  defaultTimeout: 5000,
+  onTimeout: (outpostName, ctx) => {
+    console.log(`${outpostName} timed out, redirecting to /error`);
+    return { name: 'error' }; // redirect instead of BLOCK
+  },
+});
+```
+
+Result after 5 seconds: → Redirect to `/error`
+
+**Example 4: Per-outpost override**
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  defaultTimeout: 5000, // global 5 seconds
+});
+
+// Fast — uses global timeout (5s)
+citadel.deployOutpost({
+  name: 'fast-check',
+  handler: () => verdicts.ALLOW,
+});
+
+// Slow — custom timeout (30s)
+citadel.deployOutpost({
+  name: 'heavy-api',
+  timeout: 30000, // override
+  handler: async () => {
+    await fetch('/api/heavy'); // needs 20 seconds
+    return verdicts.ALLOW;
+  },
+});
+
+// No timeout — disabled
+citadel.deployOutpost({
+  name: 'unlimited',
+  timeout: 0, // disables timeout
+  handler: async () => {
+    await longRunningTask(); // can run as long as needed
+    return verdicts.ALLOW;
+  },
+});
+```
+
+Result: `heavy-api` has 30 seconds and completes successfully. `unlimited` has no timeout.
 
 ### Outpost Error Handling
 
@@ -414,6 +553,7 @@ const citadel = createNavigationCitadel(router, {
 | Duplicate outposts  | 🟡 `log.warn`  | always      |
 | Outpost not found   | 🟡 `log.warn`  | always      |
 | Patrol stopped      | 🟡 `log.warn`  | `log: true` |
+| Outpost timeout     | 🟡 `log.warn`  | always      |
 | Outpost error       | 🔴 `log.error` | always      |
 
 ---
@@ -427,6 +567,7 @@ Named debug points with console output `🟣 [DEBUG] <name>`:
 | `navigation-start` | Start of each hook (beforeEach/beforeResolve/afterEach) | `debug: true` |
 | `before-outpost`   | Before each outpost handler processing                  | `debug: true` |
 | `patrol-stopped`   | When outpost returns BLOCK or redirect                  | `debug: true` |
+| `timeout`          | When outpost handler times out                          | `debug: true` |
 | `error-caught`     | When outpost throws an error                            | `debug: true` |
 
 ---
@@ -500,6 +641,7 @@ interface NavigationOutpostOptions {
   handler: NavigationOutpost;
   priority?: number; // Default: 100
   hooks?: NavigationHook[]; // Default: ['beforeEach']
+  timeout?: number; // Overrides defaultTimeout
 }
 ```
 
@@ -512,7 +654,9 @@ interface NavigationCitadelOptions {
   log?: boolean; // Default: __DEV__
   debug?: boolean; // Default: false
   defaultPriority?: number; // Default: 100
+  defaultTimeout?: number; // Default: undefined (no timeout)
   onError?: (error: Error, ctx: NavigationOutpostContext) => NavigationOutpostOutcome;
+  onTimeout?: (outpostName: string, ctx: NavigationOutpostContext) => NavigationOutpostOutcome;
 }
 ```
 

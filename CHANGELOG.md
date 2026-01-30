@@ -32,13 +32,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Route outposts deduplication with warning log
 - Route validation for redirect returns
 - Default error handler (`console.error` + `BLOCK`)
+- Timeout support (`defaultTimeout`, `timeout`, `onTimeout`)
 
 #### Developer Experience
 
 - `log` option — console logging for navigation flow (default: `true` in dev, `false` in prod)
 - `debug` option — logging + debugger breakpoints (default: `false`)
 - Colored console output: 🔵 info, 🟡 warn, 🔴 error, 🟣 debug
-- Named debug breakpoints: `navigation-start`, `before-outpost`, `patrol-stopped`, `error-caught`
+- Named debug breakpoints: `navigation-start`, `before-outpost`, `patrol-stopped`, `timeout`,
+  `error-caught`
 - Optimized processing — outposts sorted at deploy, direct calls from registry
 
 #### Documentation
