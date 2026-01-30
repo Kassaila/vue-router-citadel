@@ -220,6 +220,35 @@ export const createNavigationCitadel = (
       return getNavigationOutpostNames(registry, scope);
     },
 
+    assignOutpostToRoute(routeName: string, outpostNames: string | string[]): boolean {
+      const routes = router.getRoutes();
+      const route = routes.find((r) => r.name === routeName);
+
+      if (!route) {
+        console.warn(`${LOG_PREFIX} Route "${routeName}" not found`);
+
+        return false;
+      }
+
+      const names = Array.isArray(outpostNames) ? outpostNames : [outpostNames];
+
+      if (!route.meta.outposts) {
+        route.meta.outposts = [];
+      }
+
+      for (const name of names) {
+        if (!route.meta.outposts.includes(name)) {
+          route.meta.outposts.push(name);
+        }
+      }
+
+      if (enableLog) {
+        console.info(`${LOG_PREFIX} Assigned outposts [${names.join(', ')}] to route "${routeName}"`);
+      }
+
+      return true;
+    },
+
     destroy(): void {
       if (enableLog) {
         console.info(`${LOG_PREFIX} Destroying citadel`);
