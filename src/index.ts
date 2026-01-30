@@ -15,7 +15,6 @@ export type {
  * Constants
  */
 export { NavigationHooks, NavigationOutpostVerdicts, NavigationOutpostScopes } from './types';
-export { __DEV__, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
 
 /**
  * Main factory

@@ -64,8 +64,8 @@ flowchart LR
     E --> F[Navigation End]
 ```
 
-Each hook (`beforeEach`, `beforeResolve`, `afterEach`) triggers `patrolNavigationCitadel` which
-processes all applicable outposts in priority order.
+Each hook (`beforeEach`, `beforeResolve`, `afterEach`) triggers `patrol` which processes all
+applicable outposts in priority order.
 
 ### Navigation Hook Flow
 
@@ -257,7 +257,7 @@ sequenceDiagram
     U->>R: Navigate to /admin/users
 
     Note over R,C: beforeEach hook
-    R->>C: patrolNavigationCitadel(registry, ctx, options)
+    R->>C: patrol(registry, ctx, options)
 
     Note over C: 🔵 log.info: beforeEach /home -> /admin/users
     Note over C: 🟣 debugger: navigation-start
@@ -286,13 +286,13 @@ sequenceDiagram
     C-->>R: 🟢 ALLOW → true
 
     Note over R,C: beforeResolve hook
-    R->>C: patrolNavigationCitadel(registry, ctx, options)
+    R->>C: patrol(registry, ctx, options)
     C-->>R: 🟢 ALLOW → true
 
     R->>R: Load component
 
     Note over R,C: afterEach hook
-    R->>C: patrolNavigationCitadel(registry, ctx, options)
+    R->>C: patrol(registry, ctx, options)
     Note over C: No return value used
 
     R-->>U: Page rendered
@@ -317,10 +317,10 @@ flowchart LR
     end
 
     subgraph Operations
-        E[deployOutpost] --> F[addNavigationOutpost]
+        E[deployOutpost] --> F[register]
         F --> LOG1["🔵 log.info: Deploying outpost"]
         LOG1 --> G[updateSortedKeys]
-        H[abandonOutpost] --> I[removeNavigationOutpost]
+        H[abandonOutpost] --> I[unregister]
         I --> LOG2["🔵 log.info: Abandoning outpost"]
         LOG2 --> G
     end
@@ -442,18 +442,14 @@ import {
   NavigationOutpostScopes,
   NavigationHooks,
   NavigationOutpostVerdicts,
-  DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
-  __DEV__,
 } from 'vue-router-citadel';
 ```
 
-| Constant                              | Values                                        | Description                                   |
-| ------------------------------------- | --------------------------------------------- | --------------------------------------------- |
-| `NavigationOutpostScopes`             | `GLOBAL`, `ROUTE`                             | Outpost scope determining when it's processed |
-| `NavigationHooks`                     | `BEFORE_EACH`, `BEFORE_RESOLVE`, `AFTER_EACH` | Vue Router navigation hooks                   |
-| `NavigationOutpostVerdicts`           | `ALLOW`, `BLOCK`                              | Handler return verdicts                       |
-| `DEFAULT_NAVIGATION_OUTPOST_PRIORITY` | `100`                                         | Default priority for outposts                 |
-| `__DEV__`                             | `true` / `false`                              | Development mode detection (Vite / Node.js)   |
+| Constant                    | Values                                        | Description                                   |
+| --------------------------- | --------------------------------------------- | --------------------------------------------- |
+| `NavigationOutpostScopes`   | `GLOBAL`, `ROUTE`                             | Outpost scope determining when it's processed |
+| `NavigationHooks`           | `BEFORE_EACH`, `BEFORE_RESOLVE`, `AFTER_EACH` | Vue Router navigation hooks                   |
+| `NavigationOutpostVerdicts` | `ALLOW`, `BLOCK`                              | Handler return verdicts                       |
 
 ### Types
 

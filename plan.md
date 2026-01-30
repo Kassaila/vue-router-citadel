@@ -108,7 +108,7 @@ citadel.deployOutpost({
 src/__tests__/
 ├── navigationCitadel.test.ts    # createNavigationCitadel, destroy
 ├── navigationRegistry.test.ts   # deploy, abandon, getOutposts, sorting
-├── navigationOutposts.test.ts   # patrolNavigationCitadel, deduplication
+├── navigationOutposts.test.ts   # patrol, deduplication
 ├── timeout.test.ts              # timeout functionality
 └── integration.test.ts          # full navigation flow
 ```
@@ -120,7 +120,7 @@ src/__tests__/
 - `abandonOutpost` — single, multiple, returns boolean
 - `getOutpostNames` — returns names by scope
 - `assignOutpostToRoute` — assigns, returns false if not found
-- `patrolNavigationCitadel` — ALLOW/BLOCK/redirect flow
+- `patrol` — ALLOW/BLOCK/redirect flow
 - Deduplication — warning logged, outpost runs once
 - `onError` — custom handler called, default BLOCK
 - Timeout — handler times out, onTimeout called
@@ -207,7 +207,7 @@ const routes = [
      ? string
      : keyof OutpostRegistry;
    ```
-2. Update `NavigationOutpostRef` to use `RegisteredOutpostName`
+2. Update `RouteMeta.outposts` to use `RegisteredOutpostName`
 3. Update `RouteMeta.outposts` type
 
 ---
