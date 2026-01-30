@@ -51,7 +51,7 @@ const moderatorOnlyNavigationOutpost = {
   },
 };
 
-const navigationOutposts = [adminOnlyNavigationOutpost, moderatorOnlyNavigationOutpost];
+const outposts = [adminOnlyNavigationOutpost, moderatorOnlyNavigationOutpost];
 
 const routes = [
   { path: '/', name: 'home', component: () => import('./pages/Home.vue') },
@@ -60,7 +60,7 @@ const routes = [
     name: 'admin',
     component: () => import('./pages/Admin.vue'),
     meta: {
-      navigationOutposts: [adminOnlyNavigationOutpost.name], // applies admin only outpost
+      outposts: [adminOnlyNavigationOutpost.name], // applies admin only outpost
     },
   },
   {
@@ -68,7 +68,7 @@ const routes = [
     name: 'moderator',
     component: () => import('./pages/Moderator.vue'),
     meta: {
-      navigationOutposts: [moderatorOnlyNavigationOutpost.name], // applies moderator only outpost
+      outposts: [moderatorOnlyNavigationOutpost.name], // applies moderator only outpost
     },
   },
 ];
@@ -79,10 +79,10 @@ const router = createRouter({
   routes,
 });
 
-// 2. Create citadel
+// 2. Create navigation citadel
 const citadel = createNavigationCitadel(router);
 
 // 3. Register navigation outposts
-citadel.deploy(navigationOutposts);
+citadel.deploy(outposts);
 
 export { router, citadel };

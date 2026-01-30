@@ -9,6 +9,7 @@ import type {
   NavigationHook,
 } from './types';
 import { NavigationHooks, NavigationOutpostVerdicts } from './types';
+import { LOG_PREFIX } from './consts';
 import {
   createNavigationOutpostRegistry,
   addNavigationOutpost,
@@ -48,7 +49,8 @@ export const createNavigationCitadel = (
   router: Router,
   options: NavigationCitadelOptions = {},
 ): NavigationCitadelAPI => {
-  const { debug = false, defaultPriority } = options;
+  const { log = true, debug = false, defaultPriority } = options;
+  const enableLog = log || debug;
   const registry = createNavigationOutpostRegistry();
 
   /**
@@ -77,8 +79,12 @@ export const createNavigationCitadel = (
   const createNavigationGuardHandler =
     (hook: NavigationHook) =>
     async (to: RouteLocationNormalized, from: RouteLocationNormalized) => {
+      if (enableLog) {
+        console.info(`${LOG_PREFIX} ${hook}: ${from.path} -> ${to.path}`);
+      }
+
       if (debug) {
-        console.warn(`[NavigationCitadel] ${hook}: ${from.path} -> ${to.path}`);
+        debugger;
       }
 
       const ctx = createContext(to, from, hook);
@@ -88,8 +94,8 @@ export const createNavigationCitadel = (
         return true;
       }
 
-      if (debug) {
-        console.warn(`[NavigationCitadel] Patrolling ${outposts.length} outposts for ${hook}`);
+      if (enableLog) {
+        console.info(`${LOG_PREFIX} Patrolling ${outposts.length} outposts for ${hook}`);
       }
 
       const outcome = await patrolNavigationCitadel(outposts, ctx, options);
@@ -113,8 +119,12 @@ export const createNavigationCitadel = (
    * Register afterEach hook
    */
   const removeAfterEach = router.afterEach(async (to, from) => {
+    if (enableLog) {
+      console.info(`${LOG_PREFIX} ${NavigationHooks.AFTER_EACH}: ${from.path} -> ${to.path}`);
+    }
+
     if (debug) {
-      console.warn(`[NavigationCitadel] ${NavigationHooks.AFTER_EACH}: ${from.path} -> ${to.path}`);
+      debugger;
     }
 
     const ctx = createContext(to, from, NavigationHooks.AFTER_EACH);
@@ -129,26 +139,24 @@ export const createNavigationCitadel = (
       return;
     }
 
-    if (debug) {
-      console.warn(
-        `[NavigationCitadel] Patrolling ${outposts.length} outposts for ${NavigationHooks.AFTER_EACH}`,
+    if (enableLog) {
+      console.info(
+        `${LOG_PREFIX} Patrolling ${outposts.length} outposts for ${NavigationHooks.AFTER_EACH}`,
       );
     }
 
     /**
      * afterEach doesn't return a value, but we still patrol
-     * Errors are handled by onError or thrown
+     * Errors are handled by onError or logged here
      */
     try {
       await patrolNavigationCitadel(outposts, ctx, options);
     } catch (error) {
+      console.error(`${LOG_PREFIX} Error in afterEach outpost:`, error);
+
       if (debug) {
-        console.error(`[NavigationCitadel] Error in afterEach outpost:`, error);
+        debugger;
       }
-      /**
-       * afterEach can't prevent navigation, so we just log the error
-       * The onError handler should handle it if provided
-       */
     }
   });
 
@@ -160,8 +168,8 @@ export const createNavigationCitadel = (
   const registerOne = (opts: NavigationOutpostOptions): void => {
     const { scope, name, handler, priority, hooks } = opts;
 
-    if (debug) {
-      console.warn(`[NavigationCitadel] Registering ${scope} outpost: ${name}`);
+    if (enableLog) {
+      console.info(`${LOG_PREFIX} Registering ${scope} outpost: ${name}`);
     }
 
     addNavigationOutpost(registry, scope, { name, handler, priority, hooks });
@@ -171,8 +179,8 @@ export const createNavigationCitadel = (
    * Internal helper to abandon a single outpost
    */
   const deleteOne = (scope: NavigationOutpostScope, name: string): boolean => {
-    if (debug) {
-      console.warn(`[NavigationCitadel] Deleting ${scope} outpost: ${name}`);
+    if (enableLog) {
+      console.info(`${LOG_PREFIX} Deleting ${scope} outpost: ${name}`);
     }
 
     return removeNavigationOutpost(registry, scope, name);
@@ -213,8 +221,8 @@ export const createNavigationCitadel = (
     },
 
     destroy(): void {
-      if (debug) {
-        console.warn(`[NavigationCitadel] Destroying citadel`);
+      if (enableLog) {
+        console.info(`${LOG_PREFIX} Destroying citadel`);
       }
 
       for (const cleanup of cleanupFns) {

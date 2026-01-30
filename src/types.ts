@@ -111,7 +111,11 @@ export type NavigationOutpostRef = NavigationOutpostOptions['name'];
  */
 export interface NavigationCitadelOptions {
   /**
-   * Enable debug logging
+   * Enable console logging (console.info for navigation flow). Default: true
+   */
+  log?: boolean;
+  /**
+   * Enable debug mode (logging + debugger breakpoints at key points). Default: false
    */
   debug?: boolean;
   /**
@@ -176,6 +180,6 @@ declare module 'vue-router' {
     /**
      * Navigation outposts to execute for this route
      */
-    navigationOutposts?: NavigationOutpostRef[];
+    outposts?: NavigationOutpostRef[];
   }
 }

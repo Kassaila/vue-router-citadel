@@ -36,7 +36,7 @@ const authNavigationOutpost = {
   },
 };
 
-const navigationOutposts = [maintenanceNavigationOutpost, authNavigationOutpost];
+const outposts = [maintenanceNavigationOutpost, authNavigationOutpost];
 
 const routes = [
   { path: '/', name: 'home', component: () => import('./pages/Home.vue') },
@@ -55,10 +55,10 @@ const router = createRouter({
   routes,
 });
 
-// 2. Create citadel
+// 2. Create navigation citadel
 const citadel = createNavigationCitadel(router);
 
 // 3. Register navigation outposts
-citadel.deploy(navigationOutposts);
+citadel.deploy(outposts);
 
 export { router, citadel };

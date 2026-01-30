@@ -49,11 +49,7 @@ const premiumNavigationOutpost = {
   },
 };
 
-const navigationOutposts = [
-  authNavigationOutpost,
-  verifiedNavigationOutpost,
-  premiumNavigationOutpost,
-];
+const outposts = [authNavigationOutpost, verifiedNavigationOutpost, premiumNavigationOutpost];
 
 const routes = [
   { path: '/', name: 'home', component: () => import('./pages/Home.vue') },
@@ -61,7 +57,7 @@ const routes = [
     path: '/account',
     component: () => import('./layouts/AccountLayout.vue'),
     meta: {
-      navigationOutposts: [authNavigationOutpost.name], // all child routes inherit auth outpost
+      outposts: [authNavigationOutpost.name], // all child routes inherit auth outpost
     },
     children: [
       {
@@ -75,7 +71,7 @@ const routes = [
         name: 'account-settings',
         component: () => import('./pages/AccountSettings.vue'),
         meta: {
-          navigationOutposts: [verifiedNavigationOutpost.name], // inherits auth outpost, adds verified outpost
+          outposts: [verifiedNavigationOutpost.name], // inherits auth outpost, adds verified outpost
         },
       },
       {
@@ -83,7 +79,7 @@ const routes = [
         name: 'account-billing',
         component: () => import('./pages/AccountBilling.vue'),
         meta: {
-          navigationOutposts: [verifiedNavigationOutpost.name, premiumNavigationOutpost.name], // inherits auth outpost, adds verified and premium outposts
+          outposts: [verifiedNavigationOutpost.name, premiumNavigationOutpost.name], // inherits auth outpost, adds verified and premium outposts
         },
       },
     ],
@@ -96,10 +92,10 @@ const router = createRouter({
   routes,
 });
 
-// 2. Create citadel
+// 2. Create navigation citadel
 const citadel = createNavigationCitadel(router);
 
 // 3. Register navigation outposts
-citadel.deploy(navigationOutposts);
+citadel.deploy(outposts);
 
 export { router, citadel };

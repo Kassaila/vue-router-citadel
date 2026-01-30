@@ -3,6 +3,7 @@ import type {
   NavigationOutpostScope,
   PlacedNavigationOutpost,
 } from './types';
+import { LOG_PREFIX } from './consts';
 
 /**
  * Creates a new navigation outpost registry
@@ -21,9 +22,7 @@ export const addNavigationOutpost = (
   outpost: PlacedNavigationOutpost,
 ): void => {
   if (registry[scope].has(outpost.name)) {
-    console.warn(
-      `[NavigationCitadel] ${scope} outpost "${outpost.name}" already exists, replacing...`,
-    );
+    console.warn(`${LOG_PREFIX} ${scope} outpost "${outpost.name}" already exists, replacing...`);
   }
 
   registry[scope].set(outpost.name, outpost);

@@ -1,4 +1,4 @@
-import type { RouteLocationNormalized, NavigationGuardReturn } from 'vue-router';
+import type { RouteLocationNormalized, NavigationGuardReturn, Router } from 'vue-router';
 
 import type {
   NavigationOutpost,
@@ -10,7 +10,98 @@ import type {
   NavigationHook,
 } from './types';
 import { NavigationHooks, NavigationOutpostVerdicts, type NavigationOutpostVerdict } from './types';
-import { DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
+import { LOG_PREFIX, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
+
+/**
+ * Checks if value is a valid RouteLocationRaw
+ */
+const isRouteLocationRaw = (value: unknown): boolean => {
+  if (typeof value === 'string') {
+    return true;
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    const obj = value as Record<string, unknown>;
+
+    return 'name' in obj || 'path' in obj;
+  }
+
+  return false;
+};
+
+/**
+ * Normalizes navigation outpost outcome for consistency
+ * Throws error if outcome is not a valid verdict or RouteLocationRaw
+ */
+export const normalizeNavigationOutpostVerdict = (
+  outcome: NavigationOutpostOutcome,
+  router: Router,
+): NavigationOutpostOutcome => {
+  /**
+   * Error - will be handled by caller
+   */
+  if (outcome instanceof Error) {
+    throw outcome;
+  }
+
+  /**
+   * Valid verdicts
+   */
+  if (Object.values(NavigationOutpostVerdicts).includes(outcome as NavigationOutpostVerdict)) {
+    return outcome;
+  }
+
+  const commonErrorText = `${LOG_PREFIX} Invalid outpost outcome: ${JSON.stringify(outcome)}.`;
+
+  /**
+   * Valid RouteLocationRaw (string path or object with name/path)
+   */
+  if (isRouteLocationRaw(outcome)) {
+    const resolved = router.resolve(outcome);
+
+    if (resolved.matched.length === 0) {
+      throw new Error(commonErrorText + ` Route not found: ${JSON.stringify(outcome)}`);
+    }
+
+    return outcome;
+  }
+
+  /**
+   * Invalid outcome - throw error
+   */
+  throw new Error(
+    commonErrorText +
+      ` Expected: verdicts.ALLOW, verdicts.BLOCK, or RouteLocationRaw (string path or object with name/path).`,
+  );
+};
+
+/**
+ * Resolves a navigation outpost reference to an outpost function
+ */
+const resolveNavigationOutpost = (
+  registry: NavigationOutpostRegistry,
+  ref: NavigationOutpostRef,
+  hook: NavigationHook,
+): NavigationOutpost | null => {
+  const placedOutpost = registry.route.get(ref);
+
+  if (!placedOutpost) {
+    console.warn(`${LOG_PREFIX} Route outpost "${ref}" not found in registry`);
+
+    return null;
+  }
+
+  /**
+   * Check if outpost should run on this hook
+   */
+  const hooks = placedOutpost.hooks ?? [NavigationHooks.BEFORE_EACH];
+
+  if (!hooks.includes(hook)) {
+    return null;
+  }
+
+  return placedOutpost.handler;
+};
 
 /**
  * Collects all navigation outposts to execute for a given route and hook
@@ -43,7 +134,7 @@ export const collectNavigationOutposts = (
    * 2. Collect route outposts from matched routes (parent to child)
    */
   for (const matched of to.matched) {
-    const routeOutpostRefs = matched.meta?.navigationOutposts as NavigationOutpostRef[] | undefined;
+    const routeOutpostRefs = matched.meta?.outposts as NavigationOutpostRef[] | undefined;
 
     if (!routeOutpostRefs || !Array.isArray(routeOutpostRefs)) {
       continue;
@@ -62,34 +153,6 @@ export const collectNavigationOutposts = (
 };
 
 /**
- * Resolves a navigation outpost reference to an outpost function
- */
-const resolveNavigationOutpost = (
-  registry: NavigationOutpostRegistry,
-  ref: NavigationOutpostRef,
-  hook: NavigationHook,
-): NavigationOutpost | null => {
-  const placedOutpost = registry.route.get(ref);
-
-  if (!placedOutpost) {
-    console.warn(`[NavigationCitadel] Route outpost "${ref}" not found in registry`);
-
-    return null;
-  }
-
-  /**
-   * Check if outpost should run on this hook
-   */
-  const hooks = placedOutpost.hooks ?? [NavigationHooks.BEFORE_EACH];
-
-  if (!hooks.includes(hook)) {
-    return null;
-  }
-
-  return placedOutpost.handler;
-};
-
-/**
  * Patrols the navigation citadel by running outposts sequentially
  * Stops execution if an outpost returns BLOCK, redirect, or throws error
  */
@@ -98,18 +161,24 @@ export const patrolNavigationCitadel = async (
   ctx: NavigationOutpostContext,
   options: NavigationCitadelOptions,
 ): Promise<NavigationOutpostOutcome> => {
-  const { debug, onError } = options;
+  const { log = true, debug = false, onError } = options;
+  const enableLog = log || debug;
+  const { router } = ctx;
 
   for (let i = 0; i < outposts.length; i++) {
     const outpost = outposts[i];
 
+    if (enableLog) {
+      console.info(`${LOG_PREFIX} Running outpost ${i + 1}/${outposts.length} [${ctx.hook}]`);
+    }
+
     if (debug) {
-      console.warn(`[NavigationCitadel] Running outpost ${i + 1}/${outposts.length} [${ctx.hook}]`);
+      debugger;
     }
 
     try {
       const outcome = await outpost(ctx);
-      const normalizedOutcome = normalizeNavigationOutpostVerdict(outcome);
+      const normalizedOutcome = normalizeNavigationOutpostVerdict(outcome, router);
 
       /**
        * Continue to next outpost
@@ -121,26 +190,35 @@ export const patrolNavigationCitadel = async (
       /**
        * Stop patrol and return outcome
        */
+      if (enableLog) {
+        console.warn(`${LOG_PREFIX} Patrol stopped by outpost ${i + 1}:`, normalizedOutcome);
+      }
+
       if (debug) {
-        console.warn(`[NavigationCitadel] Patrol stopped by outpost ${i + 1}:`, normalizedOutcome);
+        debugger;
       }
 
       return normalizedOutcome;
     } catch (error) {
-      if (debug) {
-        console.error(`[NavigationCitadel] Outpost ${i + 1} threw error:`, error);
-      }
-
       /**
-       * Handle error with custom handler or re-throw
+       * Handle error with custom handler or default behavior
        */
       if (onError && error instanceof Error) {
         const errorOutcome = await onError(error, ctx);
 
-        return normalizeNavigationOutpostVerdict(errorOutcome);
+        return normalizeNavigationOutpostVerdict(errorOutcome, router);
       }
 
-      throw error;
+      /**
+       * Default error handler: log error and block navigation
+       */
+      console.error(`${LOG_PREFIX} Outpost ${i + 1} threw error:`, error);
+
+      if (debug) {
+        debugger;
+      }
+
+      return NavigationOutpostVerdicts.BLOCK;
     }
   }
 
@@ -148,59 +226,6 @@ export const patrolNavigationCitadel = async (
    * All outposts passed
    */
   return NavigationOutpostVerdicts.ALLOW;
-};
-
-/**
- * Checks if value is a valid RouteLocationRaw
- */
-const isRouteLocationRaw = (value: unknown): boolean => {
-  if (typeof value === 'string') {
-    return true;
-  }
-
-  if (typeof value === 'object' && value !== null) {
-    const obj = value as Record<string, unknown>;
-
-    return 'name' in obj || 'path' in obj;
-  }
-
-  return false;
-};
-
-/**
- * Normalizes navigation outpost outcome for consistency
- * Throws error if outcome is not a valid verdict or RouteLocationRaw
- */
-export const normalizeNavigationOutpostVerdict = (
-  outcome: NavigationOutpostOutcome,
-): NavigationOutpostOutcome => {
-  /**
-   * Error - will be handled by caller
-   */
-  if (outcome instanceof Error) {
-    throw outcome;
-  }
-
-  /**
-   * Valid verdicts
-   */
-  if (Object.values(NavigationOutpostVerdicts).includes(outcome as NavigationOutpostVerdict)) {
-    return outcome;
-  }
-
-  /**
-   * Valid RouteLocationRaw (string path or object with name/path)
-   */
-  if (isRouteLocationRaw(outcome)) {
-    return outcome;
-  }
-
-  /**
-   * Invalid outcome - throw error
-   */
-  throw new Error(
-    `[NavigationCitadel] Invalid outpost outcome: ${JSON.stringify(outcome)}. Expected verdicts.ALLOW, verdicts.BLOCK, or RouteLocationRaw (string path or object with name/path).`,
-  );
 };
 
 /**
