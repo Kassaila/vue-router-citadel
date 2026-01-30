@@ -27,6 +27,7 @@ Think of it as turning your router into a fortress.
 - [🎯 Outpost Scopes](#-outpost-scopes)
 - [🪝 Navigation Hooks](#-navigation-hooks)
 - [↩️ Outpost Handler Return Values](#️-outpost-handler-return-values)
+- [⏱️ Timeout](#️-timeout)
 - [📚 API](#-api)
   - [Citadel](#citadel)
   - [deployOutpost](#deployoutpost)
@@ -164,6 +165,55 @@ const routes = [
 > See [Handler Return Values](./docs/internals.md#️-outpost-handler-return-values) for verdict flow
 > diagram and handler context details.
 
+## ⏱️ Timeout
+
+Prevent outposts from hanging navigation indefinitely.
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  defaultTimeout: 5000, // 5 seconds for all outposts
+  onTimeout: (name, ctx) => ({ name: 'error' }), // redirect on timeout
+});
+
+// auth — uses defaultTimeout (5s)
+citadel.deployOutpost({
+  name: 'auth',
+  handler: async ({ verdicts }) => {
+    await checkAuth(); // must complete within 5 seconds
+    return verdicts.ALLOW;
+  },
+});
+
+// data-loader — needs more time (30s)
+citadel.deployOutpost({
+  name: 'data-loader',
+  timeout: 30000, // override: 30 seconds
+  handler: async ({ verdicts }) => {
+    await loadHeavyData(); // can take up to 30 seconds
+    return verdicts.ALLOW;
+  },
+});
+
+// analytics — no timeout (runs in afterEach, shouldn't block)
+citadel.deployOutpost({
+  name: 'analytics',
+  timeout: 0, // disabled
+  hooks: [NavigationHooks.AFTER_EACH],
+  handler: async ({ verdicts }) => {
+    await sendAnalytics(); // can take as long as needed
+    return verdicts.ALLOW;
+  },
+});
+```
+
+| Outpost       | `timeout`   | `defaultTimeout` | Result                |
+| ------------- | ----------- | ---------------- | --------------------- |
+| `auth`        | `undefined` | `5000`           | 5 seconds             |
+| `data-loader` | `30000`     | `5000`           | 30 seconds (override) |
+| `analytics`   | `0`         | `5000`           | No timeout (disabled) |
+
+> See [Outpost Timeout](./docs/internals.md#outpost-timeout) for diagrams and detailed examples.
+
 ## 📚 API
 
 ### Citadel
@@ -179,8 +229,13 @@ const citadel = createNavigationCitadel(router, {
   log: true, // Enable console logging (default: __DEV__)
   debug: false, // Enable logging + debugger breakpoints (default: false)
   defaultPriority: 100, // Default priority for outposts
+  defaultTimeout: 10000, // Default timeout for outposts in ms (default: undefined)
   onError: (error, ctx) => {
     // Custom error handler (default: console.error + BLOCK)
+    return { name: 'error' };
+  },
+  onTimeout: (outpostName, ctx) => {
+    // Custom timeout handler (default: console.warn + BLOCK)
     return { name: 'error' };
   },
 });
@@ -203,6 +258,7 @@ citadel.deployOutpost({
   },
   priority: 10, // Optional, lower = processed first
   hooks: [NavigationHooks.BEFORE_EACH], // Optional, default: ['beforeEach']
+  timeout: 5000, // Optional, overrides defaultTimeout
 });
 
 // Deploy multiple

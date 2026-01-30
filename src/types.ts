@@ -41,6 +41,7 @@ export const DebugPoints = {
   BEFORE_OUTPOST: 'before-outpost',
   PATROL_STOPPED: 'patrol-stopped',
   ERROR_CAUGHT: 'error-caught',
+  TIMEOUT: 'timeout',
 } as const;
 
 export type DebugPoint = (typeof DebugPoints)[keyof typeof DebugPoints];
@@ -111,6 +112,10 @@ export interface NavigationOutpostOptions {
    * Hooks this outpost should run on. Default: ['beforeEach']
    */
   hooks?: NavigationHook[];
+  /**
+   * Timeout for this outpost in milliseconds. Overrides defaultTimeout.
+   */
+  timeout?: number;
 }
 
 /**
@@ -136,6 +141,17 @@ export interface NavigationCitadelOptions {
    * Default priority for outposts. Default: 100
    */
   defaultPriority?: number;
+  /**
+   * Default timeout for outposts in milliseconds. Default: undefined (no timeout)
+   */
+  defaultTimeout?: number;
+  /**
+   * Handler called when outpost times out
+   */
+  onTimeout?: (
+    outpostName: string,
+    ctx: NavigationOutpostContext,
+  ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
 }
 
 /**
