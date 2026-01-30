@@ -10,7 +10,7 @@ breakpoints.
 - [🎨 Legend](#-legend)
 - [🪝 Navigation Hooks](#-navigation-hooks)
   - [Navigation Flow Overview](#navigation-flow-overview)
-  - [Navigation Hook Patrol Flow](#navigation-hook-patrol-flow)
+  - [Navigation Hook Flow](#navigation-hook-flow)
 - [🎯 Outpost Scopes](#-outpost-scopes)
   - [Global vs Route Scopes](#global-vs-route-scopes)
   - [Nested Routes & Deduplication](#nested-routes--deduplication)
@@ -67,7 +67,7 @@ flowchart LR
 Each hook (`beforeEach`, `beforeResolve`, `afterEach`) triggers `patrolNavigationCitadel` which
 processes all applicable outposts in priority order.
 
-### Navigation Hook Patrol Flow
+### Navigation Hook Flow
 
 What happens when a navigation hook is triggered:
 
@@ -352,7 +352,7 @@ flowchart TD
     D -->|Error thrown| G{Custom onError?}
 
     G -->|Yes| H["onError(error, ctx)"]
-    G -->|No| LOG2[🔴 log.error + Return BLOCK]
+    G -->|No| LOG2[🔴 log.error]
 
     H --> I[normalizeOutcome]
     I --> J{Valid?}

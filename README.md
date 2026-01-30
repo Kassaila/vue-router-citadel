@@ -147,7 +147,7 @@ const routes = [
 > and
 > [The Full Navigation Resolution Flow](https://router.vuejs.org/guide/advanced/navigation-guards.html#The-Full-Navigation-Resolution-Flow)
 >
-> See [Navigation Hooks](./docs/internals.md#-navigation-hooks) for diagrams and hook patrol flow.
+> See [Navigation Hooks](./docs/internals.md#-navigation-hooks) for detailed flow diagrams.
 
 ## ↩️ Outpost Handler Return Values
 
