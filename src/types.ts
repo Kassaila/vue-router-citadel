@@ -114,11 +114,6 @@ export interface NavigationOutpostOptions {
 }
 
 /**
- * Navigation outpost reference (deployed outpost name)
- */
-export type NavigationOutpostRef = NavigationOutpostOptions['name'];
-
-/**
  * Options for creating navigation citadel
  */
 export interface NavigationCitadelOptions {
@@ -146,7 +141,7 @@ export interface NavigationCitadelOptions {
 /**
  * Placed navigation outpost structure
  */
-export type PlacedNavigationOutpost = Omit<NavigationOutpostOptions, 'scope'>;
+export type RegisteredNavigationOutpost = Omit<NavigationOutpostOptions, 'scope'>;
 
 /**
  * Public API returned by createNavigationCitadel
@@ -177,15 +172,15 @@ export interface NavigationCitadelAPI {
 /**
  * Navigation citadel registry structure
  */
-export interface NavigationOutpostRegistry {
+export interface NavigationRegistry {
   /**
    * Global outposts (processed for all routes)
    */
-  global: Map<string, PlacedNavigationOutpost>;
+  global: Map<string, RegisteredNavigationOutpost>;
   /**
    * Route outposts (processed when referenced in route meta)
    */
-  route: Map<string, PlacedNavigationOutpost>;
+  route: Map<string, RegisteredNavigationOutpost>;
   /**
    * Sorted global outpost names by priority (updated on deploy/abandon)
    */
@@ -204,6 +199,6 @@ declare module 'vue-router' {
     /**
      * Navigation outposts to process for this route
      */
-    outposts?: NavigationOutpostRef[];
+    outposts?: string[];
   }
 }

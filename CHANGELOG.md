@@ -35,8 +35,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 #### Developer Experience
 
-- `__DEV__` constant — development mode detection (Vite / Node.js)
-- `log` option — console logging for navigation flow (default: `__DEV__`)
+- `log` option — console logging for navigation flow (default: `true` in dev, `false` in prod)
 - `debug` option — logging + debugger breakpoints (default: `false`)
 - Colored console output: 🔵 info, 🟡 warn, 🔴 error, 🟣 debug
 - Named debug breakpoints: `navigation-start`, `before-outpost`, `patrol-stopped`, `error-caught`

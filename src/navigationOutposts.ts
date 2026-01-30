@@ -3,9 +3,9 @@ import type { NavigationGuardReturn, Router } from 'vue-router';
 import type {
   NavigationOutpostContext,
   NavigationCitadelOptions,
-  NavigationOutpostRegistry,
+  NavigationRegistry,
   NavigationOutpostOutcome,
-  PlacedNavigationOutpost,
+  RegisteredNavigationOutpost,
 } from './types';
 import {
   NavigationHooks,
@@ -37,7 +37,7 @@ const isRouteLocationRaw = (value: unknown): boolean => {
  * Normalizes navigation outpost outcome for consistency
  * Throws error if outcome is not a valid verdict or RouteLocationRaw
  */
-export const normalizeNavigationOutpostVerdict = (
+export const normalizeOutcome = (
   outcome: NavigationOutpostOutcome,
   router: Router,
 ): NavigationOutpostOutcome => {
@@ -82,7 +82,7 @@ export const normalizeNavigationOutpostVerdict = (
 /**
  * Checks if outpost should run on the given hook
  */
-const shouldRunOnHook = (outpost: PlacedNavigationOutpost, hook: string): boolean => {
+const shouldRunOnHook = (outpost: RegisteredNavigationOutpost, hook: string): boolean => {
   const hooks = outpost.hooks ?? [NavigationHooks.BEFORE_EACH];
 
   return hooks.includes(hook as typeof NavigationHooks.BEFORE_EACH);
@@ -92,12 +92,11 @@ const shouldRunOnHook = (outpost: PlacedNavigationOutpost, hook: string): boolea
  * Processes a single outpost and returns normalized outcome
  */
 const processOutpost = async (
-  outpost: PlacedNavigationOutpost,
+  outpost: RegisteredNavigationOutpost,
   ctx: NavigationOutpostContext,
   options: NavigationCitadelOptions,
 ): Promise<NavigationOutpostOutcome> => {
-  const { log = true, debug = false, onError } = options;
-  const enableLog = log || debug;
+  const { debug = false, onError } = options;
   const { router } = ctx;
 
   debugPoint(DebugPoints.BEFORE_OUTPOST, debug);
@@ -105,7 +104,7 @@ const processOutpost = async (
   try {
     const outcome = await outpost.handler(ctx);
 
-    return normalizeNavigationOutpostVerdict(outcome, router);
+    return normalizeOutcome(outcome, router);
   } catch (error) {
     /**
      * Handle error with custom handler or default behavior
@@ -113,7 +112,7 @@ const processOutpost = async (
     if (onError && error instanceof Error) {
       const errorOutcome = await onError(error, ctx);
 
-      return normalizeNavigationOutpostVerdict(errorOutcome, router);
+      return normalizeOutcome(errorOutcome, router);
     }
 
     /**
@@ -134,8 +133,8 @@ const processOutpost = async (
  * 1. Global outposts (pre-sorted by priority)
  * 2. Route outposts (pre-sorted by priority, deduplicated)
  */
-export const patrolNavigationCitadel = async (
-  registry: NavigationOutpostRegistry,
+export const patrol = async (
+  registry: NavigationRegistry,
   ctx: NavigationOutpostContext,
   options: NavigationCitadelOptions,
 ): Promise<NavigationOutpostOutcome> => {
