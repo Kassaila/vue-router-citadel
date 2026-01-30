@@ -1,16 +1,14 @@
-import type { RouteLocationNormalized, NavigationGuardReturn, Router } from 'vue-router';
+import type { NavigationGuardReturn, Router } from 'vue-router';
 
 import type {
-  NavigationOutpost,
   NavigationOutpostContext,
   NavigationCitadelOptions,
   NavigationOutpostRegistry,
   NavigationOutpostOutcome,
-  NavigationOutpostRef,
-  NavigationHook,
+  PlacedNavigationOutpost,
 } from './types';
 import { NavigationHooks, NavigationOutpostVerdicts, type NavigationOutpostVerdict } from './types';
-import { LOG_PREFIX, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
+import { LOG_PREFIX } from './consts';
 
 /**
  * Checks if value is a valid RouteLocationRaw
@@ -76,88 +74,19 @@ export const normalizeNavigationOutpostVerdict = (
 };
 
 /**
- * Resolves a navigation outpost reference to an outpost function
+ * Checks if outpost should run on the given hook
  */
-const resolveNavigationOutpost = (
-  registry: NavigationOutpostRegistry,
-  ref: NavigationOutpostRef,
-  hook: NavigationHook,
-): NavigationOutpost | null => {
-  const placedOutpost = registry.route.get(ref);
+const shouldRunOnHook = (outpost: PlacedNavigationOutpost, hook: string): boolean => {
+  const hooks = outpost.hooks ?? [NavigationHooks.BEFORE_EACH];
 
-  if (!placedOutpost) {
-    console.warn(`${LOG_PREFIX} Route outpost "${ref}" not found in registry`);
-
-    return null;
-  }
-
-  /**
-   * Check if outpost should run on this hook
-   */
-  const hooks = placedOutpost.hooks ?? [NavigationHooks.BEFORE_EACH];
-
-  if (!hooks.includes(hook)) {
-    return null;
-  }
-
-  return placedOutpost.handler;
+  return hooks.includes(hook as typeof NavigationHooks.BEFORE_EACH);
 };
 
 /**
- * Collects all navigation outposts to execute for a given route and hook
- * Order: global outposts (sorted by priority) -> route outposts (parent to child)
+ * Executes a single outpost and returns normalized outcome
  */
-export const collectNavigationOutposts = (
-  registry: NavigationOutpostRegistry,
-  to: RouteLocationNormalized,
-  hook: NavigationHook,
-  defaultPriority: number = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
-): NavigationOutpost[] => {
-  const outposts: NavigationOutpost[] = [];
-
-  /**
-   * 1. Collect and sort global outposts by priority
-   */
-  const globalOutposts = Array.from(registry.global.values())
-    .filter((p) => {
-      const hooks = p.hooks ?? [NavigationHooks.BEFORE_EACH];
-
-      return hooks.includes(hook);
-    })
-    .sort((a, b) => (a.priority ?? defaultPriority) - (b.priority ?? defaultPriority));
-
-  for (const p of globalOutposts) {
-    outposts.push(p.handler);
-  }
-
-  /**
-   * 2. Collect route outposts from matched routes (parent to child)
-   */
-  for (const matched of to.matched) {
-    const routeOutpostRefs = matched.meta?.outposts as NavigationOutpostRef[] | undefined;
-
-    if (!routeOutpostRefs || !Array.isArray(routeOutpostRefs)) {
-      continue;
-    }
-
-    for (const ref of routeOutpostRefs) {
-      const outpost = resolveNavigationOutpost(registry, ref, hook);
-
-      if (outpost) {
-        outposts.push(outpost);
-      }
-    }
-  }
-
-  return outposts;
-};
-
-/**
- * Patrols the navigation citadel by running outposts sequentially
- * Stops execution if an outpost returns BLOCK, redirect, or throws error
- */
-export const patrolNavigationCitadel = async (
-  outposts: NavigationOutpost[],
+const executeOutpost = async (
+  outpost: PlacedNavigationOutpost,
   ctx: NavigationOutpostContext,
   options: NavigationCitadelOptions,
 ): Promise<NavigationOutpostOutcome> => {
@@ -165,60 +94,157 @@ export const patrolNavigationCitadel = async (
   const enableLog = log || debug;
   const { router } = ctx;
 
-  for (let i = 0; i < outposts.length; i++) {
-    const outpost = outposts[i];
+  if (debug) {
+    debugger;
+  }
 
-    if (enableLog) {
-      console.info(`${LOG_PREFIX} Running outpost ${i + 1}/${outposts.length} [${ctx.hook}]`);
+  try {
+    const outcome = await outpost.handler(ctx);
+
+    return normalizeNavigationOutpostVerdict(outcome, router);
+  } catch (error) {
+    /**
+     * Handle error with custom handler or default behavior
+     */
+    if (onError && error instanceof Error) {
+      const errorOutcome = await onError(error, ctx);
+
+      return normalizeNavigationOutpostVerdict(errorOutcome, router);
     }
+
+    /**
+     * Default error handler: log error and block navigation
+     */
+    console.error(`${LOG_PREFIX} Outpost "${outpost.name}" threw error:`, error);
 
     if (debug) {
       debugger;
     }
 
-    try {
-      const outcome = await outpost(ctx);
-      const normalizedOutcome = normalizeNavigationOutpostVerdict(outcome, router);
+    return NavigationOutpostVerdicts.BLOCK;
+  }
+};
 
-      /**
-       * Continue to next outpost
-       */
-      if (normalizedOutcome === NavigationOutpostVerdicts.ALLOW) {
-        continue;
-      }
+/**
+ * Patrols the navigation citadel by running outposts sequentially
+ * Stops execution if an outpost returns BLOCK, redirect, or throws error
+ *
+ * Execution order:
+ * 1. Global outposts (pre-sorted by priority)
+ * 2. Route outposts (pre-sorted by priority, deduplicated)
+ */
+export const patrolNavigationCitadel = async (
+  registry: NavigationOutpostRegistry,
+  ctx: NavigationOutpostContext,
+  options: NavigationCitadelOptions,
+): Promise<NavigationOutpostOutcome> => {
+  const { log = true, debug = false } = options;
+  const enableLog = log || debug;
+  const { hook, to } = ctx;
 
-      /**
-       * Stop patrol and return outcome
-       */
+  /**
+   * 1. Collect route outpost names from matched routes + check duplicates
+   */
+  const routeOutpostRefs: string[] = to.matched.flatMap(
+    (matched) => (matched.meta?.outposts as string[] | undefined) ?? [],
+  );
+  const routeOutpostNames = new Set(routeOutpostRefs);
+
+  if (routeOutpostRefs.length !== routeOutpostNames.size) {
+    console.warn(
+      `${LOG_PREFIX} Duplicate outposts detected on route "${String(to.name ?? to.path)}"`,
+    );
+  }
+
+  let executedCount = 0;
+  const totalGlobal = registry.globalSorted.filter((name) =>
+    shouldRunOnHook(registry.global.get(name)!, hook),
+  ).length;
+  const totalRoute = registry.routeSorted.filter(
+    (name) => routeOutpostNames.has(name) && shouldRunOnHook(registry.route.get(name)!, hook),
+  ).length;
+  const totalCount = totalGlobal + totalRoute;
+
+  if (totalCount === 0) {
+    return NavigationOutpostVerdicts.ALLOW;
+  }
+
+  if (enableLog) {
+    console.info(`${LOG_PREFIX} Patrolling ${totalCount} outposts for ${hook}`);
+  }
+
+  /**
+   * 2. Execute global outposts (pre-sorted by priority)
+   */
+  for (const name of registry.globalSorted) {
+    const outpost = registry.global.get(name);
+
+    if (!outpost || !shouldRunOnHook(outpost, hook)) {
+      continue;
+    }
+
+    executedCount++;
+
+    if (enableLog) {
+      console.info(
+        `${LOG_PREFIX} Running outpost ${executedCount}/${totalCount}: "${name}" [${hook}]`,
+      );
+    }
+
+    const outcome = await executeOutpost(outpost, ctx, options);
+
+    if (outcome !== NavigationOutpostVerdicts.ALLOW) {
       if (enableLog) {
-        console.warn(`${LOG_PREFIX} Patrol stopped by outpost ${i + 1}:`, normalizedOutcome);
+        console.warn(`${LOG_PREFIX} Patrol stopped by outpost "${name}":`, outcome);
       }
 
       if (debug) {
         debugger;
       }
 
-      return normalizedOutcome;
-    } catch (error) {
-      /**
-       * Handle error with custom handler or default behavior
-       */
-      if (onError && error instanceof Error) {
-        const errorOutcome = await onError(error, ctx);
+      return outcome;
+    }
+  }
 
-        return normalizeNavigationOutpostVerdict(errorOutcome, router);
+  /**
+   * 3. Execute route outposts (pre-sorted by priority, filtered by needed names)
+   */
+  for (const name of registry.routeSorted) {
+    if (!routeOutpostNames.has(name)) {
+      continue;
+    }
+
+    const outpost = registry.route.get(name);
+
+    if (!outpost) {
+      console.warn(`${LOG_PREFIX} Route outpost "${name}" not found in registry`);
+      continue;
+    }
+
+    if (!shouldRunOnHook(outpost, hook)) {
+      continue;
+    }
+
+    executedCount++;
+
+    if (enableLog) {
+      console.info(
+        `${LOG_PREFIX} Running outpost ${executedCount}/${totalCount}: "${name}" [${hook}]`,
+      );
+    }
+
+    const outcome = await executeOutpost(outpost, ctx, options);
+
+    if (outcome !== NavigationOutpostVerdicts.ALLOW) {
+      if (enableLog) {
+        console.warn(`${LOG_PREFIX} Patrol stopped by outpost "${name}":`, outcome);
       }
-
-      /**
-       * Default error handler: log error and block navigation
-       */
-      console.error(`${LOG_PREFIX} Outpost ${i + 1} threw error:`, error);
 
       if (debug) {
         debugger;
       }
 
-      return NavigationOutpostVerdicts.BLOCK;
+      return outcome;
     }
   }
 

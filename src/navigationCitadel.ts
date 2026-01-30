@@ -16,11 +16,7 @@ import {
   removeNavigationOutpost,
   getNavigationOutpostNames,
 } from './navigationRegistry';
-import {
-  collectNavigationOutposts,
-  patrolNavigationCitadel,
-  toNavigationGuardReturn,
-} from './navigationOutposts';
+import { patrolNavigationCitadel, toNavigationGuardReturn } from './navigationOutposts';
 
 /**
  * Creates a navigation citadel for Vue Router
@@ -88,17 +84,7 @@ export const createNavigationCitadel = (
       }
 
       const ctx = createContext(to, from, hook);
-      const outposts = collectNavigationOutposts(registry, to, hook, defaultPriority);
-
-      if (outposts.length === 0) {
-        return true;
-      }
-
-      if (enableLog) {
-        console.info(`${LOG_PREFIX} Patrolling ${outposts.length} outposts for ${hook}`);
-      }
-
-      const outcome = await patrolNavigationCitadel(outposts, ctx, options);
+      const outcome = await patrolNavigationCitadel(registry, ctx, options);
 
       return toNavigationGuardReturn(outcome);
     };
@@ -128,29 +114,13 @@ export const createNavigationCitadel = (
     }
 
     const ctx = createContext(to, from, NavigationHooks.AFTER_EACH);
-    const outposts = collectNavigationOutposts(
-      registry,
-      to,
-      NavigationHooks.AFTER_EACH,
-      defaultPriority,
-    );
-
-    if (outposts.length === 0) {
-      return;
-    }
-
-    if (enableLog) {
-      console.info(
-        `${LOG_PREFIX} Patrolling ${outposts.length} outposts for ${NavigationHooks.AFTER_EACH}`,
-      );
-    }
 
     /**
      * afterEach doesn't return a value, but we still patrol
      * Errors are handled by onError or logged here
      */
     try {
-      await patrolNavigationCitadel(outposts, ctx, options);
+      await patrolNavigationCitadel(registry, ctx, options);
     } catch (error) {
       console.error(`${LOG_PREFIX} Error in afterEach outpost:`, error);
 
@@ -172,7 +142,7 @@ export const createNavigationCitadel = (
       console.info(`${LOG_PREFIX} Registering ${scope} outpost: ${name}`);
     }
 
-    addNavigationOutpost(registry, scope, { name, handler, priority, hooks });
+    addNavigationOutpost(registry, scope, { name, handler, priority, hooks }, defaultPriority);
   };
 
   /**
@@ -183,7 +153,7 @@ export const createNavigationCitadel = (
       console.info(`${LOG_PREFIX} Deleting ${scope} outpost: ${name}`);
     }
 
-    return removeNavigationOutpost(registry, scope, name);
+    return removeNavigationOutpost(registry, scope, name, defaultPriority);
   };
 
   /**
@@ -243,7 +213,9 @@ export const createNavigationCitadel = (
       }
 
       if (enableLog) {
-        console.info(`${LOG_PREFIX} Assigned outposts [${names.join(', ')}] to route "${routeName}"`);
+        console.info(
+          `${LOG_PREFIX} Assigned outposts [${names.join(', ')}] to route "${routeName}"`,
+        );
       }
 
       return true;
@@ -261,6 +233,8 @@ export const createNavigationCitadel = (
       cleanupFns.length = 0;
       registry.global.clear();
       registry.route.clear();
+      registry.globalSorted.length = 0;
+      registry.routeSorted.length = 0;
     },
   };
 

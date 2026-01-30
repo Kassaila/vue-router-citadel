@@ -1,13 +1,19 @@
 /**
  * Nested routes example - route outposts inheritance from parent routes
+ *
+ * Route outposts are:
+ * - Sorted by priority (lower = earlier execution)
+ * - Deduplicated (same outpost in parent and child runs only once)
  */
 import { createRouter, createWebHistory } from 'vue-router';
 import { createNavigationCitadel, NavigationOutpostScopes } from 'vue-router-citadel';
 
 // Auth outpost - redirects to home if user is not authenticated
+// Priority 10 - runs first (lower = earlier)
 const authNavigationOutpost = {
   scope: NavigationOutpostScopes.ROUTE,
   name: 'auth',
+  priority: 10,
   handler: ({ verdicts }) => {
     const token = localStorage.getItem('token');
 
@@ -20,9 +26,11 @@ const authNavigationOutpost = {
 };
 
 // Verified outpost - requires user email to be verified
+// Priority 20 - runs after auth
 const verifiedNavigationOutpost = {
   scope: NavigationOutpostScopes.ROUTE,
   name: 'verified',
+  priority: 20,
   handler: ({ verdicts }) => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -35,9 +43,11 @@ const verifiedNavigationOutpost = {
 };
 
 // Premium outpost - requires user to have premium subscription
+// Priority 30 - runs after verified
 const premiumNavigationOutpost = {
   scope: NavigationOutpostScopes.ROUTE,
   name: 'premium',
+  priority: 30,
   handler: ({ verdicts }) => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
