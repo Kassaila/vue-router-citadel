@@ -43,7 +43,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 #### Documentation
 
-- `README.md` — API reference with examples
-- `docs/internals.md` — deep dive with Mermaid diagrams (navigation flow, patrol, outpost
-  processing, error handling)
+- `README.md` — API reference with section-specific links to internals
+- `docs/internals.md` — deep dive documentation:
+  - Mermaid diagrams (navigation flow, patrol, outpost processing, error handling)
+  - Expanded sections matching README structure
+  - Exports Reference (constants, types, interfaces)
+  - Logging Reference and Debug Reference tables
 - `examples/` — usage patterns (auth, nested routes, hooks)

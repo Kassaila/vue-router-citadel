@@ -8,24 +8,30 @@ breakpoints.
 <!-- TOC -->
 
 - [Internals](#internals)
-  - [Legend](#legend)
-  - [Navigation Flow Overview](#navigation-flow-overview)
-  - [Citadel Registry Structure](#citadel-registry-structure)
-  - [Navigation Hook Patrol Flow](#navigation-hook-patrol-flow)
-  - [Outpost Processing](#outpost-processing)
-  - [Outpost Handler Verdict Logic](#outpost-handler-verdict-logic)
-    - [Outpost Handler Context (ctx)](#outpost-handler-context-ctx)
-  - [Nested Routes & Deduplication](#nested-routes--deduplication)
-  - [Outpost Processing Error Handling](#outpost-processing-error-handling)
-  - [Complete Navigation Example](#complete-navigation-example)
-  - [Logging Reference](#logging-reference)
-  - [Debug Reference](#debug-reference)
+  - [🎨 Legend](#-legend)
+  - [🪝 Navigation Hooks](#-navigation-hooks)
+    - [Navigation Flow Overview](#navigation-flow-overview)
+    - [Hook Patrol Flow](#hook-patrol-flow)
+  - [🎯 Outpost Scopes](#-outpost-scopes)
+    - [Global vs Route Scopes](#global-vs-route-scopes)
+    - [Nested Routes & Deduplication](#nested-routes--deduplication)
+  - [↩️ Outpost Handler Return Values](#️-outpost-handler-return-values)
+    - [Verdict Decision Flow](#verdict-decision-flow)
+    - [Handler Context (ctx)](#handler-context-ctx)
+  - [🔄 Complete Navigation Example](#-complete-navigation-example)
+  - [⚙️ API Internals](#️-api-internals)
+    - [Registry Structure](#registry-structure)
+    - [Outpost Processing](#outpost-processing)
+    - [Error Handling](#error-handling)
+  - [📋 Logging Reference](#-logging-reference)
+  - [🐛 Debug Reference](#-debug-reference)
+  - [📦 Exports Reference](#-exports-reference)
 
 <!-- /TOC -->
 
 ---
 
-## Legend
+## 🎨 Legend
 
 | Color | Meaning                                |
 | ----- | -------------------------------------- |
@@ -35,7 +41,20 @@ breakpoints.
 | 🔵    | Logging (`log: true`)                  |
 | 🟣    | Named debug breakpoint (`debug: true`) |
 
-## Navigation Flow Overview
+---
+
+## 🪝 Navigation Hooks
+
+Citadel integrates with Vue Router's navigation lifecycle through three hooks. Each hook triggers
+the patrol system that processes all registered outposts.
+
+| Hook             | When                            | Can Block | Use Case                         |
+| ---------------- | ------------------------------- | --------- | -------------------------------- |
+| `BEFORE_EACH`    | Before navigation starts        | Yes       | Auth, permissions, redirects     |
+| `BEFORE_RESOLVE` | After async components resolved | Yes       | Data validation, final checks    |
+| `AFTER_EACH`     | After navigation completed      | No        | Analytics, logging, side effects |
+
+### Navigation Flow Overview
 
 ```mermaid
 flowchart LR
@@ -46,35 +65,12 @@ flowchart LR
     E --> F[Navigation End]
 ```
 
-Each hook (`beforeEach`, `beforeResolve`, `afterEach`) triggers `patrolNavigationCitadel`.
+Each hook (`beforeEach`, `beforeResolve`, `afterEach`) triggers `patrolNavigationCitadel` which
+processes all applicable outposts in priority order.
 
-## Citadel Registry Structure
+### Hook Patrol Flow
 
-```mermaid
-flowchart LR
-    subgraph Registry
-        A["global: Map&lt;string, Outpost&gt;"]
-        B["route: Map&lt;string, Outpost&gt;"]
-        C["globalSorted: string array"]
-        D["routeSorted: string array"]
-    end
-
-    subgraph Operations
-        E[deploy] --> F[addNavigationOutpost]
-        F --> LOG1["🔵 log.info: Deploying outpost"]
-        LOG1 --> G[updateSortedKeys]
-        H[abandon] --> I[removeNavigationOutpost]
-        I --> LOG2["🔵 log.info: Abandoning outpost"]
-        LOG2 --> G
-    end
-
-    G --> C
-    G --> D
-```
-
-Sorted arrays are updated on every `deploy` / `abandon`, not during navigation.
-
-## Navigation Hook Patrol Flow
+What happens when a navigation hook is triggered:
 
 ```mermaid
 flowchart TD
@@ -104,65 +100,43 @@ flowchart TD
     N -->|Redirect| M
 ```
 
-## Outpost Processing
+---
 
-```mermaid
-flowchart TD
-    A[processOutpost called] --> DBG1[🟣 debugger: before-outpost]
-    DBG1 --> B[Process handler]
+## 🎯 Outpost Scopes
 
-    B --> C[normalizeOutcome]
-    C --> D{Valid outcome?}
+Outposts are organized into two scopes that determine when they are processed during navigation.
 
-    D -->|ALLOW| E[🟢 Return ALLOW]
-    D -->|BLOCK/Redirect| LOG1[🟡 log.warn: patrol stopped]
-    LOG1 --> DBG2[🟣 debugger: patrol-stopped]
-    DBG2 --> F[Return outcome]
+### Global vs Route Scopes
 
-    D -->|Error thrown| G{Custom onError?}
+| Scope    | Processing                  | Priority Sorting | Use Case                     |
+| -------- | --------------------------- | ---------------- | ---------------------------- |
+| `GLOBAL` | Every navigation            | Yes              | Auth, maintenance, analytics |
+| `ROUTE`  | Only when assigned to route | Yes              | Route-specific permissions   |
 
-    G -->|Yes| H["onError(error, ctx)"]
-    G -->|No| LOG2[🔴 log.error + Return BLOCK]
+**Processing order:**
 
-    H --> I[normalizeOutcome]
-    I --> J{Valid?}
-    J -->|Yes| F
-    J -->|Error| LOG2
+1. Global outposts (sorted by priority, lower = first)
+2. Route outposts (sorted by priority, filtered by `meta.outposts`)
 
-    LOG2 --> DBG3[🟣 debugger: error-caught]
-    DBG3 --> K[🔴 Return BLOCK]
-```
-
-## Outpost Handler Verdict Logic
-
-```mermaid
-flowchart TD
-    A["handler(ctx) called"] --> B{Check Condition}
-
-    B -->|Pass| C[🟢 return verdicts.ALLOW]
-    B -->|Fail| D{Need Redirect?}
-
-    D -->|Yes| E["🟡 return { name: 'login' }"]
-    D -->|No| F[🔴 return verdicts.BLOCK]
-
-    C --> G[Next Outpost]
-    E --> H[Stop + Redirect]
-    F --> I[Cancel Navigation]
-```
-
-### Outpost Handler Context (ctx)
+**Route outposts assignment:**
 
 ```typescript
-{
-  verdicts: { ALLOW: 'allow', BLOCK: 'block' },
-  to: RouteLocationNormalized,      // target route
-  from: RouteLocationNormalized,    // current route
-  router: Router,                   // router instance
-  hook: 'beforeEach' | 'beforeResolve' | 'afterEach' // current hook
-}
+// Static assignment in route definition
+const routes = [
+  {
+    path: '/admin',
+    meta: { outposts: ['admin-only', 'audit'] },
+  },
+];
+
+// Dynamic assignment via API
+citadel.assignOutpostToRoute('admin', ['admin-only', 'audit']);
 ```
 
-## Nested Routes & Deduplication
+### Nested Routes & Deduplication
+
+When navigating to nested routes, outposts from all matched routes in the hierarchy are collected.
+Duplicates are automatically removed with a warning.
 
 ```mermaid
 flowchart TD
@@ -194,28 +168,85 @@ flowchart TD
     H --> I
 ```
 
-## Outpost Processing Error Handling
+**Best practice:** Avoid duplicating outpost names in nested routes. Place shared outposts only on
+the parent route.
+
+---
+
+## ↩️ Outpost Handler Return Values
+
+Outpost handlers must return a verdict that determines how navigation proceeds.
+
+| Return              | Result            | Navigation         |
+| ------------------- | ----------------- | ------------------ |
+| `verdicts.ALLOW`    | Continue          | Proceeds           |
+| `verdicts.BLOCK`    | Cancel            | Stops immediately  |
+| `{ name: 'route' }` | Redirect (named)  | Redirects          |
+| `{ path: '/path' }` | Redirect (path)   | Redirects          |
+| `'/path'`           | Redirect (string) | Redirects          |
+| `throw Error`       | Error             | Handled by onError |
+
+### Verdict Decision Flow
 
 ```mermaid
 flowchart TD
-    A[Handler throws Error] --> B{error instanceof Error?}
+    A["handler(ctx) called"] --> B{Check Condition}
 
-    B -->|Yes| C{Custom onError?}
-    B -->|No| LOG1[🔴 log.error: outpost threw error]
+    B -->|Pass| C[🟢 return verdicts.ALLOW]
+    B -->|Fail| D{Need Redirect?}
 
-    C -->|Yes| E["onError(error, ctx)"]
-    C -->|No| LOG1
+    D -->|Yes| E["🟡 return { name: 'login' }"]
+    D -->|No| F[🔴 return verdicts.BLOCK]
 
-    E --> F[normalizeOutcome]
-    F --> G{Valid?}
-    G -->|Yes| H[Return outcome]
-    G -->|Error| LOG1
-
-    LOG1 --> DBG1[🟣 debugger: error-caught]
-    DBG1 --> I[🔴 Return BLOCK]
+    C --> G[Next Outpost]
+    E --> H[Stop + Redirect]
+    F --> I[Cancel Navigation]
 ```
 
-## Complete Navigation Example
+**Important:** Redirect routes are validated against the router. If the route is not found, an error
+is thrown.
+
+### Handler Context (ctx)
+
+Every outpost handler receives a context object with navigation details:
+
+```typescript
+interface NavigationOutpostContext {
+  verdicts: {
+    ALLOW: 'allow';
+    BLOCK: 'block';
+  };
+  to: RouteLocationNormalized; // target route
+  from: RouteLocationNormalized; // current route
+  router: Router; // router instance
+  hook: 'beforeEach' | 'beforeResolve' | 'afterEach';
+}
+```
+
+**Usage example:**
+
+```typescript
+handler: ({ verdicts, to, from, router, hook }) => {
+  // Access route params
+  const userId = to.params.id;
+
+  // Access route meta
+  const requiresAuth = to.meta.requiresAuth;
+
+  // Check current hook
+  if (hook === 'afterEach') {
+    // Analytics, logging (return value ignored)
+  }
+
+  return verdicts.ALLOW;
+};
+```
+
+---
+
+## 🔄 Complete Navigation Example
+
+Full sequence diagram showing a navigation with global and route outposts:
 
 ```mermaid
 sequenceDiagram
@@ -268,7 +299,111 @@ sequenceDiagram
     R-->>U: Page rendered
 ```
 
-## Logging Reference
+---
+
+## ⚙️ API Internals
+
+### Registry Structure
+
+The citadel maintains a registry with separate maps for global and route outposts. Sorted arrays are
+pre-computed on every `deploy` / `abandon` for efficient navigation processing.
+
+```mermaid
+flowchart LR
+    subgraph Registry
+        A["global: Map&lt;string, Outpost&gt;"]
+        B["route: Map&lt;string, Outpost&gt;"]
+        C["globalSorted: string array"]
+        D["routeSorted: string array"]
+    end
+
+    subgraph Operations
+        E[deploy] --> F[addNavigationOutpost]
+        F --> LOG1["🔵 log.info: Deploying outpost"]
+        LOG1 --> G[updateSortedKeys]
+        H[abandon] --> I[removeNavigationOutpost]
+        I --> LOG2["🔵 log.info: Abandoning outpost"]
+        LOG2 --> G
+    end
+
+    G --> C
+    G --> D
+```
+
+**Optimization:** Sorting happens at deploy/abandon time, not during navigation. This ensures
+navigation remains fast regardless of the number of outposts.
+
+### Outpost Processing
+
+How a single outpost is processed during patrol:
+
+```mermaid
+flowchart TD
+    A[processOutpost called] --> DBG1[🟣 debugger: before-outpost]
+    DBG1 --> B[Process handler]
+
+    B --> C[normalizeOutcome]
+    C --> D{Valid outcome?}
+
+    D -->|ALLOW| E[🟢 Return ALLOW]
+    D -->|BLOCK/Redirect| LOG1[🟡 log.warn: patrol stopped]
+    LOG1 --> DBG2[🟣 debugger: patrol-stopped]
+    DBG2 --> F[Return outcome]
+
+    D -->|Error thrown| G{Custom onError?}
+
+    G -->|Yes| H["onError(error, ctx)"]
+    G -->|No| LOG2[🔴 log.error + Return BLOCK]
+
+    H --> I[normalizeOutcome]
+    I --> J{Valid?}
+    J -->|Yes| F
+    J -->|Error| LOG2
+
+    LOG2 --> DBG3[🟣 debugger: error-caught]
+    DBG3 --> K[🔴 Return BLOCK]
+```
+
+### Error Handling
+
+When an outpost handler throws an error, the citadel handles it gracefully:
+
+```mermaid
+flowchart TD
+    A[Handler throws Error] --> B{error instanceof Error?}
+
+    B -->|Yes| C{Custom onError?}
+    B -->|No| LOG1[🔴 log.error: outpost threw error]
+
+    C -->|Yes| E["onError(error, ctx)"]
+    C -->|No| LOG1
+
+    E --> F[normalizeOutcome]
+    F --> G{Valid?}
+    G -->|Yes| H[Return outcome]
+    G -->|Error| LOG1
+
+    LOG1 --> DBG1[🟣 debugger: error-caught]
+    DBG1 --> I[🔴 Return BLOCK]
+```
+
+**Default behavior:** If no `onError` handler is provided, errors are logged and navigation is
+blocked.
+
+**Custom error handler:**
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  onError: (error, ctx) => {
+    console.error('Navigation error:', error);
+    return { name: 'error', query: { message: error.message } };
+  },
+});
+```
+
+---
+
+## 📋 Logging Reference
 
 | Event               | Method         | Condition   |
 | ------------------- | -------------- | ----------- |
@@ -282,7 +417,9 @@ sequenceDiagram
 | Patrol stopped      | 🟡 `log.warn`  | `log: true` |
 | Outpost error       | 🔴 `log.error` | always      |
 
-## Debug Reference
+---
+
+## 🐛 Debug Reference
 
 Named debug points with console output `🟣 [DEBUG] <name>`:
 
@@ -292,3 +429,129 @@ Named debug points with console output `🟣 [DEBUG] <name>`:
 | `before-outpost`   | Before each outpost handler processing                  | `debug: true` |
 | `patrol-stopped`   | When outpost returns BLOCK or redirect                  | `debug: true` |
 | `error-caught`     | When outpost throws an error                            | `debug: true` |
+
+---
+
+## 📦 Exports Reference
+
+All public exports from `vue-router-citadel`.
+
+### Constants
+
+```typescript
+import {
+  NavigationOutpostScopes,
+  NavigationHooks,
+  NavigationOutpostVerdicts,
+  DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
+} from 'vue-router-citadel';
+```
+
+| Constant                              | Values                                        | Description                                   |
+| ------------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| `NavigationOutpostScopes`             | `GLOBAL`, `ROUTE`                             | Outpost scope determining when it's processed |
+| `NavigationHooks`                     | `BEFORE_EACH`, `BEFORE_RESOLVE`, `AFTER_EACH` | Vue Router navigation hooks                   |
+| `NavigationOutpostVerdicts`           | `ALLOW`, `BLOCK`                              | Handler return verdicts                       |
+| `DEFAULT_NAVIGATION_OUTPOST_PRIORITY` | `100`                                         | Default priority for outposts                 |
+
+### Types
+
+```typescript
+import type {
+  NavigationOutpostContext,
+  NavigationOutpost,
+  NavigationOutpostOptions,
+  NavigationCitadelOptions,
+  NavigationCitadelAPI,
+  NavigationHook,
+  NavigationOutpostScope,
+} from 'vue-router-citadel';
+```
+
+#### NavigationOutpostContext
+
+Context passed to outpost handler:
+
+```typescript
+interface NavigationOutpostContext {
+  verdicts: { ALLOW: 'allow'; BLOCK: 'block' };
+  to: RouteLocationNormalized;
+  from: RouteLocationNormalized;
+  router: Router;
+  hook: 'beforeEach' | 'beforeResolve' | 'afterEach';
+}
+```
+
+#### NavigationOutpost
+
+Handler function signature:
+
+```typescript
+type NavigationOutpost = (
+  ctx: NavigationOutpostContext,
+) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
+```
+
+#### NavigationOutpostOptions
+
+Options for deploying an outpost:
+
+```typescript
+interface NavigationOutpostOptions {
+  scope: 'global' | 'route';
+  name: string;
+  handler: NavigationOutpost;
+  priority?: number; // Default: 100
+  hooks?: NavigationHook[]; // Default: ['beforeEach']
+}
+```
+
+#### NavigationCitadelOptions
+
+Options for creating citadel:
+
+```typescript
+interface NavigationCitadelOptions {
+  log?: boolean; // Default: true
+  debug?: boolean; // Default: false
+  defaultPriority?: number; // Default: 100
+  onError?: (error: Error, ctx: NavigationOutpostContext) => NavigationOutpostOutcome;
+}
+```
+
+#### NavigationCitadelAPI
+
+Public API returned by `createNavigationCitadel`:
+
+```typescript
+interface NavigationCitadelAPI {
+  deploy: (options: NavigationOutpostOptions | NavigationOutpostOptions[]) => void;
+  abandon: (scope: NavigationOutpostScope, name: string | string[]) => boolean;
+  getOutposts: (scope: NavigationOutpostScope) => string[];
+  assignOutpostToRoute: (routeName: string, outpostNames: string | string[]) => boolean;
+  destroy: () => void;
+}
+```
+
+### Route Meta Extension
+
+The library extends Vue Router's `RouteMeta` interface:
+
+```typescript
+declare module 'vue-router' {
+  interface RouteMeta {
+    outposts?: string[];
+  }
+}
+```
+
+**Usage:**
+
+```typescript
+const routes = [
+  {
+    path: '/admin',
+    meta: { outposts: ['auth', 'admin-only'] },
+  },
+];
+```
