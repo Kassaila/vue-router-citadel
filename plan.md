@@ -26,11 +26,12 @@
 
 ### Documentation
 
-- [x] `README.md` — full documentation
+- [x] `README.md` — API reference with section links to internals
+- [x] `docs/internals.md` — deep dive with Mermaid diagrams
 - [x] `CHANGELOG.md` — release notes
 - [x] Usage examples (`examples/`)
-- [x] Exported constants section
-- [x] Logging & Debug section
+- [x] Exports Reference section (constants + types)
+- [x] Logging & Debug sections with colored output reference
 
 ### Features
 
@@ -312,44 +313,24 @@ Interactive demo for trying the library.
 
 ### Priority 3 — Documentation
 
-#### Restructure docs: README.md → API reference, internals.md → deep dive
-
-**Problem:** Duplication between README.md and flow.md:
-
-- Handler Return Values / Valid Outcomes — identical tables
-- Debug Breakpoints — identical tables
-- Console Methods / Logging Summary — similar content
-
-**Solution:** Clear separation of concerns.
+#### Restructure docs: README.md → API reference, internals.md → deep dive ✅
 
 **README.md** — concise API reference:
 
-- [x] Remove "Console Methods" section (table with console.info/warn/error)
-- [x] Remove "Debugger Breakpoints" section (table with names)
-- [x] Simplify "🔍 Logging & Debug" section to:
-  - Only Options table (log/debug)
-  - Link: "> See [Internals](./docs/internals.md) for detailed logging and debug info"
-- [x] Update link from flow.md → internals.md
+- [x] Logical section order (concepts before API)
+- [x] Section-specific links to internals.md
+- [x] Simplified API headers (Citadel, deploy, abandon, etc.)
+- [x] "📦 Exports" section with link to detailed reference
+- [x] "📖 Internals" section at the end
 
-**docs/flow.md → docs/internals.md:**
+**docs/internals.md** — deep dive:
 
-- [x] Rename file
-- [x] Update title: "# Internals"
-- [x] Add intro text about contents (diagrams + logging + debug)
-- [x] Remove "Valid Outcomes" section (duplicate from README)
-- [x] Keep:
-  - Legend (colors)
-  - All Mermaid diagrams
-  - Logging Summary (detailed table)
-  - Debug Breakpoints (detailed table)
-
----
-
-#### Improve API section in README.md
-
-- [ ] Add tables with parameters and types for each method
-- [ ] Describe Handler Context (ctx) as separate block
-- [ ] Add return values for methods
+- [x] Restructured to match README sections
+- [x] Added emojis to section headers
+- [x] Expanded content for each section (Navigation Hooks, Outpost Scopes, Handler Return Values)
+- [x] "🔄 Complete Navigation Example" moved before API Internals
+- [x] "📦 Exports Reference" section (constants + types + interfaces)
+- [x] Logging Reference + Debug Reference tables
 
 ---
 

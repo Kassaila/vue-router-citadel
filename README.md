@@ -16,8 +16,6 @@ navigation flows.
 
 Think of it as turning your router into a fortress.
 
-> **[View Internals](./docs/internals.md)** — diagrams, logging details, and debug breakpoints
-
 ---
 
 <!-- TOC -->
@@ -38,7 +36,8 @@ Think of it as turning your router into a fortress.
   - [destroy](#destroy)
 - [🔍 Logging & Debug](#-logging--debug)
 - [💡 Examples](#-examples)
-- [📤 Exported Constants](#-exported-constants)
+- [📦 Exports](#-exports)
+- [📖 Internals](#-internals)
 - [📄 License](#-license)
 
 <!-- /TOC -->
@@ -131,6 +130,9 @@ const routes = [
 > Route outposts from nested routes are automatically deduplicated. If the same outpost is
 > referenced in parent and child routes, it will only be processed once. A warning is logged when
 > duplicates are detected.
+>
+> See [Outpost Scopes](./docs/internals.md#-outpost-scopes) for diagrams and detailed processing
+> flow.
 
 ## 🪝 Navigation Hooks
 
@@ -144,6 +146,8 @@ const routes = [
 > [Navigation Guards](https://router.vuejs.org/guide/advanced/navigation-guards.html#Navigation-Guards)
 > and
 > [The Full Navigation Resolution Flow](https://router.vuejs.org/guide/advanced/navigation-guards.html#The-Full-Navigation-Resolution-Flow)
+>
+> See [Navigation Hooks](./docs/internals.md#-navigation-hooks) for diagrams and hook patrol flow.
 
 ## ↩️ Outpost Handler Return Values
 
@@ -156,6 +160,9 @@ const routes = [
 | `'/path'`           | Redirect to path (string) |
 
 > Redirect routes are validated against the router. If route is not found, an error is thrown.
+>
+> See [Handler Return Values](./docs/internals.md#️-outpost-handler-return-values) for verdict flow
+> diagram and handler context details.
 
 ## 📚 API
 
@@ -250,6 +257,9 @@ citadel.destroy();
 
 Removes all navigation hooks and clears registry.
 
+> See [API Internals](./docs/internals.md#️-api-internals) for registry structure and outpost
+> processing diagrams.
+
 ## 🔍 Logging & Debug
 
 Citadel provides two options for development insights:
@@ -268,27 +278,39 @@ const citadel = createNavigationCitadel(router, {
 
 > `debug: true` automatically enables logging.
 >
-> See [Internals](./docs/internals.md) for detailed logging events and debug breakpoints.
+> See [Logging Reference](./docs/internals.md#-logging-reference) and
+> [Debug Reference](./docs/internals.md#-debug-reference) for detailed events and breakpoints.
 
 ## 💡 Examples
 
 See [examples](./examples) directory for more usage patterns:
 
-- [auth.ts](./examples/auth.ts) — Global outposts with BLOCK and redirect
-- [global-different-hooks.ts](./examples/global-different-hooks.ts) — Using different hooks
-- [nested-routes.ts](./examples/nested-routes.ts) — Route outposts inheritance
-- [route-multiple-hooks.ts](./examples/route-multiple-hooks.ts) — Single outpost with multiple hooks
+- [auth.ts](./examples/auth.ts) — Global outposts with BLOCK and redirect verdicts
+- [global-different-hooks.ts](./examples/global-different-hooks.ts) — Global outposts using
+  beforeEach, beforeResolve, afterEach
+- [nested-routes.ts](./examples/nested-routes.ts) — Route outposts inheritance with priority sorting
+- [route-multiple-hooks.ts](./examples/route-multiple-hooks.ts) — Single outpost handling multiple
+  hooks, role-based access
 
-## 📤 Exported Constants
+## 📦 Exports
 
 ```typescript
 import {
-  NavigationOutpostScopes, // { GLOBAL, ROUTE }
-  NavigationHooks, // { BEFORE_EACH, BEFORE_RESOLVE, AFTER_EACH }
-  NavigationOutpostVerdicts, // { ALLOW, BLOCK }
-  DEFAULT_NAVIGATION_OUTPOST_PRIORITY, // 100
+  createNavigationCitadel,
+  NavigationOutpostScopes,
+  NavigationHooks,
+  NavigationOutpostVerdicts,
 } from 'vue-router-citadel';
 ```
+
+> See [Exports Reference](./docs/internals.md#-exports-reference) for all constants, types, and
+> interfaces.
+
+## 📖 Internals
+
+Deep dive into how vue-router-citadel works:
+
+**[View Internals](./docs/internals.md)** — diagrams, logging details, and debug breakpoints.
 
 ## 📄 License
 
