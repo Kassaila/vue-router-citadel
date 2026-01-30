@@ -16,6 +16,8 @@ navigation flows.
 
 Think of it as turning your router into a fortress.
 
+> **[View Internals](./docs/internals.md)** — diagrams, logging details, and debug breakpoints
+
 ---
 
 <!-- TOC -->
@@ -25,12 +27,12 @@ Think of it as turning your router into a fortress.
 - [📦 Installation](#-installation)
 - [🚀 Quick Start](#-quick-start)
 - [📚 API](#-api)
-  - [createNavigationCitadel(router, options?)](#createnavigationcitadelrouter-options)
-  - [citadel.deploy(options)](#citadeldeployoptions)
-  - [citadel.abandon(scope, name)](#citadelabandonscope-name)
-  - [citadel.getOutposts(scope)](#citadelgetoutpostsscope)
-  - [citadel.assignOutpostToRoute(routeName, outpostNames)](#citadelassignoutposttorouteroutename-outpostnames)
-  - [citadel.destroy()](#citadeldestroy)
+  - [Citadel](#citadel)
+  - [deploy](#deploy)
+  - [abandon](#abandon)
+  - [getOutposts](#getoutposts)
+  - [assignOutpostToRoute](#assignoutposttoroute)
+  - [destroy](#destroy)
 - [📤 Exported Constants](#-exported-constants)
 - [↩️ Handler Return Values](#️-handler-return-values)
 - [🎯 Outpost Scopes](#-outpost-scopes)
@@ -90,7 +92,7 @@ const router = createRouter({
 // 2. Create navigation citadel
 const citadel = createNavigationCitadel(router);
 
-// 3. Register outpost
+// 3. Deploy outpost
 citadel.deploy({
   scope: NavigationOutpostScopes.GLOBAL,
   name: 'auth',
@@ -110,7 +112,11 @@ export { router, citadel };
 
 ## 📚 API
 
-### createNavigationCitadel(router, options?)
+### Citadel
+
+```typescript
+createNavigationCitadel(router, options?)
+```
 
 Creates a navigation citadel instance.
 
@@ -126,9 +132,13 @@ const citadel = createNavigationCitadel(router, {
 });
 ```
 
-### citadel.deploy(options)
+### deploy
 
-Registers one or multiple navigation outposts.
+```typescript
+citadel.deploy(options);
+```
+
+Deploys one or multiple navigation outposts.
 
 ```typescript
 citadel.deploy({
@@ -137,15 +147,19 @@ citadel.deploy({
   handler: ({ verdicts, to, from, router, hook }) => {
     return verdicts.ALLOW;
   },
-  priority: 10, // Optional, lower = earlier execution
+  priority: 10, // Optional, lower = processed first
   hooks: [NavigationHooks.BEFORE_EACH], // Optional, default: ['beforeEach']
 });
 
-// Register multiple
+// Deploy multiple
 citadel.deploy([outpost1, outpost2, outpost3]);
 ```
 
-### citadel.abandon(scope, name)
+### abandon
+
+```typescript
+citadel.abandon(scope, name);
+```
 
 Removes outpost(s) by scope and name.
 
@@ -154,15 +168,23 @@ citadel.abandon(NavigationOutpostScopes.ROUTE, 'outpost-name');
 citadel.abandon(NavigationOutpostScopes.ROUTE, ['name1', 'name2']);
 ```
 
-### citadel.getOutposts(scope)
+### getOutposts
 
-Returns array of registered outpost names.
+```typescript
+citadel.getOutposts(scope);
+```
+
+Returns array of deployed outpost names.
 
 ```typescript
 citadel.getOutposts(NavigationOutpostScopes.GLOBAL); // ['auth', 'analytics']
 ```
 
-### citadel.assignOutpostToRoute(routeName, outpostNames)
+### assignOutpostToRoute
+
+```typescript
+citadel.assignOutpostToRoute(routeName, outpostNames);
+```
 
 Assigns outpost(s) to an existing route dynamically.
 
@@ -173,7 +195,11 @@ citadel.assignOutpostToRoute('settings', ['auth', 'verified']);
 
 Returns `true` if route was found and outposts assigned, `false` otherwise.
 
-### citadel.destroy()
+### destroy
+
+```typescript
+citadel.destroy();
+```
 
 Removes all navigation hooks and clears registry.
 
@@ -218,8 +244,8 @@ const routes = [
 ];
 ```
 
-> **Note:** Route outposts from nested routes are automatically deduplicated. If the same outpost is
-> referenced in parent and child routes, it will only execute once. A warning is logged when
+> Route outposts from nested routes are automatically deduplicated. If the same outpost is
+> referenced in parent and child routes, it will only be processed once. A warning is logged when
 > duplicates are detected.
 
 ## 🪝 Navigation Hooks
@@ -246,33 +272,14 @@ const citadel = createNavigationCitadel(router, {
 });
 ```
 
-### Options
-
 | Option  | Default | Description                                 |
 | ------- | ------- | ------------------------------------------- |
 | `log`   | `true`  | Enables console logging for navigation flow |
 | `debug` | `false` | Enables logging + `debugger` breakpoints    |
 
 > `debug: true` automatically enables logging.
-
-### Console Methods
-
-| Method          | Usage                                                                 |
-| --------------- | --------------------------------------------------------------------- |
-| `console.info`  | Navigation flow, patrolling, running outposts, registering            |
-| `console.warn`  | Outpost not found, already exists, patrol stopped, duplicate outposts |
-| `console.error` | Outpost errors, unhandled exceptions                                  |
-
-### Debugger Breakpoints
-
-When `debug: true`, breakpoints are triggered at:
-
-| Location         | Description                                     |
-| ---------------- | ----------------------------------------------- |
-| Navigation start | Before `beforeEach`/`beforeResolve`/`afterEach` |
-| Before outpost   | Before each outpost handler execution           |
-| Patrol stopped   | When outpost returns `BLOCK` or redirect        |
-| Error caught     | When outpost throws an error                    |
+>
+> See [Internals](./docs/internals.md) for detailed logging events and debug breakpoints.
 
 ## 💡 Examples
 

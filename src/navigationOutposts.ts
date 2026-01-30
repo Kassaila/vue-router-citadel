@@ -7,8 +7,14 @@ import type {
   NavigationOutpostOutcome,
   PlacedNavigationOutpost,
 } from './types';
-import { NavigationHooks, NavigationOutpostVerdicts, type NavigationOutpostVerdict } from './types';
+import {
+  NavigationHooks,
+  NavigationOutpostVerdicts,
+  DebugPoints,
+  type NavigationOutpostVerdict,
+} from './types';
 import { LOG_PREFIX } from './consts';
+import { debugPoint } from './helpers';
 
 /**
  * Checks if value is a valid RouteLocationRaw
@@ -83,9 +89,9 @@ const shouldRunOnHook = (outpost: PlacedNavigationOutpost, hook: string): boolea
 };
 
 /**
- * Executes a single outpost and returns normalized outcome
+ * Processes a single outpost and returns normalized outcome
  */
-const executeOutpost = async (
+const processOutpost = async (
   outpost: PlacedNavigationOutpost,
   ctx: NavigationOutpostContext,
   options: NavigationCitadelOptions,
@@ -94,9 +100,7 @@ const executeOutpost = async (
   const enableLog = log || debug;
   const { router } = ctx;
 
-  if (debug) {
-    debugger;
-  }
+  debugPoint(DebugPoints.BEFORE_OUTPOST, debug);
 
   try {
     const outcome = await outpost.handler(ctx);
@@ -115,21 +119,18 @@ const executeOutpost = async (
     /**
      * Default error handler: log error and block navigation
      */
-    console.error(`${LOG_PREFIX} Outpost "${outpost.name}" threw error:`, error);
-
-    if (debug) {
-      debugger;
-    }
+    console.error(`🔴 ${LOG_PREFIX} Outpost "${outpost.name}" threw error:`, error);
+    debugPoint(DebugPoints.ERROR_CAUGHT, debug);
 
     return NavigationOutpostVerdicts.BLOCK;
   }
 };
 
 /**
- * Patrols the navigation citadel by running outposts sequentially
- * Stops execution if an outpost returns BLOCK, redirect, or throws error
+ * Patrols the navigation citadel by processing outposts sequentially
+ * Stops processing if an outpost returns BLOCK, redirect, or throws error
  *
- * Execution order:
+ * Processing order:
  * 1. Global outposts (pre-sorted by priority)
  * 2. Route outposts (pre-sorted by priority, deduplicated)
  */
@@ -152,11 +153,11 @@ export const patrolNavigationCitadel = async (
 
   if (routeOutpostRefs.length !== routeOutpostNames.size) {
     console.warn(
-      `${LOG_PREFIX} Duplicate outposts detected on route "${String(to.name ?? to.path)}"`,
+      `🟡 ${LOG_PREFIX} Duplicate outposts detected on route "${String(to.name ?? to.path)}"`,
     );
   }
 
-  let executedCount = 0;
+  let processedCount = 0;
   const totalGlobal = registry.globalSorted.filter((name) =>
     shouldRunOnHook(registry.global.get(name)!, hook),
   ).length;
@@ -170,11 +171,11 @@ export const patrolNavigationCitadel = async (
   }
 
   if (enableLog) {
-    console.info(`${LOG_PREFIX} Patrolling ${totalCount} outposts for ${hook}`);
+    console.info(`🔵 ${LOG_PREFIX} Patrolling ${totalCount} outposts for ${hook}`);
   }
 
   /**
-   * 2. Execute global outposts (pre-sorted by priority)
+   * 2. Process global outposts (pre-sorted by priority)
    */
   for (const name of registry.globalSorted) {
     const outpost = registry.global.get(name);
@@ -183,31 +184,29 @@ export const patrolNavigationCitadel = async (
       continue;
     }
 
-    executedCount++;
+    processedCount++;
 
     if (enableLog) {
       console.info(
-        `${LOG_PREFIX} Running outpost ${executedCount}/${totalCount}: "${name}" [${hook}]`,
+        `🔵 ${LOG_PREFIX} Processing outpost ${processedCount}/${totalCount}: "${name}" [${hook}]`,
       );
     }
 
-    const outcome = await executeOutpost(outpost, ctx, options);
+    const outcome = await processOutpost(outpost, ctx, options);
 
     if (outcome !== NavigationOutpostVerdicts.ALLOW) {
       if (enableLog) {
-        console.warn(`${LOG_PREFIX} Patrol stopped by outpost "${name}":`, outcome);
+        console.warn(`🟡 ${LOG_PREFIX} Patrol stopped by outpost "${name}":`, outcome);
       }
 
-      if (debug) {
-        debugger;
-      }
+      debugPoint(DebugPoints.PATROL_STOPPED, debug);
 
       return outcome;
     }
   }
 
   /**
-   * 3. Execute route outposts (pre-sorted by priority, filtered by needed names)
+   * 3. Process route outposts (pre-sorted by priority, filtered by needed names)
    */
   for (const name of registry.routeSorted) {
     if (!routeOutpostNames.has(name)) {
@@ -217,7 +216,7 @@ export const patrolNavigationCitadel = async (
     const outpost = registry.route.get(name);
 
     if (!outpost) {
-      console.warn(`${LOG_PREFIX} Route outpost "${name}" not found in registry`);
+      console.warn(`🟡 ${LOG_PREFIX} Route outpost "${name}" not found in registry`);
       continue;
     }
 
@@ -225,24 +224,22 @@ export const patrolNavigationCitadel = async (
       continue;
     }
 
-    executedCount++;
+    processedCount++;
 
     if (enableLog) {
       console.info(
-        `${LOG_PREFIX} Running outpost ${executedCount}/${totalCount}: "${name}" [${hook}]`,
+        `🔵 ${LOG_PREFIX} Processing outpost ${processedCount}/${totalCount}: "${name}" [${hook}]`,
       );
     }
 
-    const outcome = await executeOutpost(outpost, ctx, options);
+    const outcome = await processOutpost(outpost, ctx, options);
 
     if (outcome !== NavigationOutpostVerdicts.ALLOW) {
       if (enableLog) {
-        console.warn(`${LOG_PREFIX} Patrol stopped by outpost "${name}":`, outcome);
+        console.warn(`🟡 ${LOG_PREFIX} Patrol stopped by outpost "${name}":`, outcome);
       }
 
-      if (debug) {
-        debugger;
-      }
+      debugPoint(DebugPoints.PATROL_STOPPED, debug);
 
       return outcome;
     }

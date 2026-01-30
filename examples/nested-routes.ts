@@ -2,7 +2,7 @@
  * Nested routes example - route outposts inheritance from parent routes
  *
  * Route outposts are:
- * - Sorted by priority (lower = earlier execution)
+ * - Sorted by priority (lower = processed first)
  * - Deduplicated (same outpost in parent and child runs only once)
  */
 import { createRouter, createWebHistory } from 'vue-router';
@@ -105,7 +105,7 @@ const router = createRouter({
 // 2. Create navigation citadel
 const citadel = createNavigationCitadel(router);
 
-// 3. Register navigation outposts
+// 3. Deploy navigation outposts
 citadel.deploy(outposts);
 
 export { router, citadel };
