@@ -54,12 +54,20 @@ Multiple layers of control --- just like a real fortress.
 
 ## ✨ Designed for scalable apps
 
-Citadel is built for:
+**Access Control:**
 
-- Role-Based Access Control (RBAC) systems
-- multi-tenant apps
-- complex authorization flows
-- data preloading pipelines
+- **RBAC systems** — role checks, permission gates, admin areas
+- **Multi-tenant apps** — tenant validation, subscription tiers, feature flags
+
+**Architecture:**
+
+- **Large-scale modular apps** — type-safe declarations per module, DI support
+  ([advanced patterns](./docs/type-safe-names-advanced.md))
+
+**Navigation Logic:**
+
+- **Complex auth flows** — SSO, MFA, session refresh, token validation
+- **Data preloading** — fetch data before navigation completes
 
 ## 📦 Installation
 

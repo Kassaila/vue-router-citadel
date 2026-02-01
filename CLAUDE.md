@@ -213,3 +213,7 @@ Note: `/docs/current-feature.md` is in `.gitignore` — it's a working document,
 - For file search: use Glob/Grep directly for specific queries, Task agent for open-ended
   exploration
 - Parallel tool calls when operations are independent
+
+### Git
+
+- Never ask about commits — user will request when needed
