@@ -44,6 +44,8 @@
 - [x] Default error handler (`console.error` + `BLOCK`)
 - [x] `assignOutpostToRoute()` method
 - [x] Optimized processing (sorting at deploy, direct registry calls)
+- [x] Type-safe outpost names (declaration merging with `GlobalOutpostRegistry` /
+      `RouteOutpostRegistry`)
 
 ### Build
 
@@ -138,45 +140,12 @@ jobs:
 
 ---
 
-#### Type-safe meta.outposts
+#### ~~Type-safe Outpost Names~~ ✅
 
-**Problem:** No autocomplete for outpost names in `meta.outposts`.
+Implemented: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, scope-aware typing for all API
+methods.
 
-**Solution:** Declaration merging with generic registry.
-
-```typescript
-// User defines their outpost names
-declare module 'vue-router-citadel' {
-  interface OutpostRegistry {
-    'auth': true;
-    'admin-only': true;
-    'verified': true;
-  }
-}
-
-// Now meta.outposts has autocomplete
-const routes = [
-  {
-    path: '/admin',
-    meta: {
-      outposts: ['auth', 'admin-only'], // ✓ autocomplete works
-      // outposts: ['typo'],            // ✗ TypeScript error
-    },
-  },
-];
-```
-
-**Implementation:**
-
-1. Add to `types.ts`:
-   ```typescript
-   export interface OutpostRegistry {}
-   export type RegisteredOutpostName = keyof OutpostRegistry extends never
-     ? string
-     : keyof OutpostRegistry;
-   ```
-2. Update `RouteMeta.outposts` to use `RegisteredOutpostName`
-3. Update `RouteMeta.outposts` type
+See [Type-Safe Outpost Names](./internals.md#-type-safe-outpost-names) for usage examples.
 
 ---
 
@@ -320,7 +289,8 @@ src/
     └── integration.test.ts
 
 docs/
-└── internals.md          # diagrams + logging + debug
+├── internals.md
+└── plan.md
 
 examples/
 ├── auth.ts
