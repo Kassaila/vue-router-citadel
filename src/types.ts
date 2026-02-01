@@ -237,6 +237,11 @@ export interface NavigationCitadelOptions {
    */
   debug?: boolean;
   /**
+   * Enable Vue DevTools integration. Default: __DEV__
+   * When enabled, registers a custom inspector showing deployed outposts.
+   */
+  devtools?: boolean;
+  /**
    * Global error handler
    */
   onError?: (
