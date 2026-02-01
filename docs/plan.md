@@ -19,7 +19,7 @@
 - [x] `src/index.ts` — entry point, exports
 - [x] `src/types.ts` — TypeScript types and interfaces
 - [x] `src/consts.ts` — constants (LOG_PREFIX, DEFAULT_PRIORITY)
-- [x] `src/helpers.ts` — utility functions (debugPoint)
+- [x] `src/helpers.ts` — utilities (debugPoint, logger)
 - [x] `src/navigationCitadel.ts` — main factory
 - [x] `src/navigationRegistry.ts` — outposts registry
 - [x] `src/navigationOutposts.ts` — patrol logic
@@ -39,7 +39,9 @@
 - [x] Priority-based processing (global + route)
 - [x] Route outposts deduplication with warning
 - [x] Route validation for redirects
-- [x] `log` / `debug` options with colored output (🔵 info, 🟡 warn, 🔴 error, 🟣 debug)
+- [x] `log` / `logger` / `debug` options with colored output (🔵 info, 🟡 warn, 🔴 error, 🟣 debug)
+- [x] Custom logger support via `CitadelLogger` interface (`createDefaultLogger`)
+- [x] Critical events always logged (errors, timeouts, missing routes)
 - [x] Named debug breakpoints (navigation-start, before-outpost, patrol-stopped, error-caught)
 - [x] Default error handler (`console.error` + `BLOCK`)
 - [x] `assignOutpostToRoute()` method

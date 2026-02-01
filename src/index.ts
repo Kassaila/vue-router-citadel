@@ -15,12 +15,19 @@ export type {
   GlobalOutpostName,
   RouteOutpostName,
   OutpostName,
+  // Logger
+  CitadelLogger,
 } from './types';
 
 /**
  * Constants
  */
 export { NavigationHooks, NavigationOutpostVerdicts, NavigationOutpostScopes } from './types';
+
+/**
+ * Logger utilities
+ */
+export { createDefaultLogger } from './helpers';
 
 /**
  * Main factory

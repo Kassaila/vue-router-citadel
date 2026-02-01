@@ -1,9 +1,9 @@
 import type {
+  CitadelLogger,
   NavigationRegistry,
   NavigationOutpostScope,
   RegisteredNavigationOutpost,
 } from './types';
-import { LOG_PREFIX, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
 
 /**
  * Creates a new navigation registry
@@ -21,7 +21,7 @@ export const createRegistry = (): NavigationRegistry => ({
 const updateSortedKeys = (
   registry: NavigationRegistry,
   scope: NavigationOutpostScope,
-  defaultPriority: number = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
+  defaultPriority: number,
 ): void => {
   const map = registry[scope];
   const sortedKey = `${scope}Sorted` as 'globalSorted' | 'routeSorted';
@@ -41,12 +41,11 @@ export const register = (
   registry: NavigationRegistry,
   scope: NavigationOutpostScope,
   outpost: RegisteredNavigationOutpost,
-  defaultPriority: number = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
+  defaultPriority: number,
+  logger: CitadelLogger,
 ): void => {
   if (registry[scope].has(outpost.name)) {
-    console.warn(
-      `🟡 ${LOG_PREFIX} ${scope} outpost "${outpost.name}" already exists, replacing...`,
-    );
+    logger.warn(`${scope} outpost "${outpost.name}" already exists, replacing...`);
   }
 
   registry[scope].set(outpost.name, outpost);
@@ -62,7 +61,7 @@ export const unregister = (
   registry: NavigationRegistry,
   scope: NavigationOutpostScope,
   name: string,
-  defaultPriority: number = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
+  defaultPriority: number,
 ): boolean => {
   const deleted = registry[scope].delete(name);
 

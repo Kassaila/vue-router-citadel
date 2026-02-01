@@ -53,7 +53,7 @@ breakpoints.
 | 🟢    | Success, ALLOW, continue               |
 | 🟡    | Warning, redirect, deduplicate         |
 | 🔴    | Error, BLOCK, cancel                   |
-| 🔵    | Logging (`log: true`)                  |
+| 🔵    | Logging (when logger is enabled)       |
 | 🟣    | Named debug breakpoint (`debug: true`) |
 
 ---
@@ -556,20 +556,108 @@ const citadel = createNavigationCitadel(router, {
 
 ---
 
-## 📋 Logging Reference
+## 📋 Logging & Custom Logger
 
-| Event               | Method         | Condition   |
-| ------------------- | -------------- | ----------- |
-| Navigation start    | 🔵 `log.info`  | `log: true` |
-| Patrolling outposts | 🔵 `log.info`  | `log: true` |
-| Processing outpost  | 🔵 `log.info`  | `log: true` |
-| Deploying outpost   | 🔵 `log.info`  | `log: true` |
-| Abandoning outpost  | 🔵 `log.info`  | `log: true` |
-| Duplicate outposts  | 🟡 `log.warn`  | always      |
-| Outpost not found   | 🟡 `log.warn`  | always      |
-| Patrol stopped      | 🟡 `log.warn`  | `log: true` |
-| Outpost timeout     | 🟡 `log.warn`  | always      |
-| Outpost error       | 🔴 `log.error` | always      |
+### Logger Interface
+
+Citadel uses `CitadelLogger` interface for all logging:
+
+```typescript
+interface CitadelLogger {
+  info: (...args: unknown[]) => void;
+  warn: (...args: unknown[]) => void;
+  error: (...args: unknown[]) => void;
+  debug: (...args: unknown[]) => void;
+}
+```
+
+### Options
+
+| Option   | Default                 | Description                                       |
+| -------- | ----------------------- | ------------------------------------------------- |
+| `log`    | `__DEV__`               | Enable non-critical logs. Critical always logged. |
+| `logger` | `createDefaultLogger()` | Custom logger implementation                      |
+| `debug`  | `false`                 | Enables logging + debugger breakpoints            |
+
+> `__DEV__` is `true` when `import.meta.env.DEV` or `NODE_ENV !== 'production'`.
+
+### Critical vs Non-Critical
+
+- **Critical events** — always logged via `logger`, regardless of `log` setting
+- **Non-critical events** — only logged when `log: true` (or `debug: true`)
+
+This ensures developers always see errors even with `log: false`.
+
+### Disable Non-Critical Logging
+
+```typescript
+createNavigationCitadel(router, { log: false });
+```
+
+### Custom Logger Examples
+
+**SSR with Pino:**
+
+```typescript
+import pino from 'pino';
+
+const pinoLogger = pino();
+
+createNavigationCitadel(router, {
+  logger: {
+    info: (...args) => pinoLogger.info({ ctx: 'citadel' }, ...args),
+    warn: (...args) => pinoLogger.warn({ ctx: 'citadel' }, ...args),
+    error: (...args) => pinoLogger.error({ ctx: 'citadel' }, ...args),
+    debug: (...args) => pinoLogger.debug({ ctx: 'citadel' }, ...args),
+  },
+});
+```
+
+**Testing with vi.fn():**
+
+```typescript
+const mockLogger: CitadelLogger = {
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+  debug: vi.fn(),
+};
+
+const citadel = createNavigationCitadel(router, { logger: mockLogger });
+
+// Assert logging calls
+expect(mockLogger.info).toHaveBeenCalledWith('Deploying global outpost: auth');
+```
+
+**Custom format (no emoji):**
+
+```typescript
+const plainLogger: CitadelLogger = {
+  info: (...args) => console.log('[Citadel]', ...args),
+  warn: (...args) => console.warn('[Citadel]', ...args),
+  error: (...args) => console.error('[Citadel]', ...args),
+  debug: (...args) => console.debug('[Citadel DEBUG]', ...args),
+};
+```
+
+### Log Events Reference
+
+| Event               | Method            | Critical |
+| ------------------- | ----------------- | -------- |
+| Navigation start    | 🔵 `logger.info`  | No       |
+| Patrolling outposts | 🔵 `logger.info`  | No       |
+| Processing outpost  | 🔵 `logger.info`  | No       |
+| Deploying outpost   | 🔵 `logger.info`  | No       |
+| Abandoning outpost  | 🔵 `logger.info`  | No       |
+| Patrol stopped      | 🟡 `logger.warn`  | No       |
+| Duplicate outposts  | 🟡 `logger.warn`  | **Yes**  |
+| Outpost not found   | 🟡 `logger.warn`  | **Yes**  |
+| Route not found     | 🟡 `logger.warn`  | **Yes**  |
+| Outpost timeout     | 🟡 `logger.warn`  | **Yes**  |
+| Outpost error       | 🔴 `logger.error` | **Yes**  |
+| afterEach error     | 🔴 `logger.error` | **Yes**  |
+
+> **Critical** events are always logged via `logger`. **Non-critical** only when `log: true`.
 
 ---
 
@@ -849,9 +937,7 @@ export class CitadelService {
   private citadel: NavigationCitadelAPI;
 
   constructor(@inject(TOKENS.Router) router: Router) {
-    this.citadel = createNavigationCitadel(router, {
-      log: import.meta.env.DEV,
-    });
+    this.citadel = createNavigationCitadel(router);
   }
 
   get api() {

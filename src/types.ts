@@ -109,6 +109,31 @@ export const DebugPoints = {
 export type DebugPoint = (typeof DebugPoints)[keyof typeof DebugPoints];
 
 /**
+ * Logger interface for citadel.
+ * Implement this interface to provide custom logging behavior.
+ *
+ * @example
+ * ```typescript
+ * // Use with pino for SSR
+ * import pino from 'pino';
+ * const pinoLogger = pino();
+ *
+ * const logger: CitadelLogger = {
+ *   info: (...args) => pinoLogger.info(args),
+ *   warn: (...args) => pinoLogger.warn(args),
+ *   error: (...args) => pinoLogger.error(args),
+ *   debug: (...args) => pinoLogger.debug(args),
+ * };
+ * ```
+ */
+export interface CitadelLogger {
+  info: (...args: unknown[]) => void;
+  warn: (...args: unknown[]) => void;
+  error: (...args: unknown[]) => void;
+  debug: (...args: unknown[]) => void;
+}
+
+/**
  * Context passed to navigation outpost functions
  */
 export interface NavigationOutpostContext {
@@ -192,9 +217,21 @@ export interface NavigationCitadelOptions {
    */
   outposts?: NavigationOutpostOptions[];
   /**
-   * Enable console logging (console.info for navigation flow). Default: __DEV__
+   * Enable logging for non-critical events. Default: __DEV__
+   * Critical events (errors, timeouts) are always logged regardless of this setting.
    */
   log?: boolean;
+  /**
+   * Custom logger implementation. Default: createDefaultLogger() (console with emoji prefixes)
+   *
+   * @example
+   * ```typescript
+   * createNavigationCitadel(router, {
+   *   logger: myCustomLogger,
+   * });
+   * ```
+   */
+  logger?: CitadelLogger;
   /**
    * Enable debug mode (logging + debugger breakpoints at key points). Default: false
    */

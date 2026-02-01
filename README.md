@@ -229,7 +229,7 @@ Creates a navigation citadel instance.
 ```typescript
 const citadel = createNavigationCitadel(router, {
   outposts: [], // Initial outposts to deploy on creation
-  log: true, // Enable console logging (default: __DEV__)
+  logger: myLogger, // Custom logger or false to disable (default: console in dev, noop in prod)
   debug: false, // Enable logging + debugger breakpoints (default: false)
   defaultPriority: 100, // Default priority for outposts
   defaultTimeout: 10000, // Default timeout for outposts in ms (default: undefined)
@@ -321,27 +321,29 @@ Removes all navigation hooks and clears registry.
 
 ## 🔍 Logging & Debug
 
-Citadel provides two options for development insights:
-
 ```typescript
-const citadel = createNavigationCitadel(router, {
-  log: true, // Console logging (default: __DEV__)
-  debug: false, // Logging + debugger breakpoints (default: false)
-});
+// Default: log enabled in dev (__DEV__), default console logger
+createNavigationCitadel(router);
+
+// Disable non-critical logging
+createNavigationCitadel(router, { log: false });
+
+// Custom logger
+createNavigationCitadel(router, { logger: myCustomLogger });
+
+// Debug mode: logging + debugger breakpoints
+createNavigationCitadel(router, { debug: true });
 ```
 
-| Option  | Default   | Description                                 |
-| ------- | --------- | ------------------------------------------- |
-| `log`   | `__DEV__` | Enables console logging for navigation flow |
-| `debug` | `false`   | Enables logging + `debugger` breakpoints    |
+| Option   | Default                 | Description                                       |
+| -------- | ----------------------- | ------------------------------------------------- |
+| `log`    | `__DEV__`               | Enable non-critical logs. Critical always logged. |
+| `logger` | `createDefaultLogger()` | Custom `CitadelLogger` implementation             |
+| `debug`  | `false`                 | Enables logging + `debugger` breakpoints          |
 
-> `__DEV__` is `true` in development (`import.meta.env.DEV` or `NODE_ENV !== 'production'`), `false`
-> in production.
-
-> `debug: true` automatically enables logging.
->
-> See [Logging Reference](./docs/internals.md#-logging-reference) and
-> [Debug Reference](./docs/internals.md#-debug-reference) for detailed events and breakpoints.
+> See [Logging & Custom Logger](./docs/internals.md#-logging--custom-logger) for custom logger
+> examples (SSR, testing) and [Debug Reference](./docs/internals.md#-debug-reference) for
+> breakpoints.
 
 ## 🔒 Type-Safe Outpost Names
 
@@ -405,10 +407,16 @@ See [examples](./examples) directory for more usage patterns:
 
 ```typescript
 import {
+  // Main factory
   createNavigationCitadel,
+  // Constants
   NavigationOutpostScopes,
   NavigationHooks,
   NavigationOutpostVerdicts,
+  // Logger utilities
+  createDefaultLogger,
+  // Types
+  type CitadelLogger,
 } from 'vue-router-citadel';
 ```
 

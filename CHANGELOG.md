@@ -37,7 +37,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 #### Developer Experience
 
-- `log` option — console logging for navigation flow (default: `true` in dev, `false` in prod)
+- `log` option — enable/disable non-critical logging (default: `__DEV__`)
+- `logger` option — custom logger with `CitadelLogger` interface (default: `createDefaultLogger()`)
+- Critical events (errors, timeouts, missing routes) always logged regardless of `log` setting
+- `createDefaultLogger()` — factory for default console logger with emoji prefixes
 - `debug` option — logging + debugger breakpoints (default: `false`)
 - Colored console output: 🔵 info, 🟡 warn, 🔴 error, 🟣 debug
 - Named debug breakpoints: `navigation-start`, `before-outpost`, `patrol-stopped`, `timeout`,
