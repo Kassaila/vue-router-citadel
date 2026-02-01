@@ -9,6 +9,12 @@ export type {
   NavigationCitadelAPI,
   NavigationHook,
   NavigationOutpostScope,
+  // Type-safe outpost names (user-extensible via declaration merging)
+  GlobalOutpostRegistry,
+  RouteOutpostRegistry,
+  GlobalOutpostName,
+  RouteOutpostName,
+  OutpostName,
 } from './types';
 
 /**

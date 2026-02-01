@@ -33,6 +33,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Route validation for redirect returns
 - Default error handler (`console.error` + `BLOCK`)
 - Timeout support (`defaultTimeout`, `timeout`, `onTimeout`)
+- Type-safe outpost names via declaration merging (`GlobalOutpostRegistry`, `RouteOutpostRegistry`)
 
 #### Developer Experience
 

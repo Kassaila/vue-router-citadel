@@ -36,6 +36,7 @@ Think of it as turning your router into a fortress.
   - [assignOutpostToRoute](#assignoutposttoroute)
   - [destroy](#destroy)
 - [🔍 Logging & Debug](#-logging--debug)
+- [🔒 Type-Safe Outpost Names](#-type-safe-outpost-names)
 - [💡 Examples](#-examples)
 - [📦 Exports](#-exports)
 - [📖 Internals](#-internals)
@@ -341,6 +342,53 @@ const citadel = createNavigationCitadel(router, {
 >
 > See [Logging Reference](./docs/internals.md#-logging-reference) and
 > [Debug Reference](./docs/internals.md#-debug-reference) for detailed events and breakpoints.
+
+## 🔒 Type-Safe Outpost Names
+
+Enable autocomplete and compile-time validation for outpost names using TypeScript declaration
+merging.
+
+```typescript
+// src/outposts.d.ts (or env.d.ts)
+declare module 'vue-router-citadel' {
+  interface GlobalOutpostRegistry {
+    auth: true;
+    maintenance: true;
+  }
+
+  interface RouteOutpostRegistry {
+    'admin-only': true;
+    'premium': true;
+  }
+}
+```
+
+Now TypeScript validates outpost names everywhere:
+
+```typescript
+// ✓ Autocomplete works, typos caught at compile time
+citadel.deployOutpost({
+  scope: 'global',
+  name: 'auth', // autocomplete: auth, maintenance
+  handler: authHandler,
+});
+
+// ✓ Route meta is also typed
+const routes = [
+  {
+    path: '/admin',
+    meta: { outposts: ['admin-only', 'premium'] }, // autocomplete works
+  },
+];
+
+// ✗ TypeScript error — typo caught!
+citadel.deployOutpost({ scope: 'global', name: 'atuh', handler });
+```
+
+> Registries are optional. Without them, names fall back to `string` (no type checking).
+>
+> See [Type-Safe Outpost Names](./docs/internals.md#-type-safe-outpost-names) for modular
+> architecture and DI examples.
 
 ## 💡 Examples
 

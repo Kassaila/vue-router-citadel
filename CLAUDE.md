@@ -131,6 +131,24 @@ npm run format:check # Check formatting
 }
 ```
 
+## Type-Safe Outpost Names
+
+Declaration merging for autocomplete and compile-time validation:
+
+```typescript
+// User extends registries in outposts.d.ts
+declare module 'vue-router-citadel' {
+  interface GlobalOutpostRegistry {
+    auth: true;
+  }
+  interface RouteOutpostRegistry {
+    'admin-only': true;
+  }
+}
+```
+
+Key types: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, `GlobalOutpostName`, `RouteOutpostName`
+
 ## Development Roadmap (see docs/plan.md)
 
 ### Priority 1 — Before Release
@@ -139,7 +157,8 @@ npm run format:check # Check formatting
   - Test files: `src/__tests__/*.test.ts`
   - Cases: citadel API, registry, patrol, deduplication, timeout, errors
 - [ ] **CI/CD**: GitHub Actions (ci.yml, release.yml)
-- [ ] **Type-safe meta.outposts**: Declaration merging with OutpostRegistry
+- [x] **Type-safe Outpost Names**: Declaration merging with
+      GlobalOutpostRegistry/RouteOutpostRegistry
 
 ### Priority 2 — Post-Release
 
@@ -166,3 +185,19 @@ npm pack --dry-run   # Check package contents
 - Branch: develop -> main
 - Peer dependency: vue-router@^4.0.0
 - TypeScript strict mode, ESM + CJS dual package
+
+## Workflow Optimization
+
+### File Editing
+
+- **Mass cleanup/deletion**: Use ONE large Edit replacing all unwanted content at once, not
+  incremental small edits
+- **Avoid**: Multiple small replacements that can fail on whitespace mismatches
+- **Pattern**: `Read -> single Edit with full replacement -> done`
+
+### Token Efficiency
+
+- Read file once, plan all changes, execute in minimal operations
+- For file search: use Glob/Grep directly for specific queries, Task agent for open-ended
+  exploration
+- Parallel tool calls when operations are independent
