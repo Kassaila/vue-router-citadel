@@ -23,6 +23,7 @@
 - [x] `src/navigationCitadel.ts` — main factory
 - [x] `src/navigationRegistry.ts` — outposts registry
 - [x] `src/navigationOutposts.ts` — patrol logic
+- [x] `src/devtools/` — Vue DevTools integration
 
 ### Documentation
 
@@ -50,6 +51,7 @@
 - [x] Optimized processing (sorting at deploy, direct registry calls)
 - [x] Type-safe outpost names (declaration merging with `GlobalOutpostRegistry` /
       `RouteOutpostRegistry`)
+- [x] Vue DevTools integration (`devtools` option, custom inspector)
 
 ### Build
 
@@ -138,23 +140,24 @@ See [Type-Safe Outpost Names](./internals.md#-type-safe-outpost-names) for usage
 
 ### Priority 2 — Post-Release
 
-#### DevTools Integration
+#### ~~DevTools Integration~~ ✅
 
-Vue DevTools plugin for visualizing outposts and navigation flow.
+Implemented: Custom inspector with `@vue/devtools-api`.
 
 **Features:**
 
-- List of deployed outposts (global/route, priority, hooks)
-- Navigation timeline with outpost processing
-- Outpost processing time
-- Click to see outpost source location
+- `devtools` option (default: `__DEV__`)
+- Custom inspector with outpost tree (Global/Route groups)
+- Tags showing priority and hooks count
+- State panel with outpost details
+- Auto-refresh on deploy/abandon
+- `setupDevtools()` export for manual setup
 
-**Implementation:**
+**Files:**
 
-- Use `@vue/devtools-api`
-- Create `src/devtools.ts`
-- Register on `createNavigationCitadel` if devtools available
-- Export `setupDevtools(citadel)` for manual setup
+- `src/devtools/index.ts` — setup functions, auto-init
+- `src/devtools/inspector.ts` — custom inspector logic
+- `src/devtools/types.ts` — DevTools-specific types
 
 ---
 
@@ -268,7 +271,11 @@ src/                             # Source code
 ├── helpers.ts
 ├── navigationCitadel.ts
 ├── navigationOutposts.ts
-└── navigationRegistry.ts
+├── navigationRegistry.ts
+└── devtools/                    # Vue DevTools integration
+    ├── index.ts
+    ├── inspector.ts
+    └── types.ts
 
 __tests__/                       # Tests
 ├── helpers/setup.ts
@@ -277,9 +284,6 @@ __tests__/                       # Tests
 ├── navigationOutposts.test.ts
 ├── timeout.test.ts
 └── integration.test.ts
-
-devtools/                        # Future Vue DevTools plugin
-└── index.ts
 
 docs/
 ├── internals.md

@@ -34,7 +34,11 @@ src/                             # Source code
 ├── helpers.ts                   # Utilities (debugPoint, logger)
 ├── navigationCitadel.ts         # Main factory, hook registration, public API
 ├── navigationOutposts.ts        # Outpost processing, patrol logic, timeout/error
-└── navigationRegistry.ts        # Registry CRUD, priority sorting
+├── navigationRegistry.ts        # Registry CRUD, priority sorting
+└── devtools/                    # Vue DevTools integration
+    ├── index.ts                 # Setup functions, auto-init
+    ├── inspector.ts             # Custom inspector logic
+    └── types.ts                 # DevTools-specific types
 
 __tests__/                       # Tests (vitest)
 ├── helpers/setup.ts             # Mock router, logger, handlers
@@ -43,9 +47,6 @@ __tests__/                       # Tests (vitest)
 ├── navigationOutposts.test.ts
 ├── timeout.test.ts
 └── integration.test.ts
-
-devtools/                        # Future Vue DevTools plugin
-└── index.ts
 
 examples/                        # Usage examples (auth, hooks, nested routes)
 docs/                            # Documentation
@@ -129,6 +130,7 @@ npm run format:check # Check formatting
 | Types/interfaces    | `src/types.ts`              |
 | Constants           | `src/consts.ts`             |
 | Utilities/Logger    | `src/helpers.ts`            |
+| DevTools            | `src/devtools/`             |
 | Tests               | `__tests__/*.test.ts`       |
 
 ## Code Patterns
@@ -179,7 +181,7 @@ Key types: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, `GlobalOutpostName`,
 
 ### Priority 2 — Post-Release
 
-- [ ] DevTools Integration (Vue DevTools plugin)
+- [x] DevTools Integration (Vue DevTools custom inspector)
 - [ ] Metrics (performance tracking per outpost)
 - [ ] Lazy Outposts (dynamic import for code splitting)
 - [ ] JSON Schema for config validation
@@ -210,12 +212,26 @@ npm pack --dry-run   # Check package contents
 ### Feature Development Flow
 
 1. **Start**: Clear `/docs/current-feature.md` from previous feature
-2. **Before implementation**: Create `/docs/current-feature.md` with proposal (problem, solution,
-   files to modify, checklist)
+2. **Before implementation**: Create `/docs/current-feature.md` (or update if exists) with proposal
+   (problem, solution, files to modify, checklist)
 3. **Implementation**: Follow the checklist, mark items as done
-4. **After implementation**: Update all docs (README.md, CLAUDE.md, CHANGELOG.md, etc.)
+4. **After implementation**: Update all docs (README.md, CLAUDE.md, CHANGELOG.md, docs/, etc.)
 
 Note: `/docs/current-feature.md` is in `.gitignore` — it's a working document, not committed.
+
+**CRITICAL**: This flow is MANDATORY for any feature implementation. Even if:
+
+- User provides a ready plan in the prompt ("Implement the following plan...")
+- Plan was already created in a previous session
+- It seems obvious and tempting to just start coding
+
+A plan from the prompt != `/docs/current-feature.md`. You must:
+
+1. Copy the plan to `/docs/current-feature.md`
+2. Add a checklist if missing
+3. Follow the flow as usual
+
+DO NOT use TaskCreate/TaskUpdate as a replacement for `/docs/current-feature.md`.
 
 ### File Editing
 

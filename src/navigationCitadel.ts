@@ -14,6 +14,7 @@ import { __DEV__, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
 import { debugPoint, createDefaultLogger } from './helpers';
 import { createRegistry, register, unregister, getRegisteredNames } from './navigationRegistry';
 import { patrol, toNavigationGuardReturn } from './navigationOutposts';
+import { autoSetupDevtools, notifyDevtoolsRefresh, clearDevtoolsApi } from './devtools';
 
 /**
  * Creates a navigation citadel for Vue Router
@@ -45,10 +46,12 @@ export const createNavigationCitadel = (
   const {
     log = __DEV__,
     debug = false,
+    devtools = __DEV__,
     defaultPriority = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
   } = options;
   const logger = options.logger ?? createDefaultLogger();
   const enableLog = log || debug;
+  const enableDevtools = devtools && typeof window !== 'undefined';
   const registry = createRegistry();
 
   /**
@@ -139,6 +142,11 @@ export const createNavigationCitadel = (
     }
 
     register(registry, scope, { name, handler, priority, hooks, timeout }, defaultPriority, logger);
+
+    // Notify DevTools of change
+    if (enableDevtools) {
+      notifyDevtoolsRefresh();
+    }
   };
 
   /**
@@ -149,7 +157,14 @@ export const createNavigationCitadel = (
       logger.info(`Abandoning ${scope} outpost: ${name}`);
     }
 
-    return unregister(registry, scope, name, defaultPriority);
+    const result = unregister(registry, scope, name, defaultPriority);
+
+    // Notify DevTools of change
+    if (enableDevtools && result) {
+      notifyDevtoolsRefresh();
+    }
+
+    return result;
   };
 
   /**
@@ -230,11 +245,21 @@ export const createNavigationCitadel = (
       registry.route.clear();
       registry.globalSorted.length = 0;
       registry.routeSorted.length = 0;
+
+      // Clear DevTools API reference
+      if (enableDevtools) {
+        clearDevtoolsApi();
+      }
     },
   };
 
   if (options.outposts) {
     api.deployOutpost(options.outposts);
+  }
+
+  // Auto-setup DevTools (browser only)
+  if (enableDevtools) {
+    autoSetupDevtools(router, registry, logger);
   }
 
   return api;

@@ -47,6 +47,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `error-caught`
 - Optimized processing — outposts sorted at deploy, direct calls from registry
 
+#### Vue DevTools Integration
+
+- `devtools` option — enable/disable Vue DevTools integration (default: `__DEV__`)
+- Custom inspector with outpost tree (Global/Route groups)
+- Tags showing priority and hooks count
+- State panel with outpost details (name, scope, priority, hooks, timeout)
+- Auto-refresh on deploy/abandon
+- `setupDevtools(app, registry, logger)` — manual setup export
+
 #### Testing
 
 - Vitest + happy-dom test setup

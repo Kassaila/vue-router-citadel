@@ -36,6 +36,7 @@ Think of it as turning your router into a fortress.
   - [assignOutpostToRoute](#assignoutposttoroute)
   - [destroy](#destroy)
 - [🔍 Logging & Debug](#-logging--debug)
+- [🛠️ Vue DevTools](#️-vue-devtools)
 - [🔒 Type-Safe Outpost Names](#-type-safe-outpost-names)
 - [💡 Examples](#-examples)
 - [📦 Exports](#-exports)
@@ -238,8 +239,10 @@ Creates a navigation citadel instance.
 ```typescript
 const citadel = createNavigationCitadel(router, {
   outposts: [], // Initial outposts to deploy on creation
-  logger: myLogger, // Custom logger or false to disable (default: console in dev, noop in prod)
+  log: true, // Enable non-critical logging (default: __DEV__)
+  logger: myLogger, // Custom logger (default: createDefaultLogger())
   debug: false, // Enable logging + debugger breakpoints (default: false)
+  devtools: true, // Enable Vue DevTools integration (default: __DEV__)
   defaultPriority: 100, // Default priority for outposts
   defaultTimeout: 10000, // Default timeout for outposts in ms (default: undefined)
   onError: (error, ctx) => {
@@ -354,6 +357,32 @@ createNavigationCitadel(router, { debug: true });
 > examples (SSR, testing) and [Debug Reference](./docs/internals.md#-debug-reference) for
 > breakpoints.
 
+## 🛠️ Vue DevTools
+
+Citadel integrates with Vue DevTools, providing a custom inspector to view deployed outposts.
+
+```typescript
+// Default: enabled in dev (__DEV__)
+createNavigationCitadel(router);
+
+// Disable DevTools integration
+createNavigationCitadel(router, { devtools: false });
+
+// Force enable (e.g., for debugging in production)
+createNavigationCitadel(router, { devtools: true });
+```
+
+**Inspector features:**
+
+- Tree view with Global and Route outpost groups
+- Tags showing priority and hooks count
+- State panel with outpost details (name, scope, priority, hooks, timeout)
+- Auto-refresh on deploy/abandon
+
+| Option     | Default   | Description                          |
+| ---------- | --------- | ------------------------------------ |
+| `devtools` | `__DEV__` | Enable Vue DevTools custom inspector |
+
 ## 🔒 Type-Safe Outpost Names
 
 Enable autocomplete and compile-time validation for outpost names using TypeScript declaration
@@ -424,6 +453,8 @@ import {
   NavigationOutpostVerdicts,
   // Logger utilities
   createDefaultLogger,
+  // DevTools (manual setup)
+  setupDevtools,
   // Types
   type CitadelLogger,
 } from 'vue-router-citadel';
