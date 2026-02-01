@@ -69,6 +69,46 @@ npm run test:coverage
 
 See [docs/testing.md](./docs/testing.md) for detailed testing guide and all test cases.
 
+## Local Testing with npm link
+
+To test the package in a real Vue project during development:
+
+**In this repository:**
+
+```bash
+# 1. Build the package
+npm run build
+
+# 2. Create a global symlink
+npm link
+```
+
+**In your test project:**
+
+```bash
+# 3. Link the package
+npm link vue-router-citadel
+```
+
+Now `import { createNavigationCitadel } from 'vue-router-citadel'` will use your local version.
+
+**After making changes:**
+
+```bash
+# Rebuild — the symlink will automatically pick up changes
+npm run build
+```
+
+**To unlink:**
+
+```bash
+# In your test project
+npm unlink vue-router-citadel
+
+# In this repository (remove global symlink)
+npm unlink
+```
+
 ## Workflow
 
 ### Branch Naming

@@ -1,8 +1,9 @@
 {
   "name": "vue-router-citadel",
   "version": "0.1.0",
-  "description": "Type-safe Vue Router guard system with return-based API",
+  "description": "Structured navigation defense for Vue Router",
   "type": "module",
+  "sideEffects": false,
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -54,6 +55,10 @@
     "type": "git",
     "url": "git+https://github.com/Kassaila/vue-router-citadel.git"
   },
+  "bugs": {
+    "url": "https://github.com/Kassaila/vue-router-citadel/issues"
+  },
+  "homepage": "https://github.com/Kassaila/vue-router-citadel#readme",
   "peerDependencies": {
     "vue-router": "^4.0.0"
   },
