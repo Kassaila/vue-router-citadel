@@ -27,7 +27,7 @@ Think of it as turning your router into a fortress.
 - [🎯 Outpost Scopes](#-outpost-scopes)
 - [🪝 Navigation Hooks](#-navigation-hooks)
 - [↩️ Outpost Handler Return Values](#️-outpost-handler-return-values)
-- [⏱️ Timeout](#️-timeout)
+- [⏱️ Outpost Timeout](#️-outpost-timeout)
 - [📚 API](#-api)
   - [Citadel](#citadel)
   - [deployOutpost](#deployoutpost)
@@ -89,22 +89,23 @@ const router = createRouter({
   routes,
 });
 
-// 2. Create navigation citadel
-const citadel = createNavigationCitadel(router);
+// 2. Create navigation citadel with outposts
+const citadel = createNavigationCitadel(router, {
+  outposts: [
+    {
+      scope: NavigationOutpostScopes.GLOBAL,
+      name: 'auth',
+      handler: ({ verdicts, to }) => {
+        const isAuthenticated = Boolean(localStorage.getItem('token'));
 
-// 3. Deploy outpost
-citadel.deployOutpost({
-  scope: NavigationOutpostScopes.GLOBAL,
-  name: 'auth',
-  handler: ({ verdicts, to }) => {
-    const isAuthenticated = Boolean(localStorage.getItem('token'));
+        if (to.meta.requiresAuth && !isAuthenticated) {
+          return { name: 'login' };
+        }
 
-    if (to.meta.requiresAuth && !isAuthenticated) {
-      return { name: 'login' };
-    }
-
-    return verdicts.ALLOW;
-  },
+        return verdicts.ALLOW;
+      },
+    },
+  ],
 });
 
 export { router, citadel };
@@ -165,7 +166,7 @@ const routes = [
 > See [Handler Return Values](./docs/internals.md#️-outpost-handler-return-values) for verdict flow
 > diagram and handler context details.
 
-## ⏱️ Timeout
+## ⏱️ Outpost Timeout
 
 Prevent outposts from hanging navigation indefinitely.
 
@@ -226,6 +227,7 @@ Creates a navigation citadel instance.
 
 ```typescript
 const citadel = createNavigationCitadel(router, {
+  outposts: [], // Initial outposts to deploy on creation
   log: true, // Enable console logging (default: __DEV__)
   debug: false, // Enable logging + debugger breakpoints (default: false)
   defaultPriority: 100, // Default priority for outposts
