@@ -1,6 +1,7 @@
 import type { NavigationGuardReturn, Router } from 'vue-router';
 
 import type {
+  CitadelLogger,
   NavigationOutpostContext,
   NavigationCitadelOptions,
   NavigationRegistry,
@@ -120,12 +121,13 @@ const processOutpost = async (
   outpost: RegisteredNavigationOutpost,
   ctx: NavigationOutpostContext,
   options: NavigationCitadelOptions,
+  logger: CitadelLogger,
 ): Promise<NavigationOutpostOutcome> => {
   const { debug = false, onError, defaultTimeout, onTimeout } = options;
   const { router } = ctx;
   const timeout = outpost.timeout ?? defaultTimeout;
 
-  debugPoint(DebugPoints.BEFORE_OUTPOST, debug);
+  debugPoint(DebugPoints.BEFORE_OUTPOST, debug, logger);
 
   try {
     /**
@@ -141,8 +143,9 @@ const processOutpost = async (
      * Handle timeout
      */
     if (isTimeoutError(error)) {
-      console.warn(`🟡 ${LOG_PREFIX} Outpost "${outpost.name}" timed out after ${timeout}ms`);
-      debugPoint(DebugPoints.TIMEOUT, debug);
+      // Critical: always log
+      logger.warn(`Outpost "${outpost.name}" timed out after ${timeout}ms`);
+      debugPoint(DebugPoints.TIMEOUT, debug, logger);
 
       if (onTimeout) {
         const timeoutOutcome = await onTimeout(outpost.name, ctx);
@@ -164,9 +167,10 @@ const processOutpost = async (
 
     /**
      * Default error handler: log error and block navigation
+     * Critical: always log
      */
-    console.error(`🔴 ${LOG_PREFIX} Outpost "${outpost.name}" threw error:`, error);
-    debugPoint(DebugPoints.ERROR_CAUGHT, debug);
+    logger.error(`Outpost "${outpost.name}" threw error:`, error);
+    debugPoint(DebugPoints.ERROR_CAUGHT, debug, logger);
 
     return NavigationOutpostVerdicts.BLOCK;
   }
@@ -184,9 +188,10 @@ export const patrol = async (
   registry: NavigationRegistry,
   ctx: NavigationOutpostContext,
   options: NavigationCitadelOptions,
+  logger: CitadelLogger,
+  enableLog: boolean,
 ): Promise<NavigationOutpostOutcome> => {
-  const { log = true, debug = false } = options;
-  const enableLog = log || debug;
+  const { debug = false } = options;
   const { hook, to } = ctx;
 
   /**
@@ -198,9 +203,8 @@ export const patrol = async (
   const routeOutpostNames = new Set(routeOutpostRefs);
 
   if (routeOutpostRefs.length !== routeOutpostNames.size) {
-    console.warn(
-      `🟡 ${LOG_PREFIX} Duplicate outposts detected on route "${String(to.name ?? to.path)}"`,
-    );
+    // Critical: always log
+    logger.warn(`Duplicate outposts detected on route "${String(to.name ?? to.path)}"`);
   }
 
   let processedCount = 0;
@@ -217,7 +221,7 @@ export const patrol = async (
   }
 
   if (enableLog) {
-    console.info(`🔵 ${LOG_PREFIX} Patrolling ${totalCount} outposts for ${hook}`);
+    logger.info(`Patrolling ${totalCount} outposts for ${hook}`);
   }
 
   /**
@@ -233,19 +237,17 @@ export const patrol = async (
     processedCount++;
 
     if (enableLog) {
-      console.info(
-        `🔵 ${LOG_PREFIX} Processing outpost ${processedCount}/${totalCount}: "${name}" [${hook}]`,
-      );
+      logger.info(`Processing outpost ${processedCount}/${totalCount}: "${name}" [${hook}]`);
     }
 
-    const outcome = await processOutpost(outpost, ctx, options);
+    const outcome = await processOutpost(outpost, ctx, options, logger);
 
     if (outcome !== NavigationOutpostVerdicts.ALLOW) {
       if (enableLog) {
-        console.warn(`🟡 ${LOG_PREFIX} Patrol stopped by outpost "${name}":`, outcome);
+        logger.warn(`Patrol stopped by outpost "${name}":`, outcome);
       }
 
-      debugPoint(DebugPoints.PATROL_STOPPED, debug);
+      debugPoint(DebugPoints.PATROL_STOPPED, debug, logger);
 
       return outcome;
     }
@@ -262,7 +264,8 @@ export const patrol = async (
     const outpost = registry.route.get(name);
 
     if (!outpost) {
-      console.warn(`🟡 ${LOG_PREFIX} Route outpost "${name}" not found in registry`);
+      // Critical: always log
+      logger.warn(`Route outpost "${name}" not found in registry`);
       continue;
     }
 
@@ -273,19 +276,17 @@ export const patrol = async (
     processedCount++;
 
     if (enableLog) {
-      console.info(
-        `🔵 ${LOG_PREFIX} Processing outpost ${processedCount}/${totalCount}: "${name}" [${hook}]`,
-      );
+      logger.info(`Processing outpost ${processedCount}/${totalCount}: "${name}" [${hook}]`);
     }
 
-    const outcome = await processOutpost(outpost, ctx, options);
+    const outcome = await processOutpost(outpost, ctx, options, logger);
 
     if (outcome !== NavigationOutpostVerdicts.ALLOW) {
       if (enableLog) {
-        console.warn(`🟡 ${LOG_PREFIX} Patrol stopped by outpost "${name}":`, outcome);
+        logger.warn(`Patrol stopped by outpost "${name}":`, outcome);
       }
 
-      debugPoint(DebugPoints.PATROL_STOPPED, debug);
+      debugPoint(DebugPoints.PATROL_STOPPED, debug, logger);
 
       return outcome;
     }

@@ -1,6 +1,7 @@
 import type { Router, RouteLocationNormalized } from 'vue-router';
 
 import type {
+  CitadelLogger,
   NavigationOutpostContext,
   NavigationCitadelAPI,
   NavigationCitadelOptions,
@@ -9,8 +10,8 @@ import type {
   NavigationHook,
 } from './types';
 import { NavigationHooks, NavigationOutpostVerdicts, DebugPoints } from './types';
-import { __DEV__, LOG_PREFIX } from './consts';
-import { debugPoint } from './helpers';
+import { __DEV__, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
+import { debugPoint, createDefaultLogger } from './helpers';
 import { createRegistry, register, unregister, getRegisteredNames } from './navigationRegistry';
 import { patrol, toNavigationGuardReturn } from './navigationOutposts';
 
@@ -41,7 +42,12 @@ export const createNavigationCitadel = (
   router: Router,
   options: NavigationCitadelOptions = {},
 ): NavigationCitadelAPI => {
-  const { log = __DEV__, debug = false, defaultPriority } = options;
+  const {
+    log = __DEV__,
+    debug = false,
+    defaultPriority = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
+  } = options;
+  const logger = options.logger ?? createDefaultLogger();
   const enableLog = log || debug;
   const registry = createRegistry();
 
@@ -72,13 +78,13 @@ export const createNavigationCitadel = (
     (hook: NavigationHook) =>
     async (to: RouteLocationNormalized, from: RouteLocationNormalized) => {
       if (enableLog) {
-        console.info(`🔵 ${LOG_PREFIX} ${hook}: ${from.path} -> ${to.path}`);
+        logger.info(`${hook}: ${from.path} -> ${to.path}`);
       }
 
-      debugPoint(DebugPoints.NAVIGATION_START, debug);
+      debugPoint(DebugPoints.NAVIGATION_START, debug, logger);
 
       const ctx = createContext(to, from, hook);
-      const outcome = await patrol(registry, ctx, options);
+      const outcome = await patrol(registry, ctx, options, logger, enableLog);
 
       return toNavigationGuardReturn(outcome);
     };
@@ -100,22 +106,23 @@ export const createNavigationCitadel = (
    */
   const removeAfterEach = router.afterEach(async (to, from) => {
     if (enableLog) {
-      console.info(`🔵 ${LOG_PREFIX} ${NavigationHooks.AFTER_EACH}: ${from.path} -> ${to.path}`);
+      logger.info(`${NavigationHooks.AFTER_EACH}: ${from.path} -> ${to.path}`);
     }
 
-    debugPoint(DebugPoints.NAVIGATION_START, debug);
+    debugPoint(DebugPoints.NAVIGATION_START, debug, logger);
 
     const ctx = createContext(to, from, NavigationHooks.AFTER_EACH);
 
     /**
      * afterEach doesn't return a value, but we still patrol
-     * Errors are handled by onError or logged here
+     * Errors are handled by onError or logged here (critical - always)
      */
     try {
-      await patrol(registry, ctx, options);
+      await patrol(registry, ctx, options, logger, enableLog);
     } catch (error) {
-      console.error(`🔴 ${LOG_PREFIX} Error in afterEach outpost:`, error);
-      debugPoint(DebugPoints.ERROR_CAUGHT, debug);
+      // Critical: always log
+      logger.error('Error in afterEach outpost:', error);
+      debugPoint(DebugPoints.ERROR_CAUGHT, debug, logger);
     }
   });
 
@@ -125,13 +132,13 @@ export const createNavigationCitadel = (
    * Deploy a single outpost
    */
   const deployOne = (opts: NavigationOutpostOptions): void => {
-    const { scope, name, handler, priority, hooks } = opts;
+    const { scope, name, handler, priority, hooks, timeout } = opts;
 
     if (enableLog) {
-      console.info(`🔵 ${LOG_PREFIX} Deploying ${scope} outpost: ${name}`);
+      logger.info(`Deploying ${scope} outpost: ${name}`);
     }
 
-    register(registry, scope, { name, handler, priority, hooks }, defaultPriority);
+    register(registry, scope, { name, handler, priority, hooks, timeout }, defaultPriority, logger);
   };
 
   /**
@@ -139,7 +146,7 @@ export const createNavigationCitadel = (
    */
   const abandonOne = (scope: NavigationOutpostScope, name: string): boolean => {
     if (enableLog) {
-      console.info(`🔵 ${LOG_PREFIX} Abandoning ${scope} outpost: ${name}`);
+      logger.info(`Abandoning ${scope} outpost: ${name}`);
     }
 
     return unregister(registry, scope, name, defaultPriority);
@@ -184,7 +191,8 @@ export const createNavigationCitadel = (
       const route = routes.find((r) => r.name === routeName);
 
       if (!route) {
-        console.warn(`🟡 ${LOG_PREFIX} Route "${routeName}" not found`);
+        // Critical: always log
+        logger.warn(`Route "${routeName}" not found`);
 
         return false;
       }
@@ -202,9 +210,7 @@ export const createNavigationCitadel = (
       }
 
       if (enableLog) {
-        console.info(
-          `🔵 ${LOG_PREFIX} Assigned outposts [${names.join(', ')}] to route "${routeName}"`,
-        );
+        logger.info(`Assigned outposts [${names.join(', ')}] to route "${routeName}"`);
       }
 
       return true;
@@ -212,7 +218,7 @@ export const createNavigationCitadel = (
 
     destroy(): void {
       if (enableLog) {
-        console.info(`🔵 ${LOG_PREFIX} Destroying citadel`);
+        logger.info('Destroying citadel');
       }
 
       for (const cleanup of cleanupFns) {

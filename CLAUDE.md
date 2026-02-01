@@ -29,7 +29,7 @@ src/
 ├── index.ts              # Public API exports
 ├── types.ts              # Type definitions, constants, interfaces
 ├── consts.ts             # __DEV__ flag, LOG_PREFIX
-├── helpers.ts            # Utility (debugPoint)
+├── helpers.ts            # Utilities (debugPoint, logger)
 ├── navigationCitadel.ts  # Main factory, hook registration, public API
 ├── navigationOutposts.ts # Outpost processing, patrol logic, timeout/error
 └── navigationRegistry.ts # Registry CRUD, priority sorting
@@ -112,13 +112,15 @@ npm run format:check # Check formatting
 | Registry management | `src/navigationRegistry.ts` |
 | Types/interfaces    | `src/types.ts`              |
 | Constants           | `src/consts.ts`             |
+| Utilities/Logger    | `src/helpers.ts`            |
 
 ## Code Patterns
 
 - Factory pattern: `createNavigationCitadel(router, options)`
 - All outposts are async handlers returning `NavigationOutpostOutcome`
 - Priority: lower number = earlier execution
-- Logging controlled by `log` option (default: `__DEV__`)
+- Logging: `log` option controls non-critical logs, `logger` option for custom implementation
+- Critical events (errors, timeouts) always logged regardless of `log` setting
 - Debug mode adds debugger breakpoints
 
 ## Route Meta Extension
@@ -187,6 +189,16 @@ npm pack --dry-run   # Check package contents
 - TypeScript strict mode, ESM + CJS dual package
 
 ## Workflow Optimization
+
+### Feature Development Flow
+
+1. **Start**: Clear `/docs/current-feature.md` from previous feature
+2. **Before implementation**: Create `/docs/current-feature.md` with proposal (problem, solution,
+   files to modify, checklist)
+3. **Implementation**: Follow the checklist, mark items as done
+4. **After implementation**: Update all docs (README.md, CLAUDE.md, CHANGELOG.md, etc.)
+
+Note: `/docs/current-feature.md` is in `.gitignore` — it's a working document, not committed.
 
 ### File Editing
 
