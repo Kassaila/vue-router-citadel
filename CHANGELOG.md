@@ -47,6 +47,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `error-caught`
 - Optimized processing — outposts sorted at deploy, direct calls from registry
 
+#### Testing
+
+- Vitest + happy-dom test setup
+- 67 tests across 5 test files
+- `__tests__/navigationCitadel.test.ts` — citadel creation, hooks, destroy
+- `__tests__/navigationRegistry.test.ts` — registry CRUD, priority sorting
+- `__tests__/navigationOutposts.test.ts` — patrol logic, verdicts, redirects
+- `__tests__/timeout.test.ts` — timeout handling, onTimeout callback
+- `__tests__/integration.test.ts` — end-to-end navigation scenarios
+- `docs/testing.md` — testing guide and test case reference
+
 #### Documentation
 
 - `README.md` — API reference with section-specific links to internals
@@ -56,3 +67,4 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - Exports Reference (constants, types, interfaces)
   - Logging Reference and Debug Reference tables
 - `examples/` — usage patterns (auth, nested routes, hooks)
+- `CONTRIBUTING.md` — contributor guide
