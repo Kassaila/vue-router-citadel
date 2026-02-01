@@ -11,13 +11,8 @@ import type {
 import { NavigationHooks, NavigationOutpostVerdicts, DebugPoints } from './types';
 import { __DEV__, LOG_PREFIX } from './consts';
 import { debugPoint } from './helpers';
-import {
-  createNavigationOutpostRegistry,
-  addNavigationOutpost,
-  removeNavigationOutpost,
-  getNavigationOutpostNames,
-} from './navigationRegistry';
-import { patrolNavigationCitadel, toNavigationGuardReturn } from './navigationOutposts';
+import { createRegistry, register, unregister, getRegisteredNames } from './navigationRegistry';
+import { patrol, toNavigationGuardReturn } from './navigationOutposts';
 
 /**
  * Creates a navigation citadel for Vue Router
@@ -25,20 +20,20 @@ import { patrolNavigationCitadel, toNavigationGuardReturn } from './navigationOu
  * @example
  * ```typescript
  * const citadel = createNavigationCitadel(router, {
- *   debug: true,
+ *   outposts: [
+ *     {
+ *       scope: NavigationOutpostScopes.GLOBAL,
+ *       name: 'auth',
+ *       priority: 10,
+ *       handler: async ({ verdicts, to }) => {
+ *         if (!isAuthenticated && to.meta.requiresAuth) {
+ *           return { name: 'login' };
+ *         }
+ *         return verdicts.ALLOW;
+ *       },
+ *     },
+ *   ],
  *   onError: (error, ctx) => ({ name: 'error' }),
- * });
- *
- * citadel.deployOutpost({
- *   scope: NavigationOutpostScopes.GLOBAL,
- *   name: 'auth',
- *   priority: 10,
- *   handler: async ({ verdicts, to }) => {
- *     if (!isAuthenticated && to.meta.requiresAuth) {
- *       return { name: 'login' };
- *     }
- *     return verdicts.ALLOW;
- *   },
  * });
  * ```
  */
@@ -48,7 +43,7 @@ export const createNavigationCitadel = (
 ): NavigationCitadelAPI => {
   const { log = __DEV__, debug = false, defaultPriority } = options;
   const enableLog = log || debug;
-  const registry = createNavigationOutpostRegistry();
+  const registry = createRegistry();
 
   /**
    * Store cleanup functions for navigation hooks
@@ -83,7 +78,7 @@ export const createNavigationCitadel = (
       debugPoint(DebugPoints.NAVIGATION_START, debug);
 
       const ctx = createContext(to, from, hook);
-      const outcome = await patrolNavigationCitadel(registry, ctx, options);
+      const outcome = await patrol(registry, ctx, options);
 
       return toNavigationGuardReturn(outcome);
     };
@@ -117,7 +112,7 @@ export const createNavigationCitadel = (
      * Errors are handled by onError or logged here
      */
     try {
-      await patrolNavigationCitadel(registry, ctx, options);
+      await patrol(registry, ctx, options);
     } catch (error) {
       console.error(`🔴 ${LOG_PREFIX} Error in afterEach outpost:`, error);
       debugPoint(DebugPoints.ERROR_CAUGHT, debug);
@@ -136,7 +131,7 @@ export const createNavigationCitadel = (
       console.info(`🔵 ${LOG_PREFIX} Deploying ${scope} outpost: ${name}`);
     }
 
-    addNavigationOutpost(registry, scope, { name, handler, priority, hooks }, defaultPriority);
+    register(registry, scope, { name, handler, priority, hooks }, defaultPriority);
   };
 
   /**
@@ -147,7 +142,7 @@ export const createNavigationCitadel = (
       console.info(`🔵 ${LOG_PREFIX} Abandoning ${scope} outpost: ${name}`);
     }
 
-    return removeNavigationOutpost(registry, scope, name, defaultPriority);
+    return unregister(registry, scope, name, defaultPriority);
   };
 
   /**
@@ -181,7 +176,7 @@ export const createNavigationCitadel = (
     },
 
     getOutpostNames(scope: NavigationOutpostScope): string[] {
-      return getNavigationOutpostNames(registry, scope);
+      return getRegisteredNames(registry, scope);
     },
 
     assignOutpostToRoute(routeName: string, outpostNames: string | string[]): boolean {
@@ -231,6 +226,10 @@ export const createNavigationCitadel = (
       registry.routeSorted.length = 0;
     },
   };
+
+  if (options.outposts) {
+    api.deployOutpost(options.outposts);
+  }
 
   return api;
 };

@@ -44,6 +44,8 @@
 - [x] Default error handler (`console.error` + `BLOCK`)
 - [x] `assignOutpostToRoute()` method
 - [x] Optimized processing (sorting at deploy, direct registry calls)
+- [x] Type-safe outpost names (declaration merging with `GlobalOutpostRegistry` /
+      `RouteOutpostRegistry`)
 
 ### Build
 
@@ -56,41 +58,9 @@
 
 ### Priority 1 — Before Release
 
-#### Timeout for Outposts
+#### ~~Timeout for Outposts~~ ✅
 
-**Problem:** Outpost can hang forever (e.g., API request without timeout), blocking navigation.
-
-**Solution:** Global `defaultTimeout` option with `onTimeout` handler.
-
-```typescript
-// Usage
-const citadel = createNavigationCitadel(router, {
-  defaultTimeout: 10000, // 10 seconds
-  onTimeout: (outpostName, ctx) => {
-    console.warn(`Outpost "${outpostName}" timed out`);
-    return { name: 'error' }; // or verdicts.BLOCK
-  },
-});
-
-// Per-outpost override
-citadel.deployOutpost({
-  name: 'slow-outpost',
-  timeout: 30000, // override global timeout
-  handler: async ({ verdicts }) => { ... },
-});
-```
-
-**Implementation:**
-
-1. Add to `NavigationCitadelOptions`:
-   - `defaultTimeout?: number` — default timeout in ms (undefined = no timeout)
-   - `onTimeout?: (outpostName: string, ctx: NavigationOutpostContext) => NavigationOutpostOutcome`
-2. Add to `NavigationOutpostOptions`:
-   - `timeout?: number` — per-outpost override
-3. In `processOutpost()`:
-   - Wrap handler call with `Promise.race([handler(), timeoutPromise])`
-   - If timeout wins, call `onTimeout` or default to `BLOCK`
-4. Log: `[🏰 NavigationCitadel] Outpost "name" timed out after Xms`
+Implemented: `defaultTimeout`, `timeout`, `onTimeout`
 
 ---
 
@@ -108,7 +78,7 @@ citadel.deployOutpost({
 src/__tests__/
 ├── navigationCitadel.test.ts    # createNavigationCitadel, destroy
 ├── navigationRegistry.test.ts   # deploy, abandon, getOutposts, sorting
-├── navigationOutposts.test.ts   # patrolNavigationCitadel, deduplication
+├── navigationOutposts.test.ts   # patrol, deduplication
 ├── timeout.test.ts              # timeout functionality
 └── integration.test.ts          # full navigation flow
 ```
@@ -120,7 +90,7 @@ src/__tests__/
 - `abandonOutpost` — single, multiple, returns boolean
 - `getOutpostNames` — returns names by scope
 - `assignOutpostToRoute` — assigns, returns false if not found
-- `patrolNavigationCitadel` — ALLOW/BLOCK/redirect flow
+- `patrol` — ALLOW/BLOCK/redirect flow
 - Deduplication — warning logged, outpost runs once
 - `onError` — custom handler called, default BLOCK
 - Timeout — handler times out, onTimeout called
@@ -170,45 +140,12 @@ jobs:
 
 ---
 
-#### Type-safe meta.outposts
+#### ~~Type-safe Outpost Names~~ ✅
 
-**Problem:** No autocomplete for outpost names in `meta.outposts`.
+Implemented: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, scope-aware typing for all API
+methods.
 
-**Solution:** Declaration merging with generic registry.
-
-```typescript
-// User defines their outpost names
-declare module 'vue-router-citadel' {
-  interface OutpostRegistry {
-    'auth': true;
-    'admin-only': true;
-    'verified': true;
-  }
-}
-
-// Now meta.outposts has autocomplete
-const routes = [
-  {
-    path: '/admin',
-    meta: {
-      outposts: ['auth', 'admin-only'], // ✓ autocomplete works
-      // outposts: ['typo'],            // ✗ TypeScript error
-    },
-  },
-];
-```
-
-**Implementation:**
-
-1. Add to `types.ts`:
-   ```typescript
-   export interface OutpostRegistry {}
-   export type RegisteredOutpostName = keyof OutpostRegistry extends never
-     ? string
-     : keyof OutpostRegistry;
-   ```
-2. Update `NavigationOutpostRef` to use `RegisteredOutpostName`
-3. Update `RouteMeta.outposts` type
+See [Type-Safe Outpost Names](./internals.md#-type-safe-outpost-names) for usage examples.
 
 ---
 
@@ -352,7 +289,8 @@ src/
     └── integration.test.ts
 
 docs/
-└── internals.md          # diagrams + logging + debug
+├── internals.md
+└── plan.md
 
 examples/
 ├── auth.ts

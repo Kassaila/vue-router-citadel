@@ -9,13 +9,18 @@ export type {
   NavigationCitadelAPI,
   NavigationHook,
   NavigationOutpostScope,
+  // Type-safe outpost names (user-extensible via declaration merging)
+  GlobalOutpostRegistry,
+  RouteOutpostRegistry,
+  GlobalOutpostName,
+  RouteOutpostName,
+  OutpostName,
 } from './types';
 
 /**
  * Constants
  */
 export { NavigationHooks, NavigationOutpostVerdicts, NavigationOutpostScopes } from './types';
-export { __DEV__, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
 
 /**
  * Main factory

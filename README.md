@@ -27,6 +27,7 @@ Think of it as turning your router into a fortress.
 - [🎯 Outpost Scopes](#-outpost-scopes)
 - [🪝 Navigation Hooks](#-navigation-hooks)
 - [↩️ Outpost Handler Return Values](#️-outpost-handler-return-values)
+- [⏱️ Outpost Timeout](#️-outpost-timeout)
 - [📚 API](#-api)
   - [Citadel](#citadel)
   - [deployOutpost](#deployoutpost)
@@ -35,6 +36,7 @@ Think of it as turning your router into a fortress.
   - [assignOutpostToRoute](#assignoutposttoroute)
   - [destroy](#destroy)
 - [🔍 Logging & Debug](#-logging--debug)
+- [🔒 Type-Safe Outpost Names](#-type-safe-outpost-names)
 - [💡 Examples](#-examples)
 - [📦 Exports](#-exports)
 - [📖 Internals](#-internals)
@@ -88,22 +90,23 @@ const router = createRouter({
   routes,
 });
 
-// 2. Create navigation citadel
-const citadel = createNavigationCitadel(router);
+// 2. Create navigation citadel with outposts
+const citadel = createNavigationCitadel(router, {
+  outposts: [
+    {
+      scope: NavigationOutpostScopes.GLOBAL,
+      name: 'auth',
+      handler: ({ verdicts, to }) => {
+        const isAuthenticated = Boolean(localStorage.getItem('token'));
 
-// 3. Deploy outpost
-citadel.deployOutpost({
-  scope: NavigationOutpostScopes.GLOBAL,
-  name: 'auth',
-  handler: ({ verdicts, to }) => {
-    const isAuthenticated = Boolean(localStorage.getItem('token'));
+        if (to.meta.requiresAuth && !isAuthenticated) {
+          return { name: 'login' };
+        }
 
-    if (to.meta.requiresAuth && !isAuthenticated) {
-      return { name: 'login' };
-    }
-
-    return verdicts.ALLOW;
-  },
+        return verdicts.ALLOW;
+      },
+    },
+  ],
 });
 
 export { router, citadel };
@@ -164,6 +167,55 @@ const routes = [
 > See [Handler Return Values](./docs/internals.md#️-outpost-handler-return-values) for verdict flow
 > diagram and handler context details.
 
+## ⏱️ Outpost Timeout
+
+Prevent outposts from hanging navigation indefinitely.
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  defaultTimeout: 5000, // 5 seconds for all outposts
+  onTimeout: (name, ctx) => ({ name: 'error' }), // redirect on timeout
+});
+
+// auth — uses defaultTimeout (5s)
+citadel.deployOutpost({
+  name: 'auth',
+  handler: async ({ verdicts }) => {
+    await checkAuth(); // must complete within 5 seconds
+    return verdicts.ALLOW;
+  },
+});
+
+// data-loader — needs more time (30s)
+citadel.deployOutpost({
+  name: 'data-loader',
+  timeout: 30000, // override: 30 seconds
+  handler: async ({ verdicts }) => {
+    await loadHeavyData(); // can take up to 30 seconds
+    return verdicts.ALLOW;
+  },
+});
+
+// analytics — no timeout (runs in afterEach, shouldn't block)
+citadel.deployOutpost({
+  name: 'analytics',
+  timeout: 0, // disabled
+  hooks: [NavigationHooks.AFTER_EACH],
+  handler: async ({ verdicts }) => {
+    await sendAnalytics(); // can take as long as needed
+    return verdicts.ALLOW;
+  },
+});
+```
+
+| Outpost       | `timeout`   | `defaultTimeout` | Result                |
+| ------------- | ----------- | ---------------- | --------------------- |
+| `auth`        | `undefined` | `5000`           | 5 seconds             |
+| `data-loader` | `30000`     | `5000`           | 30 seconds (override) |
+| `analytics`   | `0`         | `5000`           | No timeout (disabled) |
+
+> See [Outpost Timeout](./docs/internals.md#outpost-timeout) for diagrams and detailed examples.
+
 ## 📚 API
 
 ### Citadel
@@ -176,11 +228,17 @@ Creates a navigation citadel instance.
 
 ```typescript
 const citadel = createNavigationCitadel(router, {
+  outposts: [], // Initial outposts to deploy on creation
   log: true, // Enable console logging (default: __DEV__)
   debug: false, // Enable logging + debugger breakpoints (default: false)
   defaultPriority: 100, // Default priority for outposts
+  defaultTimeout: 10000, // Default timeout for outposts in ms (default: undefined)
   onError: (error, ctx) => {
     // Custom error handler (default: console.error + BLOCK)
+    return { name: 'error' };
+  },
+  onTimeout: (outpostName, ctx) => {
+    // Custom timeout handler (default: console.warn + BLOCK)
     return { name: 'error' };
   },
 });
@@ -203,6 +261,7 @@ citadel.deployOutpost({
   },
   priority: 10, // Optional, lower = processed first
   hooks: [NavigationHooks.BEFORE_EACH], // Optional, default: ['beforeEach']
+  timeout: 5000, // Optional, overrides defaultTimeout
 });
 
 // Deploy multiple
@@ -283,6 +342,53 @@ const citadel = createNavigationCitadel(router, {
 >
 > See [Logging Reference](./docs/internals.md#-logging-reference) and
 > [Debug Reference](./docs/internals.md#-debug-reference) for detailed events and breakpoints.
+
+## 🔒 Type-Safe Outpost Names
+
+Enable autocomplete and compile-time validation for outpost names using TypeScript declaration
+merging.
+
+```typescript
+// src/outposts.d.ts (or env.d.ts)
+declare module 'vue-router-citadel' {
+  interface GlobalOutpostRegistry {
+    auth: true;
+    maintenance: true;
+  }
+
+  interface RouteOutpostRegistry {
+    'admin-only': true;
+    'premium': true;
+  }
+}
+```
+
+Now TypeScript validates outpost names everywhere:
+
+```typescript
+// ✓ Autocomplete works, typos caught at compile time
+citadel.deployOutpost({
+  scope: 'global',
+  name: 'auth', // autocomplete: auth, maintenance
+  handler: authHandler,
+});
+
+// ✓ Route meta is also typed
+const routes = [
+  {
+    path: '/admin',
+    meta: { outposts: ['admin-only', 'premium'] }, // autocomplete works
+  },
+];
+
+// ✗ TypeScript error — typo caught!
+citadel.deployOutpost({ scope: 'global', name: 'atuh', handler });
+```
+
+> Registries are optional. Without them, names fall back to `string` (no type checking).
+>
+> See [Type-Safe Outpost Names](./docs/internals.md#-type-safe-outpost-names) for modular
+> architecture and DI examples.
 
 ## 💡 Examples
 

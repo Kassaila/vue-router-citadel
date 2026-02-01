@@ -1,4 +1,4 @@
-# Internals
+# 🧬 Internals
 
 Deep dive into how vue-router-citadel works: navigation flow diagrams, logging details, and debug
 breakpoints.
@@ -7,24 +7,40 @@ breakpoints.
 
 <!-- TOC -->
 
-- [🎨 Legend](#-legend)
-- [🪝 Navigation Hooks](#-navigation-hooks)
-  - [Navigation Flow Overview](#navigation-flow-overview)
-  - [Navigation Hook Flow](#navigation-hook-flow)
-- [🎯 Outpost Scopes](#-outpost-scopes)
-  - [Global vs Route Scopes](#global-vs-route-scopes)
-  - [Nested Routes & Deduplication](#nested-routes--deduplication)
-- [↩️ Outpost Handler Return Values](#️-outpost-handler-return-values)
-  - [Outpost Verdict Decision Flow](#outpost-verdict-decision-flow)
-  - [Handler Context (ctx)](#handler-context-ctx)
-- [🔄 Complete Navigation Example](#-complete-navigation-example)
-- [⚙️ API Internals](#️-api-internals)
-  - [Registry Structure](#registry-structure)
-  - [Outpost Processing](#outpost-processing)
-  - [Outpost Error Handling](#outpost-error-handling)
-- [📋 Logging Reference](#-logging-reference)
-- [🐛 Debug Reference](#-debug-reference)
-- [📦 Exports Reference](#-exports-reference)
+- [🧬 Internals](#-internals)
+  - [🎨 Legend](#-legend)
+  - [🪝 Navigation Hooks](#-navigation-hooks)
+    - [Navigation Flow Overview](#navigation-flow-overview)
+    - [Navigation Hook Flow](#navigation-hook-flow)
+  - [🎯 Outpost Scopes](#-outpost-scopes)
+    - [Global vs Route Scopes](#global-vs-route-scopes)
+    - [Nested Routes & Deduplication](#nested-routes--deduplication)
+  - [↩️ Outpost Handler Return Values](#-outpost-handler-return-values)
+    - [Outpost Verdict Decision Flow](#outpost-verdict-decision-flow)
+    - [Handler Context ctx](#handler-context-ctx)
+  - [🔄 Complete Navigation Example](#-complete-navigation-example)
+  - [⚙️ API Internals](#-api-internals)
+    - [Registry Structure](#registry-structure)
+    - [Outpost Processing](#outpost-processing)
+    - [Outpost Timeout](#outpost-timeout)
+    - [Outpost Error Handling](#outpost-error-handling)
+  - [📋 Logging Reference](#-logging-reference)
+  - [🐛 Debug Reference](#-debug-reference)
+  - [🔒 Type-Safe Outpost Names](#-type-safe-outpost-names)
+    - [How It Works](#how-it-works)
+    - [Simple Example](#simple-example)
+    - [Modular Architecture](#modular-architecture)
+    - [Dependency Injection](#dependency-injection)
+    - [Naming Conventions](#naming-conventions)
+  - [📦 Exports Reference](#-exports-reference)
+    - [Constants](#constants)
+    - [Types](#types)
+      - [NavigationOutpostContext](#navigationoutpostcontext)
+      - [NavigationOutpost](#navigationoutpost)
+      - [NavigationOutpostOptions](#navigationoutpostoptions)
+      - [NavigationCitadelOptions](#navigationcitadeloptions)
+      - [NavigationCitadelAPI](#navigationcitadelapi)
+    - [Route Meta Extension](#route-meta-extension)
 
 <!-- /TOC -->
 
@@ -64,8 +80,8 @@ flowchart LR
     E --> F[Navigation End]
 ```
 
-Each hook (`beforeEach`, `beforeResolve`, `afterEach`) triggers `patrolNavigationCitadel` which
-processes all applicable outposts in priority order.
+Each hook (`beforeEach`, `beforeResolve`, `afterEach`) triggers `patrol` which processes all
+applicable outposts in priority order.
 
 ### Navigation Hook Flow
 
@@ -257,7 +273,7 @@ sequenceDiagram
     U->>R: Navigate to /admin/users
 
     Note over R,C: beforeEach hook
-    R->>C: patrolNavigationCitadel(registry, ctx, options)
+    R->>C: patrol(registry, ctx, options)
 
     Note over C: 🔵 log.info: beforeEach /home -> /admin/users
     Note over C: 🟣 debugger: navigation-start
@@ -286,13 +302,13 @@ sequenceDiagram
     C-->>R: 🟢 ALLOW → true
 
     Note over R,C: beforeResolve hook
-    R->>C: patrolNavigationCitadel(registry, ctx, options)
+    R->>C: patrol(registry, ctx, options)
     C-->>R: 🟢 ALLOW → true
 
     R->>R: Load component
 
     Note over R,C: afterEach hook
-    R->>C: patrolNavigationCitadel(registry, ctx, options)
+    R->>C: patrol(registry, ctx, options)
     Note over C: No return value used
 
     R-->>U: Page rendered
@@ -317,10 +333,10 @@ flowchart LR
     end
 
     subgraph Operations
-        E[deployOutpost] --> F[addNavigationOutpost]
+        E[deployOutpost] --> F[register]
         F --> LOG1["🔵 log.info: Deploying outpost"]
         LOG1 --> G[updateSortedKeys]
-        H[abandonOutpost] --> I[removeNavigationOutpost]
+        H[abandonOutpost] --> I[unregister]
         I --> LOG2["🔵 log.info: Abandoning outpost"]
         LOG2 --> G
     end
@@ -339,9 +355,25 @@ How a single outpost is processed during patrol:
 ```mermaid
 flowchart TD
     A[processOutpost called] --> DBG1[🟣 debugger: before-outpost]
-    DBG1 --> B[Process handler]
+    DBG1 --> T{Timeout configured?}
+
+    T -->|Yes| RACE["Promise.race([handler, timeout])"]
+    T -->|No| B[handler]
+
+    RACE --> TO{Timeout?}
+    TO -->|Yes| TOH{Custom onTimeout?}
+    TO -->|No| C
 
     B --> C[normalizeOutcome]
+
+    TOH -->|Yes| TOC["onTimeout(name, ctx)"]
+    TOH -->|No| TOLOG[🟡 log.warn: timed out]
+    TOLOG --> TODBG[🟣 debugger: timeout]
+    TODBG --> TOK[🔴 Return BLOCK]
+
+    TOC --> TON[normalizeOutcome]
+    TON --> F
+
     C --> D{Valid outcome?}
 
     D -->|ALLOW| E[🟢 Return ALLOW]
@@ -362,6 +394,128 @@ flowchart TD
     LOG2 --> DBG3[🟣 debugger: error-caught]
     DBG3 --> K[🔴 Return BLOCK]
 ```
+
+### Outpost Timeout
+
+How timeout is determined for an outpost:
+
+```mermaid
+flowchart TD
+    A[Get timeout value] --> B{outpost.timeout<br/>defined?}
+
+    B -->|Yes| C{outpost.timeout}
+    B -->|No| D{defaultTimeout<br/>defined?}
+
+    C -->|"> 0"| E[Use outpost.timeout]
+    C -->|"0 or Infinity"| F[No timeout]
+
+    D -->|Yes| G[Use defaultTimeout]
+    D -->|No| F
+
+    E --> H["Promise.race([handler, timeoutPromise])"]
+    G --> H
+    F --> I[await handler]
+```
+
+**Timeout configuration:**
+
+| `outpost.timeout` | `defaultTimeout` | Result                |
+| ----------------- | ---------------- | --------------------- |
+| `undefined`       | `undefined`      | No timeout            |
+| `undefined`       | `5000`           | 5 seconds             |
+| `10000`           | `5000`           | 10 seconds (override) |
+| `0`               | `5000`           | No timeout (disabled) |
+
+**Example 1: No timeout (default)**
+
+```typescript
+const citadel = createNavigationCitadel(router);
+// defaultTimeout = undefined — no timeouts
+
+citadel.deployOutpost({
+  name: 'slow-api',
+  handler: async () => {
+    await fetch('/api/slow'); // can hang forever
+    return verdicts.ALLOW;
+  },
+});
+```
+
+Result: If API doesn't respond — navigation hangs indefinitely.
+
+**Example 2: Global timeout**
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  defaultTimeout: 5000, // 5 seconds for all outposts
+});
+
+citadel.deployOutpost({
+  name: 'slow-api',
+  handler: async () => {
+    await fetch('/api/slow'); // takes 10 seconds
+    return verdicts.ALLOW;
+  },
+});
+```
+
+Result after 5 seconds:
+
+```
+🟡 [🏰 NavigationCitadel] Outpost "slow-api" timed out after 5000ms
+```
+
+→ Navigation blocked (`BLOCK`)
+
+**Example 3: Global timeout + custom handler**
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  defaultTimeout: 5000,
+  onTimeout: (outpostName, ctx) => {
+    console.log(`${outpostName} timed out, redirecting to /error`);
+    return { name: 'error' }; // redirect instead of BLOCK
+  },
+});
+```
+
+Result after 5 seconds: → Redirect to `/error`
+
+**Example 4: Per-outpost override**
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  defaultTimeout: 5000, // global 5 seconds
+});
+
+// Fast — uses global timeout (5s)
+citadel.deployOutpost({
+  name: 'fast-check',
+  handler: () => verdicts.ALLOW,
+});
+
+// Slow — custom timeout (30s)
+citadel.deployOutpost({
+  name: 'heavy-api',
+  timeout: 30000, // override
+  handler: async () => {
+    await fetch('/api/heavy'); // needs 20 seconds
+    return verdicts.ALLOW;
+  },
+});
+
+// No timeout — disabled
+citadel.deployOutpost({
+  name: 'unlimited',
+  timeout: 0, // disables timeout
+  handler: async () => {
+    await longRunningTask(); // can run as long as needed
+    return verdicts.ALLOW;
+  },
+});
+```
+
+Result: `heavy-api` has 30 seconds and completes successfully. `unlimited` has no timeout.
 
 ### Outpost Error Handling
 
@@ -414,6 +568,7 @@ const citadel = createNavigationCitadel(router, {
 | Duplicate outposts  | 🟡 `log.warn`  | always      |
 | Outpost not found   | 🟡 `log.warn`  | always      |
 | Patrol stopped      | 🟡 `log.warn`  | `log: true` |
+| Outpost timeout     | 🟡 `log.warn`  | always      |
 | Outpost error       | 🔴 `log.error` | always      |
 
 ---
@@ -427,7 +582,386 @@ Named debug points with console output `🟣 [DEBUG] <name>`:
 | `navigation-start` | Start of each hook (beforeEach/beforeResolve/afterEach) | `debug: true` |
 | `before-outpost`   | Before each outpost handler processing                  | `debug: true` |
 | `patrol-stopped`   | When outpost returns BLOCK or redirect                  | `debug: true` |
+| `timeout`          | When outpost handler times out                          | `debug: true` |
 | `error-caught`     | When outpost throws an error                            | `debug: true` |
+
+---
+
+## 🔒 Type-Safe Outpost Names
+
+Enable autocomplete and compile-time validation for outpost names using TypeScript declaration
+merging.
+
+### How It Works
+
+The library exports two empty interfaces that you can extend:
+
+- `GlobalOutpostRegistry` — for global outpost names
+- `RouteOutpostRegistry` — for route outpost names
+
+When extended, TypeScript infers the allowed names and provides:
+
+- Autocomplete in IDE
+- Compile-time error on typos
+- Scope-aware validation (global names can't be used where route names expected)
+
+If registries are not extended, names fall back to `string` (no type checking).
+
+### Simple Example
+
+Create a declaration file in your project:
+
+```typescript
+// src/outposts.d.ts
+declare module 'vue-router-citadel' {
+  interface GlobalOutpostRegistry {
+    auth: true;
+    maintenance: true;
+    analytics: true;
+  }
+
+  interface RouteOutpostRegistry {
+    'admin-only': true;
+    'verified-email': true;
+    'premium': true;
+  }
+}
+```
+
+Now TypeScript validates names everywhere:
+
+```typescript
+import { createNavigationCitadel, NavigationOutpostScopes } from 'vue-router-citadel';
+
+const citadel = createNavigationCitadel(router, {
+  outposts: [
+    {
+      scope: NavigationOutpostScopes.GLOBAL,
+      name: 'auth', // ✓ autocomplete: auth, maintenance, analytics
+      handler: authHandler,
+    },
+    {
+      scope: NavigationOutpostScopes.ROUTE,
+      name: 'admin-only', // ✓ autocomplete: admin-only, verified-email, premium
+      handler: adminHandler,
+    },
+  ],
+});
+
+// Scope-aware validation
+citadel.abandonOutpost('global', 'auth'); // ✓
+citadel.abandonOutpost('global', 'admin-only'); // ✗ Error: not a global outpost
+citadel.abandonOutpost('route', 'premium'); // ✓
+
+// Route meta typed
+const routes = [
+  {
+    path: '/admin',
+    meta: { outposts: ['admin-only', 'premium'] }, // ✓ autocomplete
+  },
+  {
+    path: '/settings',
+    meta: { outposts: ['typo'] }, // ✗ TypeScript error
+  },
+];
+```
+
+### Modular Architecture
+
+For large applications with modular structure, each module can extend the registries in its own
+declaration file.
+
+**Project structure:**
+
+```
+src/
+├── core/
+│   └── citadel/
+│       ├── index.ts
+│       └── outposts.d.ts      # core outposts
+├── modules/
+│   ├── auth/
+│   │   ├── outposts/
+│   │   │   ├── index.ts       # handlers
+│   │   │   └── outposts.d.ts  # auth registry
+│   │   └── routes.ts
+│   ├── admin/
+│   │   └── outposts/
+│   │       └── outposts.d.ts  # admin registry
+│   └── billing/
+│       └── outposts/
+│           └── outposts.d.ts  # billing registry
+└── main.ts
+```
+
+**Core module — src/core/citadel/outposts.d.ts:**
+
+```typescript
+declare module 'vue-router-citadel' {
+  interface GlobalOutpostRegistry {
+    'app:maintenance': true;
+    'app:feature-flags': true;
+  }
+}
+```
+
+**Auth module — src/modules/auth/outposts/outposts.d.ts:**
+
+```typescript
+declare module 'vue-router-citadel' {
+  interface GlobalOutpostRegistry {
+    'auth:check': true;
+    'auth:refresh-token': true;
+  }
+
+  interface RouteOutpostRegistry {
+    'auth:require-login': true;
+    'auth:require-verified': true;
+    'auth:guest-only': true;
+  }
+}
+```
+
+**Auth module — src/modules/auth/outposts/index.ts:**
+
+```typescript
+import type { NavigationOutpost } from 'vue-router-citadel';
+import { useAuthStore } from '../store';
+
+export const authCheckHandler: NavigationOutpost = ({ verdicts }) => {
+  const auth = useAuthStore();
+  auth.checkSession();
+  return verdicts.ALLOW;
+};
+
+export const requireLoginHandler: NavigationOutpost = ({ verdicts, to }) => {
+  const auth = useAuthStore();
+  if (!auth.isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } };
+  }
+  return verdicts.ALLOW;
+};
+
+export const guestOnlyHandler: NavigationOutpost = ({ verdicts }) => {
+  const auth = useAuthStore();
+  if (auth.isAuthenticated) {
+    return { name: 'dashboard' };
+  }
+  return verdicts.ALLOW;
+};
+```
+
+**Auth module — src/modules/auth/index.ts:**
+
+```typescript
+import { citadel } from '@/core/citadel';
+import { authCheckHandler, requireLoginHandler, guestOnlyHandler } from './outposts';
+
+export function registerAuthModule() {
+  citadel.deployOutpost([
+    {
+      scope: 'global',
+      name: 'auth:check', // ✓ typed
+      priority: 5,
+      handler: authCheckHandler,
+    },
+    {
+      scope: 'route',
+      name: 'auth:require-login', // ✓ typed
+      handler: requireLoginHandler,
+    },
+    {
+      scope: 'route',
+      name: 'auth:guest-only', // ✓ typed
+      handler: guestOnlyHandler,
+    },
+  ]);
+}
+```
+
+**Auth module — src/modules/auth/routes.ts:**
+
+```typescript
+export const authRoutes = [
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('./pages/Login.vue'),
+    meta: { outposts: ['auth:guest-only'] }, // ✓ typed
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('./pages/Dashboard.vue'),
+    meta: { outposts: ['auth:require-login'] }, // ✓ typed
+  },
+];
+```
+
+**Admin module — src/modules/admin/outposts/outposts.d.ts:**
+
+```typescript
+declare module 'vue-router-citadel' {
+  interface RouteOutpostRegistry {
+    'admin:require-role': true;
+    'admin:audit-log': true;
+  }
+}
+```
+
+**Main entry — src/main.ts:**
+
+```typescript
+import { registerAuthModule } from './modules/auth';
+import { registerAdminModule } from './modules/admin';
+import { registerBillingModule } from './modules/billing';
+
+registerAuthModule();
+registerAdminModule();
+registerBillingModule();
+```
+
+### Dependency Injection
+
+For applications using DI containers (InversifyJS, tsyringe), outposts can be organized as
+injectable services.
+
+**DI tokens — src/di/tokens.ts:**
+
+```typescript
+export const TOKENS = {
+  Citadel: Symbol('Citadel'),
+  Router: Symbol('Router'),
+  AuthService: Symbol('AuthService'),
+} as const;
+```
+
+**Citadel service — src/core/citadel/citadel.service.ts:**
+
+```typescript
+import { injectable, inject } from 'inversify';
+import { createNavigationCitadel, type NavigationCitadelAPI } from 'vue-router-citadel';
+import type { Router } from 'vue-router';
+import { TOKENS } from '@/di/tokens';
+
+@injectable()
+export class CitadelService {
+  private citadel: NavigationCitadelAPI;
+
+  constructor(@inject(TOKENS.Router) router: Router) {
+    this.citadel = createNavigationCitadel(router, {
+      log: import.meta.env.DEV,
+    });
+  }
+
+  get api() {
+    return this.citadel;
+  }
+}
+```
+
+**Auth outposts — src/modules/auth/outposts/auth.outposts.ts:**
+
+```typescript
+import { injectable, inject } from 'inversify';
+import type { NavigationOutpostOptions } from 'vue-router-citadel';
+import { TOKENS } from '@/di/tokens';
+import type { AuthService } from '../services/auth.service';
+
+@injectable()
+export class AuthOutposts {
+  constructor(@inject(TOKENS.AuthService) private authService: AuthService) {}
+
+  getOutposts(): NavigationOutpostOptions[] {
+    return [
+      {
+        scope: 'global',
+        name: 'auth:check', // ✓ typed
+        priority: 5,
+        handler: ({ verdicts }) => {
+          this.authService.checkSession();
+          return verdicts.ALLOW;
+        },
+      },
+      {
+        scope: 'route',
+        name: 'auth:require-login', // ✓ typed
+        handler: ({ verdicts, to }) => {
+          if (!this.authService.isAuthenticated) {
+            return { name: 'login', query: { redirect: to.fullPath } };
+          }
+          return verdicts.ALLOW;
+        },
+      },
+    ];
+  }
+}
+```
+
+**Auth module — src/modules/auth/auth.module.ts:**
+
+```typescript
+import { injectable, inject } from 'inversify';
+import { TOKENS } from '@/di/tokens';
+import type { CitadelService } from '@/core/citadel/citadel.service';
+import { AuthOutposts } from './outposts/auth.outposts';
+
+@injectable()
+export class AuthModule {
+  constructor(
+    @inject(TOKENS.Citadel) private citadel: CitadelService,
+    @inject(AuthOutposts) private outposts: AuthOutposts,
+  ) {}
+
+  register() {
+    this.citadel.api.deployOutpost(this.outposts.getOutposts());
+  }
+}
+```
+
+### Naming Conventions
+
+For modular projects, use namespace prefixes to avoid conflicts and improve clarity:
+
+```typescript
+// Pattern: 'module:action'
+declare module 'vue-router-citadel' {
+  interface GlobalOutpostRegistry {
+    'app:maintenance': true;
+    'app:feature-flags': true;
+    'auth:check': true;
+    'auth:refresh': true;
+    'analytics:track': true;
+  }
+
+  interface RouteOutpostRegistry {
+    'auth:require-login': true;
+    'auth:require-verified': true;
+    'auth:guest-only': true;
+    'admin:require-role': true;
+    'billing:require-premium': true;
+  }
+}
+```
+
+**Benefits:**
+
+- Clear module ownership
+- No naming conflicts between modules
+- Easy to filter/search by module
+
+**Dynamic names (advanced):**
+
+For dynamically generated outpost names, use template literal types:
+
+```typescript
+declare module 'vue-router-citadel' {
+  interface RouteOutpostRegistry {
+    'tenant:access': true;
+    [key: `tenant:${string}:admin`]: true; // tenant:foo:admin, tenant:bar:admin
+  }
+}
+```
 
 ---
 
@@ -442,18 +976,14 @@ import {
   NavigationOutpostScopes,
   NavigationHooks,
   NavigationOutpostVerdicts,
-  DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
-  __DEV__,
 } from 'vue-router-citadel';
 ```
 
-| Constant                              | Values                                        | Description                                   |
-| ------------------------------------- | --------------------------------------------- | --------------------------------------------- |
-| `NavigationOutpostScopes`             | `GLOBAL`, `ROUTE`                             | Outpost scope determining when it's processed |
-| `NavigationHooks`                     | `BEFORE_EACH`, `BEFORE_RESOLVE`, `AFTER_EACH` | Vue Router navigation hooks                   |
-| `NavigationOutpostVerdicts`           | `ALLOW`, `BLOCK`                              | Handler return verdicts                       |
-| `DEFAULT_NAVIGATION_OUTPOST_PRIORITY` | `100`                                         | Default priority for outposts                 |
-| `__DEV__`                             | `true` / `false`                              | Development mode detection (Vite / Node.js)   |
+| Constant                    | Values                                        | Description                                   |
+| --------------------------- | --------------------------------------------- | --------------------------------------------- |
+| `NavigationOutpostScopes`   | `GLOBAL`, `ROUTE`                             | Outpost scope determining when it's processed |
+| `NavigationHooks`           | `BEFORE_EACH`, `BEFORE_RESOLVE`, `AFTER_EACH` | Vue Router navigation hooks                   |
+| `NavigationOutpostVerdicts` | `ALLOW`, `BLOCK`                              | Handler return verdicts                       |
 
 ### Types
 
@@ -466,6 +996,12 @@ import type {
   NavigationCitadelAPI,
   NavigationHook,
   NavigationOutpostScope,
+  // Type-safe outpost names
+  GlobalOutpostRegistry,
+  RouteOutpostRegistry,
+  GlobalOutpostName,
+  RouteOutpostName,
+  OutpostName,
 } from 'vue-router-citadel';
 ```
 
@@ -495,15 +1031,16 @@ type NavigationOutpost = (
 
 #### NavigationOutpostOptions
 
-Options for deploying an outpost:
+Options for deploying an outpost (generic parameter constrains name by scope):
 
 ```typescript
-interface NavigationOutpostOptions {
-  scope: 'global' | 'route';
-  name: string;
+interface NavigationOutpostOptions<S extends NavigationOutpostScope = NavigationOutpostScope> {
+  scope: S;
+  name: OutpostNameByScope<S>; // Type-safe when registries extended
   handler: NavigationOutpost;
   priority?: number; // Default: 100
   hooks?: NavigationHook[]; // Default: ['beforeEach']
+  timeout?: number; // Overrides defaultTimeout
 }
 ```
 
@@ -513,10 +1050,13 @@ Options for creating citadel:
 
 ```typescript
 interface NavigationCitadelOptions {
+  outposts?: NavigationOutpostOptions[]; // Initial outposts to deploy
   log?: boolean; // Default: __DEV__
   debug?: boolean; // Default: false
   defaultPriority?: number; // Default: 100
+  defaultTimeout?: number; // Default: undefined (no timeout)
   onError?: (error: Error, ctx: NavigationOutpostContext) => NavigationOutpostOutcome;
+  onTimeout?: (outpostName: string, ctx: NavigationOutpostContext) => NavigationOutpostOutcome;
 }
 ```
 
@@ -526,12 +1066,43 @@ Public API returned by `createNavigationCitadel`:
 
 ```typescript
 interface NavigationCitadelAPI {
-  deployOutpost: (options: NavigationOutpostOptions | NavigationOutpostOptions[]) => void;
-  abandonOutpost: (scope: NavigationOutpostScope, name: string | string[]) => boolean;
-  getOutpostNames: (scope: NavigationOutpostScope) => string[];
-  assignOutpostToRoute: (routeName: string, outpostNames: string | string[]) => boolean;
-  destroy: () => void;
+  deployOutpost<S extends NavigationOutpostScope>(
+    options: NavigationOutpostOptions<S> | NavigationOutpostOptions<S>[],
+  ): void;
+
+  // Scope-aware overloads
+  abandonOutpost(scope: 'global', name: GlobalOutpostName | GlobalOutpostName[]): boolean;
+  abandonOutpost(scope: 'route', name: RouteOutpostName | RouteOutpostName[]): boolean;
+
+  getOutpostNames(scope: 'global'): GlobalOutpostName[];
+  getOutpostNames(scope: 'route'): RouteOutpostName[];
+
+  assignOutpostToRoute(
+    routeName: string,
+    outpostNames: RouteOutpostName | RouteOutpostName[],
+  ): boolean;
+
+  destroy(): void;
 }
+```
+
+#### Type-Safe Outpost Names
+
+Interfaces for declaration merging (extend in your project):
+
+```typescript
+// Empty by default — extend to enable type checking
+interface GlobalOutpostRegistry {}
+interface RouteOutpostRegistry {}
+
+// Conditional types (fall back to string if registries empty)
+type GlobalOutpostName = keyof GlobalOutpostRegistry extends never
+  ? string
+  : keyof GlobalOutpostRegistry;
+type RouteOutpostName = keyof RouteOutpostRegistry extends never
+  ? string
+  : keyof RouteOutpostRegistry;
+type OutpostName = GlobalOutpostName | RouteOutpostName;
 ```
 
 ### Route Meta Extension
@@ -541,7 +1112,7 @@ The library extends Vue Router's `RouteMeta` interface:
 ```typescript
 declare module 'vue-router' {
   interface RouteMeta {
-    outposts?: string[];
+    outposts?: RouteOutpostName[]; // Type-safe when RouteOutpostRegistry extended
   }
 }
 ```
@@ -552,7 +1123,7 @@ declare module 'vue-router' {
 const routes = [
   {
     path: '/admin',
-    meta: { outposts: ['auth', 'admin-only'] },
+    meta: { outposts: ['auth', 'admin-only'] }, // Typed if registry extended
   },
 ];
 ```

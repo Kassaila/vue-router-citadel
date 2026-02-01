@@ -32,14 +32,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Route outposts deduplication with warning log
 - Route validation for redirect returns
 - Default error handler (`console.error` + `BLOCK`)
+- Timeout support (`defaultTimeout`, `timeout`, `onTimeout`)
+- Type-safe outpost names via declaration merging (`GlobalOutpostRegistry`, `RouteOutpostRegistry`)
 
 #### Developer Experience
 
-- `__DEV__` constant — development mode detection (Vite / Node.js)
-- `log` option — console logging for navigation flow (default: `__DEV__`)
+- `log` option — console logging for navigation flow (default: `true` in dev, `false` in prod)
 - `debug` option — logging + debugger breakpoints (default: `false`)
 - Colored console output: 🔵 info, 🟡 warn, 🔴 error, 🟣 debug
-- Named debug breakpoints: `navigation-start`, `before-outpost`, `patrol-stopped`, `error-caught`
+- Named debug breakpoints: `navigation-start`, `before-outpost`, `patrol-stopped`, `timeout`,
+  `error-caught`
 - Optimized processing — outposts sorted at deploy, direct calls from registry
 
 #### Documentation

@@ -33,6 +33,68 @@ export const NavigationOutpostScopes = {
 export type NavigationOutpostScope =
   (typeof NavigationOutpostScopes)[keyof typeof NavigationOutpostScopes];
 
+// ============================================================================
+// Outpost Registries (user-extensible via declaration merging)
+// ============================================================================
+
+/**
+ * Global outpost registry — extend this interface to enable type-safe global outpost names.
+ *
+ * @example
+ * ```typescript
+ * declare module 'vue-router-citadel' {
+ *   interface GlobalOutpostRegistry {
+ *     'auth': true;
+ *     'maintenance': true;
+ *   }
+ * }
+ * ```
+ */
+export interface GlobalOutpostRegistry {}
+
+/**
+ * Route outpost registry — extend this interface to enable type-safe route outpost names.
+ *
+ * @example
+ * ```typescript
+ * declare module 'vue-router-citadel' {
+ *   interface RouteOutpostRegistry {
+ *     'admin-only': true;
+ *     'premium': true;
+ *   }
+ * }
+ * ```
+ */
+export interface RouteOutpostRegistry {}
+
+/**
+ * Global outpost name type — inferred from GlobalOutpostRegistry or falls back to string
+ */
+export type GlobalOutpostName = keyof GlobalOutpostRegistry extends never
+  ? string
+  : keyof GlobalOutpostRegistry;
+
+/**
+ * Route outpost name type — inferred from RouteOutpostRegistry or falls back to string
+ */
+export type RouteOutpostName = keyof RouteOutpostRegistry extends never
+  ? string
+  : keyof RouteOutpostRegistry;
+
+/**
+ * Combined outpost name type (global | route)
+ */
+export type OutpostName = GlobalOutpostName | RouteOutpostName;
+
+/**
+ * Helper type to get outpost name type by scope
+ */
+type OutpostNameByScope<S extends NavigationOutpostScope> = S extends 'global'
+  ? GlobalOutpostName
+  : S extends 'route'
+    ? RouteOutpostName
+    : never;
+
 /**
  * Debug point names for debugger breakpoints
  */
@@ -41,6 +103,7 @@ export const DebugPoints = {
   BEFORE_OUTPOST: 'before-outpost',
   PATROL_STOPPED: 'patrol-stopped',
   ERROR_CAUGHT: 'error-caught',
+  TIMEOUT: 'timeout',
 } as const;
 
 export type DebugPoint = (typeof DebugPoints)[keyof typeof DebugPoints];
@@ -88,17 +151,20 @@ export type NavigationOutpost = (
 ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
 
 /**
- * Navigation outpost registration options
+ * Navigation outpost registration options.
+ * Generic parameter S constrains the name field based on scope.
  */
-export interface NavigationOutpostOptions {
+export interface NavigationOutpostOptions<
+  S extends NavigationOutpostScope = NavigationOutpostScope,
+> {
   /**
    * Outpost scope
    */
-  scope: NavigationOutpostScope;
+  scope: S;
   /**
-   * Unique outpost name
+   * Unique outpost name (type-safe when registries are extended)
    */
-  name: string;
+  name: OutpostNameByScope<S>;
   /**
    * Outpost handler function
    */
@@ -111,17 +177,20 @@ export interface NavigationOutpostOptions {
    * Hooks this outpost should run on. Default: ['beforeEach']
    */
   hooks?: NavigationHook[];
+  /**
+   * Timeout for this outpost in milliseconds. Overrides defaultTimeout.
+   */
+  timeout?: number;
 }
-
-/**
- * Navigation outpost reference (deployed outpost name)
- */
-export type NavigationOutpostRef = NavigationOutpostOptions['name'];
 
 /**
  * Options for creating navigation citadel
  */
 export interface NavigationCitadelOptions {
+  /**
+   * Initial outposts to deploy on citadel creation
+   */
+  outposts?: NavigationOutpostOptions[];
   /**
    * Enable console logging (console.info for navigation flow). Default: __DEV__
    */
@@ -141,12 +210,23 @@ export interface NavigationCitadelOptions {
    * Default priority for outposts. Default: 100
    */
   defaultPriority?: number;
+  /**
+   * Default timeout for outposts in milliseconds. Default: undefined (no timeout)
+   */
+  defaultTimeout?: number;
+  /**
+   * Handler called when outpost times out
+   */
+  onTimeout?: (
+    outpostName: string,
+    ctx: NavigationOutpostContext,
+  ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
 }
 
 /**
  * Placed navigation outpost structure
  */
-export type PlacedNavigationOutpost = Omit<NavigationOutpostOptions, 'scope'>;
+export type RegisteredNavigationOutpost = Omit<NavigationOutpostOptions, 'scope'>;
 
 /**
  * Public API returned by createNavigationCitadel
@@ -155,19 +235,36 @@ export interface NavigationCitadelAPI {
   /**
    * Deploy one or multiple outposts
    */
-  deployOutpost: (options: NavigationOutpostOptions | NavigationOutpostOptions[]) => void;
+  deployOutpost: <S extends NavigationOutpostScope>(
+    options: NavigationOutpostOptions<S> | NavigationOutpostOptions<S>[],
+  ) => void;
+
   /**
-   * Remove one or multiple outposts by scope and name(s)
+   * Remove one or multiple global outposts by name(s)
    */
-  abandonOutpost: (scope: NavigationOutpostScope, name: string | string[]) => boolean;
+  abandonOutpost(scope: 'global', name: GlobalOutpostName | GlobalOutpostName[]): boolean;
   /**
-   * Get all deployed outpost names by scope
+   * Remove one or multiple route outposts by name(s)
    */
-  getOutpostNames: (scope: NavigationOutpostScope) => string[];
+  abandonOutpost(scope: 'route', name: RouteOutpostName | RouteOutpostName[]): boolean;
+
   /**
-   * Assign outpost(s) to an existing route by route name
+   * Get all deployed global outpost names
    */
-  assignOutpostToRoute: (routeName: string, outpostNames: string | string[]) => boolean;
+  getOutpostNames(scope: 'global'): GlobalOutpostName[];
+  /**
+   * Get all deployed route outpost names
+   */
+  getOutpostNames(scope: 'route'): RouteOutpostName[];
+
+  /**
+   * Assign route outpost(s) to an existing route by route name
+   */
+  assignOutpostToRoute: (
+    routeName: string,
+    outpostNames: RouteOutpostName | RouteOutpostName[],
+  ) => boolean;
+
   /**
    * Destroy the citadel and remove navigation hooks
    */
@@ -177,15 +274,15 @@ export interface NavigationCitadelAPI {
 /**
  * Navigation citadel registry structure
  */
-export interface NavigationOutpostRegistry {
+export interface NavigationRegistry {
   /**
    * Global outposts (processed for all routes)
    */
-  global: Map<string, PlacedNavigationOutpost>;
+  global: Map<string, RegisteredNavigationOutpost>;
   /**
    * Route outposts (processed when referenced in route meta)
    */
-  route: Map<string, PlacedNavigationOutpost>;
+  route: Map<string, RegisteredNavigationOutpost>;
   /**
    * Sorted global outpost names by priority (updated on deploy/abandon)
    */
@@ -202,8 +299,8 @@ export interface NavigationOutpostRegistry {
 declare module 'vue-router' {
   interface RouteMeta {
     /**
-     * Navigation outposts to process for this route
+     * Route outposts to process for this route (type-safe when RouteOutpostRegistry is extended)
      */
-    outposts?: NavigationOutpostRef[];
+    outposts?: RouteOutpostName[];
   }
 }

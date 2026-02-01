@@ -1,14 +1,14 @@
 import type {
-  NavigationOutpostRegistry,
+  NavigationRegistry,
   NavigationOutpostScope,
-  PlacedNavigationOutpost,
+  RegisteredNavigationOutpost,
 } from './types';
 import { LOG_PREFIX, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
 
 /**
- * Creates a new navigation outpost registry
+ * Creates a new navigation registry
  */
-export const createNavigationOutpostRegistry = (): NavigationOutpostRegistry => ({
+export const createRegistry = (): NavigationRegistry => ({
   global: new Map(),
   route: new Map(),
   globalSorted: [],
@@ -18,8 +18,8 @@ export const createNavigationOutpostRegistry = (): NavigationOutpostRegistry => 
 /**
  * Updates sorted keys array for a scope by priority
  */
-export const updateSortedKeys = (
-  registry: NavigationOutpostRegistry,
+const updateSortedKeys = (
+  registry: NavigationRegistry,
   scope: NavigationOutpostScope,
   defaultPriority: number = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
 ): void => {
@@ -35,12 +35,12 @@ export const updateSortedKeys = (
 };
 
 /**
- * Adds a navigation outpost to the registry
+ * Registers a navigation outpost in the registry
  */
-export const addNavigationOutpost = (
-  registry: NavigationOutpostRegistry,
+export const register = (
+  registry: NavigationRegistry,
   scope: NavigationOutpostScope,
-  outpost: PlacedNavigationOutpost,
+  outpost: RegisteredNavigationOutpost,
   defaultPriority: number = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
 ): void => {
   if (registry[scope].has(outpost.name)) {
@@ -58,8 +58,8 @@ export const addNavigationOutpost = (
  *
  * @returns true if outpost was found and removed
  */
-export const removeNavigationOutpost = (
-  registry: NavigationOutpostRegistry,
+export const unregister = (
+  registry: NavigationRegistry,
   scope: NavigationOutpostScope,
   name: string,
   defaultPriority: number = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
@@ -74,9 +74,9 @@ export const removeNavigationOutpost = (
 };
 
 /**
- * Gets all navigation outpost names by scope
+ * Gets all registered outpost names by scope
  */
-export const getNavigationOutpostNames = (
-  registry: NavigationOutpostRegistry,
+export const getRegisteredNames = (
+  registry: NavigationRegistry,
   scope: NavigationOutpostScope,
 ): string[] => Array.from(registry[scope].keys());
