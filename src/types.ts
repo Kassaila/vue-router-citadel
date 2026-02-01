@@ -123,6 +123,10 @@ export interface NavigationOutpostOptions {
  */
 export interface NavigationCitadelOptions {
   /**
+   * Initial outposts to deploy on citadel creation
+   */
+  outposts?: NavigationOutpostOptions[];
+  /**
    * Enable console logging (console.info for navigation flow). Default: __DEV__
    */
   log?: boolean;

@@ -651,6 +651,7 @@ Options for creating citadel:
 
 ```typescript
 interface NavigationCitadelOptions {
+  outposts?: NavigationOutpostOptions[]; // Initial outposts to deploy
   log?: boolean; // Default: __DEV__
   debug?: boolean; // Default: false
   defaultPriority?: number; // Default: 100

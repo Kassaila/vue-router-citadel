@@ -20,20 +20,20 @@ import { patrol, toNavigationGuardReturn } from './navigationOutposts';
  * @example
  * ```typescript
  * const citadel = createNavigationCitadel(router, {
- *   debug: true,
+ *   outposts: [
+ *     {
+ *       scope: NavigationOutpostScopes.GLOBAL,
+ *       name: 'auth',
+ *       priority: 10,
+ *       handler: async ({ verdicts, to }) => {
+ *         if (!isAuthenticated && to.meta.requiresAuth) {
+ *           return { name: 'login' };
+ *         }
+ *         return verdicts.ALLOW;
+ *       },
+ *     },
+ *   ],
  *   onError: (error, ctx) => ({ name: 'error' }),
- * });
- *
- * citadel.deployOutpost({
- *   scope: NavigationOutpostScopes.GLOBAL,
- *   name: 'auth',
- *   priority: 10,
- *   handler: async ({ verdicts, to }) => {
- *     if (!isAuthenticated && to.meta.requiresAuth) {
- *       return { name: 'login' };
- *     }
- *     return verdicts.ALLOW;
- *   },
  * });
  * ```
  */
@@ -226,6 +226,10 @@ export const createNavigationCitadel = (
       registry.routeSorted.length = 0;
     },
   };
+
+  if (options.outposts) {
+    api.deployOutpost(options.outposts);
+  }
 
   return api;
 };
