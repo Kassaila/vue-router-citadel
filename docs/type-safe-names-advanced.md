@@ -1,4 +1,4 @@
-# Advanced Type-Safe Outpost Names
+# 🔐 Advanced Type-Safe Outpost Names
 
 Advanced patterns for organizing type-safe outpost names in large applications.
 
@@ -6,7 +6,17 @@ For basics, see [Type-Safe Outpost Names](./internals.md#-type-safe-outpost-name
 
 ---
 
-## Modular Architecture
+<!-- TOC -->
+
+- [🔐 Advanced Type-Safe Outpost Names](#-advanced-type-safe-outpost-names)
+  - [📦 Modular Architecture](#-modular-architecture)
+  - [💉 Dependency Injection](#-dependency-injection)
+
+<!-- /TOC -->
+
+---
+
+## 📦 Modular Architecture
 
 For large applications with modular structure, each module can extend the registries in its own
 declaration file.
@@ -163,7 +173,7 @@ registerBillingModule();
 
 ---
 
-## Dependency Injection
+## 💉 Dependency Injection
 
 For applications using DI containers (InversifyJS, tsyringe), outposts can be organized as
 injectable services.
