@@ -1,8 +1,52 @@
-# Testing Guide
+# 🧪 Testing Guide
 
 This document describes the testing setup for vue-router-citadel and lists all test cases.
 
-## Overview
+---
+
+<!-- TOC -->
+
+- [🧪 Testing Guide](#-testing-guide)
+  - [📊 Overview](#-overview)
+  - [🚀 Quick Start](#-quick-start)
+  - [📁 Test Structure](#-test-structure)
+  - [🔧 Test Helpers](#-test-helpers)
+    - [Example Usage](#example-usage)
+  - [📝 Test Cases](#-test-cases)
+    - [navigationRegistry.test.ts 12 tests](#navigationregistrytestts-12-tests)
+      - [createRegistry](#createregistry)
+      - [register](#register)
+      - [unregister](#unregister)
+      - [getRegisteredNames](#getregisterednames)
+    - [navigationOutposts.test.ts 19 tests](#navigationoutpoststestts-19-tests)
+      - [normalizeOutcome](#normalizeoutcome)
+      - [toNavigationGuardReturn](#tonavigationguardreturn)
+      - [patrol](#patrol)
+    - [navigationCitadel.test.ts 18 tests](#navigationcitadeltestts-18-tests)
+      - [createNavigationCitadel](#createnavigationcitadel)
+      - [deployOutpost](#deployoutpost)
+      - [abandonOutpost](#abandonoutpost)
+      - [getOutpostNames](#getoutpostnames)
+      - [assignOutpostToRoute](#assignoutposttoroute)
+      - [destroy](#destroy)
+    - [timeout.test.ts 5 tests](#timeouttestts-5-tests)
+    - [integration.test.ts 13 tests](#integrationtestts-13-tests)
+      - [navigation flow](#navigation-flow)
+      - [error handling](#error-handling)
+      - [hooks](#hooks)
+      - [route outposts](#route-outposts)
+      - [context](#context)
+  - [✍️ Writing New Tests](#-writing-new-tests)
+    - [Choose the Right File](#choose-the-right-file)
+    - [Use Existing Helpers](#use-existing-helpers)
+    - [Test Patterns](#test-patterns)
+  - [📈 Coverage](#-coverage)
+
+<!-- /TOC -->
+
+---
+
+## 📊 Overview
 
 | Metric         | Value     |
 | -------------- | --------- |
@@ -11,7 +55,7 @@ This document describes the testing setup for vue-router-citadel and lists all t
 | Total Tests    | 67        |
 | Test Files     | 5         |
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
 # Run tests in watch mode
@@ -24,7 +68,7 @@ npm run test:run
 npm run test:coverage
 ```
 
-## Test Structure
+## 📁 Test Structure
 
 ```
 __tests__/
@@ -37,7 +81,7 @@ __tests__/
 └── integration.test.ts             # Full navigation flows (13 tests)
 ```
 
-## Test Helpers
+## 🔧 Test Helpers
 
 Located in `__tests__/helpers/setup.ts`:
 
@@ -65,7 +109,7 @@ expect(logger.calls.some((c) => c.level === 'warn')).toBe(true);
 
 ---
 
-## Test Cases
+## 📝 Test Cases
 
 ### navigationRegistry.test.ts (12 tests)
 
@@ -257,7 +301,7 @@ Full navigation flows with real router.
 
 ---
 
-## Writing New Tests
+## ✍️ Writing New Tests
 
 ### 1. Choose the Right File
 
@@ -318,7 +362,7 @@ expect(logger.calls.some((c) => c.level === 'warn' && c.args[0].includes('timed 
 
 ---
 
-## Coverage
+## 📈 Coverage
 
 Run coverage report:
 
