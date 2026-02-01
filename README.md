@@ -40,6 +40,7 @@ Think of it as turning your router into a fortress.
 - [💡 Examples](#-examples)
 - [📦 Exports](#-exports)
 - [📖 Internals](#-internals)
+- [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
 
 <!-- /TOC -->
@@ -436,6 +437,12 @@ import {
 Deep dive into how vue-router-citadel works:
 
 **[View Internals](./docs/internals.md)** — diagrams, logging details, and debug breakpoints.
+
+## 🤝 Contributing
+
+Contributions are welcome! See **[CONTRIBUTING.md](./CONTRIBUTING.md)** for guidelines.
+
+For testing details and all test cases, see **[docs/testing.md](./docs/testing.md)**.
 
 ## 📄 License
 

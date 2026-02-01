@@ -19,23 +19,36 @@ pipelines
 | ------------------- | ------------------------------------------ |
 | `README.md`         | API reference, quick start, usage examples |
 | `docs/internals.md` | Deep dive with Mermaid diagrams            |
+| `docs/testing.md`   | Testing guide and all test cases           |
 | `docs/plan.md`      | Development roadmap and TODO priorities    |
+| `CONTRIBUTING.md`   | Guide for contributors                     |
 | `CHANGELOG.md`      | Release notes                              |
 
 ## Repository Structure
 
 ```
-src/
-├── index.ts              # Public API exports
-├── types.ts              # Type definitions, constants, interfaces
-├── consts.ts             # __DEV__ flag, LOG_PREFIX
-├── helpers.ts            # Utilities (debugPoint, logger)
-├── navigationCitadel.ts  # Main factory, hook registration, public API
-├── navigationOutposts.ts # Outpost processing, patrol logic, timeout/error
-└── navigationRegistry.ts # Registry CRUD, priority sorting
+src/                             # Source code
+├── index.ts                     # Public API exports
+├── types.ts                     # Type definitions, constants, interfaces
+├── consts.ts                    # __DEV__ flag, LOG_PREFIX
+├── helpers.ts                   # Utilities (debugPoint, logger)
+├── navigationCitadel.ts         # Main factory, hook registration, public API
+├── navigationOutposts.ts        # Outpost processing, patrol logic, timeout/error
+└── navigationRegistry.ts        # Registry CRUD, priority sorting
 
-examples/                 # Usage examples (auth, hooks, nested routes)
-docs/internals.md         # Deep dive documentation with diagrams
+__tests__/                       # Tests (vitest)
+├── helpers/setup.ts             # Mock router, logger, handlers
+├── navigationCitadel.test.ts
+├── navigationRegistry.test.ts
+├── navigationOutposts.test.ts
+├── timeout.test.ts
+└── integration.test.ts
+
+devtools/                        # Future Vue DevTools plugin
+└── index.ts
+
+examples/                        # Usage examples (auth, hooks, nested routes)
+docs/                            # Documentation
 ```
 
 ## Key Concepts
@@ -87,11 +100,14 @@ interface NavigationCitadelAPI {
 }
 ```
 
-## Build Commands
+## Build & Test Commands
 
 ```bash
 npm run build        # Production build (ESM + CJS)
 npm run build:dev    # Development build with sourcemaps
+npm run test         # Run tests in watch mode
+npm run test:run     # Run tests once
+npm run test:coverage # Run tests with coverage
 npm run format       # Format with Prettier
 npm run format:check # Check formatting
 ```
@@ -113,6 +129,7 @@ npm run format:check # Check formatting
 | Types/interfaces    | `src/types.ts`              |
 | Constants           | `src/consts.ts`             |
 | Utilities/Logger    | `src/helpers.ts`            |
+| Tests               | `__tests__/*.test.ts`       |
 
 ## Code Patterns
 
@@ -155,9 +172,7 @@ Key types: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, `GlobalOutpostName`,
 
 ### Priority 1 — Before Release
 
-- [ ] **Testing**: vitest + @vue/test-utils + happy-dom
-  - Test files: `src/__tests__/*.test.ts`
-  - Cases: citadel API, registry, patrol, deduplication, timeout, errors
+- [x] **Testing**: vitest + happy-dom (67 tests, 5 files)
 - [ ] **CI/CD**: GitHub Actions (ci.yml, release.yml)
 - [x] **Type-safe Outpost Names**: Declaration merging with
       GlobalOutpostRegistry/RouteOutpostRegistry
@@ -176,8 +191,10 @@ Key types: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, `GlobalOutpostName`,
 npm install          # Install dependencies
 npm run build        # Build for production
 npm run build:dev    # Build for development
+npm run test         # Run tests (watch mode)
+npm run test:run     # Run tests once
+npm run test:coverage # Run tests with coverage
 npm run format       # Format code
-npm test             # Run tests (after setup)
 npm pack --dry-run   # Check package contents
 ```
 

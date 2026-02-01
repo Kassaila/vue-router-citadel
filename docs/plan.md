@@ -28,6 +28,8 @@
 
 - [x] `README.md` — API reference with section links to internals
 - [x] `docs/internals.md` — deep dive with Mermaid diagrams
+- [x] `docs/testing.md` — testing guide and all test cases
+- [x] `CONTRIBUTING.md` — contributor guide
 - [x] `CHANGELOG.md` — release notes
 - [x] Usage examples (`examples/`)
 - [x] Exports Reference section (constants + types)
@@ -66,36 +68,19 @@ Implemented: `defaultTimeout`, `timeout`, `onTimeout`
 
 ---
 
-#### Testing
+#### ~~Testing~~ ✅
 
-**Setup:**
-
-1. Install: `npm install -D vitest @vue/test-utils vue vue-router happy-dom`
-2. Add to `package.json`: `"test": "vitest"`, `"test:coverage": "vitest --coverage"`
-3. Create `vitest.config.ts`
-
-**Test files:**
+Implemented: vitest + happy-dom, 67 tests across 5 test files.
 
 ```
 src/__tests__/
-├── navigationCitadel.test.ts    # createNavigationCitadel, destroy
-├── navigationRegistry.test.ts   # deploy, abandon, getOutposts, sorting
-├── navigationOutposts.test.ts   # patrol, deduplication
-├── timeout.test.ts              # timeout functionality
-└── integration.test.ts          # full navigation flow
+├── helpers/setup.ts             # Mock router, logger, handlers
+├── navigationCitadel.test.ts    # 18 tests
+├── navigationRegistry.test.ts   # 12 tests
+├── navigationOutposts.test.ts   # 19 tests
+├── timeout.test.ts              # 5 tests
+└── integration.test.ts          # 13 tests
 ```
-
-**Test cases:**
-
-- `createNavigationCitadel` — returns API, registers hooks
-- `deployOutpost` — single, multiple, priority sorting, duplicate warning
-- `abandonOutpost` — single, multiple, returns boolean
-- `getOutpostNames` — returns names by scope
-- `assignOutpostToRoute` — assigns, returns false if not found
-- `patrol` — ALLOW/BLOCK/redirect flow
-- Deduplication — warning logged, outpost runs once
-- `onError` — custom handler called, default BLOCK
-- Timeout — handler times out, onTimeout called
 
 ---
 
@@ -276,19 +261,25 @@ Interactive demo for trying the library.
 ## Project Structure
 
 ```
-src/
-├── index.ts
+src/                             # Source code
+├── index.ts                     # Public API exports
 ├── types.ts
 ├── consts.ts
 ├── helpers.ts
 ├── navigationCitadel.ts
 ├── navigationOutposts.ts
-├── navigationRegistry.ts
-└── __tests__/
-    ├── navigationCitadel.test.ts
-    ├── navigationRegistry.test.ts
-    ├── navigationOutposts.test.ts
-    └── integration.test.ts
+└── navigationRegistry.ts
+
+__tests__/                       # Tests
+├── helpers/setup.ts
+├── navigationCitadel.test.ts
+├── navigationRegistry.test.ts
+├── navigationOutposts.test.ts
+├── timeout.test.ts
+└── integration.test.ts
+
+devtools/                        # Future Vue DevTools plugin
+└── index.ts
 
 docs/
 ├── internals.md
@@ -300,7 +291,7 @@ examples/
 ├── nested-routes.ts
 └── route-multiple-hooks.ts
 
-.github/workflows/
+.github/workflows/               # TODO
 ├── ci.yml
 └── release.yml
 ```

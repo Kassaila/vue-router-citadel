@@ -25,6 +25,9 @@
   "scripts": {
     "build": "tsup",
     "build:dev": "NODE_ENV=development tsup",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
@@ -55,11 +58,15 @@
     "vue-router": "^4.0.0"
   },
   "devDependencies": {
+    "@vue/test-utils": "^2.4.6",
+    "happy-dom": "^20.4.0",
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "prettier": "^3.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
+    "vitest": "^4.0.18",
+    "vue": "^3.5.27",
     "vue-router": "^4.0.0"
   }
 }
