@@ -88,9 +88,7 @@ What happens when a navigation hook is triggered:
 
 ```mermaid
 flowchart TD
-    A[Hook Triggered] --> LOG1[🔵 log.info: hook path]
-    LOG1 --> DBG1[🟣 debugger: navigation-start]
-    DBG1 --> B[Collect route outpost names<br/>from matched stack]
+    A[Hook Triggered] --> B[Collect route outpost names<br/>from matched stack]
     B --> C{Duplicates?}
     C -->|Yes| D[🟡 log.warn + deduplicate]
     C -->|No| E[Continue]
@@ -99,9 +97,10 @@ flowchart TD
     E --> F[Count outposts for current hook]
     F --> G{Total = 0?}
     G -->|Yes| H[🟢 Return ALLOW]
-    G -->|No| LOG2[🔵 log.info: patrolling N outposts]
+    G -->|No| LOG1[🔵 log.info: hook path → path N outposts]
 
-    LOG2 --> I[Process global outposts]
+    LOG1 --> DBG1[🟣 debugger: navigation-start]
+    DBG1 --> I[Process global outposts]
 
     I --> J{Result}
     J -->|ALLOW| K[Process assigned route outposts]
@@ -113,6 +112,9 @@ flowchart TD
     N -->|BLOCK| L
     N -->|Redirect| M
 ```
+
+> **Note:** Logging and debug breakpoints only trigger when there are outposts to process for the
+> current hook. If no outposts are registered for a hook, it returns `ALLOW` silently.
 
 ---
 
@@ -274,13 +276,12 @@ sequenceDiagram
     Note over R,C: beforeEach hook
     R->>C: patrol(registry, ctx, options)
 
-    Note over C: 🔵 log.info: beforeEach /home -> /admin/users
-    Note over C: 🟣 debugger: navigation-start
-
     C->>C: Collect route names from matched stack
     C->>C: Deduplicate
+    C->>C: Count outposts for hook
 
-    Note over C: 🔵 log.info: Patrolling N outposts
+    Note over C: 🔵 log.info: beforeEach /home -> /admin/users (N outposts)
+    Note over C: 🟣 debugger: navigation-start
 
     loop Global Outposts
         Note over C: 🔵 log.info: Processing outpost "name"
@@ -300,8 +301,9 @@ sequenceDiagram
 
     C-->>R: 🟢 ALLOW → true
 
-    Note over R,C: beforeResolve hook
+    Note over R,C: beforeResolve hook (no outposts)
     R->>C: patrol(registry, ctx, options)
+    Note over C: No outposts for hook → skip silently
     C-->>R: 🟢 ALLOW → true
 
     R->>R: Load component
@@ -641,22 +643,24 @@ const plainLogger: CitadelLogger = {
 
 ### Log Events Reference
 
-| Event               | Method            | Critical |
-| ------------------- | ----------------- | -------- |
-| Navigation start    | 🔵 `logger.info`  | No       |
-| Patrolling outposts | 🔵 `logger.info`  | No       |
-| Processing outpost  | 🔵 `logger.info`  | No       |
-| Deploying outpost   | 🔵 `logger.info`  | No       |
-| Abandoning outpost  | 🔵 `logger.info`  | No       |
-| Patrol stopped      | 🟡 `logger.warn`  | No       |
-| Duplicate outposts  | 🟡 `logger.warn`  | **Yes**  |
-| Outpost not found   | 🟡 `logger.warn`  | **Yes**  |
-| Route not found     | 🟡 `logger.warn`  | **Yes**  |
-| Outpost timeout     | 🟡 `logger.warn`  | **Yes**  |
-| Outpost error       | 🔴 `logger.error` | **Yes**  |
-| afterEach error     | 🔴 `logger.error` | **Yes**  |
+| Event                                 | Method            | Critical |
+| ------------------------------------- | ----------------- | -------- |
+| Hook start (only if outposts present) | 🔵 `logger.info`  | No       |
+| Processing outpost                    | 🔵 `logger.info`  | No       |
+| Deploying outpost                     | 🔵 `logger.info`  | No       |
+| Abandoning outpost                    | 🔵 `logger.info`  | No       |
+| Patrol stopped                        | 🟡 `logger.warn`  | No       |
+| Duplicate outposts                    | 🟡 `logger.warn`  | **Yes**  |
+| Outpost not found                     | 🟡 `logger.warn`  | **Yes**  |
+| Route not found                       | 🟡 `logger.warn`  | **Yes**  |
+| Outpost timeout                       | 🟡 `logger.warn`  | **Yes**  |
+| Outpost error                         | 🔴 `logger.error` | **Yes**  |
+| afterEach error                       | 🔴 `logger.error` | **Yes**  |
 
 > **Critical** events are always logged via `logger`. **Non-critical** only when `log: true`.
+>
+> **Note:** Hook start is only logged when there are outposts to process. Hooks with no outposts
+> return `ALLOW` silently without any logging.
 
 ---
 
@@ -664,15 +668,18 @@ const plainLogger: CitadelLogger = {
 
 Named debug points with console output `🟣 [DEBUG] <name>`:
 
-| Name                 | Location                                                | Condition     |
-| -------------------- | ------------------------------------------------------- | ------------- |
-| `navigation-start`   | Start of each hook (beforeEach/beforeResolve/afterEach) | `debug: true` |
-| `before-outpost`     | Before each outpost handler processing                  | `debug: true` |
-| `patrol-stopped`     | When outpost returns BLOCK or redirect                  | `debug: true` |
-| `timeout`            | When outpost handler times out                          | `debug: true` |
-| `error-caught`       | When outpost throws an error                            | `debug: true` |
-| `devtools-init`      | DevTools initialized (via install hook or existing app) | `debug: true` |
-| `devtools-inspector` | DevTools inspector registered                           | `debug: true` |
+| Name                 | Location                                                  | Condition     |
+| -------------------- | --------------------------------------------------------- | ------------- |
+| `navigation-start`   | Start of patrol (only when outposts present for the hook) | `debug: true` |
+| `before-outpost`     | Before each outpost handler processing                    | `debug: true` |
+| `patrol-stopped`     | When outpost returns BLOCK or redirect                    | `debug: true` |
+| `timeout`            | When outpost handler times out                            | `debug: true` |
+| `error-caught`       | When outpost throws an error                              | `debug: true` |
+| `devtools-init`      | DevTools initialized (via install hook or existing app)   | `debug: true` |
+| `devtools-inspector` | DevTools inspector registered                             | `debug: true` |
+
+> **Note:** `navigation-start` breakpoint only triggers when there are outposts to process for the
+> current hook. Hooks with no registered outposts skip the breakpoint entirely.
 
 ---
 
