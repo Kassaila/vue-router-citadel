@@ -33,8 +33,3 @@ export { createDefaultLogger } from './helpers';
  * Main factory
  */
 export { createNavigationCitadel } from './navigationCitadel';
-
-/**
- * DevTools integration (manual setup)
- */
-export { setupDevtools } from './devtools';

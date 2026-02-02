@@ -35,7 +35,6 @@ Think of it as turning your router into a fortress.
     - [abandonOutpost](#abandonoutpost)
     - [getOutpostNames](#getoutpostnames)
     - [assignOutpostToRoute](#assignoutposttoroute)
-    - [initDevtools](#initdevtools)
     - [destroy](#destroy)
   - [🔍 Logging & Debug](#-logging--debug)
   - [🛠️ Vue DevTools](#-vue-devtools)
@@ -84,6 +83,8 @@ npm install vue-router-citadel
 ```typescript
 import { createRouter, createWebHistory } from 'vue-router';
 import { createNavigationCitadel } from 'vue-router-citadel';
+import { createApp } from 'vue';
+import App from './App.vue';
 
 const routes = [
   { path: '/', name: 'home', component: () => import('./pages/Home.vue') },
@@ -119,6 +120,13 @@ const citadel = createNavigationCitadel(router, {
     },
   ],
 });
+
+// 3. Create app and install plugins
+const app = createApp(App);
+
+app.use(router);
+app.use(citadel); // DevTools auto-initialized
+app.mount('#app');
 
 export { router, citadel };
 ```
@@ -328,22 +336,6 @@ citadel.assignOutpostToRoute('settings', ['auth', 'verified']);
 
 Returns `true` if route was found and outposts assigned, `false` otherwise.
 
-### initDevtools
-
-```typescript
-citadel.initDevtools(app);
-```
-
-Manually initialize Vue DevTools. Use this if citadel was created after `app.use(router)`.
-
-```typescript
-app.use(router);
-
-const citadel = createNavigationCitadel(router);
-
-citadel.initDevtools(app); // Manual init needed here
-```
-
 ### destroy
 
 ```typescript
@@ -386,40 +378,27 @@ createNavigationCitadel(router, { debug: true });
 Citadel integrates with Vue DevTools, providing a custom inspector to view deployed outposts.
 
 ```typescript
-// Default: enabled in dev (__DEV__)
-createNavigationCitadel(router);
+import { createApp } from 'vue';
+import { createRouter } from 'vue-router';
+import { createNavigationCitadel } from 'vue-router-citadel';
+import App from './App.vue';
 
-// Disable DevTools integration
-createNavigationCitadel(router, { devtools: false });
-
-// Force enable (e.g., for debugging in production)
-createNavigationCitadel(router, { devtools: true });
-```
-
-**Important:** For auto-setup to work, create citadel **before** `app.use(router)`:
-
-```typescript
-// Recommended order (auto-setup works)
-const router = createRouter({ ... });
+const router = createRouter({
+  /* ... */
+});
 const citadel = createNavigationCitadel(router);
-const app = createApp(App);
 
-app.use(router); // DevTools init here automatically
-app.mount('#app');
-```
-
-If you must create citadel after `app.use(router)`, use manual init:
-
-```typescript
-// Fallback (manual init)
 const app = createApp(App);
 
 app.use(router);
-
-const citadel = createNavigationCitadel(router);
-
-citadel.initDevtools(app); // Manual init
+app.use(citadel); // DevTools enabled automatically (default: __DEV__)
 app.mount('#app');
+```
+
+**Disable DevTools:**
+
+```typescript
+const citadel = createNavigationCitadel(router, { devtools: false });
 ```
 
 **Inspector features:**
@@ -503,8 +482,6 @@ import {
   NavigationOutpostVerdicts,
   // Logger utilities
   createDefaultLogger,
-  // DevTools (manual setup)
-  setupDevtools,
   // Types
   type NavigationOutpost,
   type NavigationOutpostHandler,

@@ -276,6 +276,11 @@ export type RegisteredNavigationOutpost = Omit<NavigationOutpost<NavigationOutpo
  */
 export interface NavigationCitadelAPI {
   /**
+   * Install method for Vue Plugin API
+   * @internal
+   */
+  install: (app: App) => void;
+  /**
    * Deploy one or multiple outposts
    */
   deployOutpost: <S extends NavigationOutpostScope = 'global'>(
@@ -307,20 +312,6 @@ export interface NavigationCitadelAPI {
     routeName: string,
     outpostNames: RouteOutpostName | RouteOutpostName[],
   ) => boolean;
-
-  /**
-   * Manually initialize Vue DevTools integration.
-   * Use this if citadel was created AFTER app.use(router).
-   *
-   * @example
-   * ```typescript
-   * // If you can't create citadel before app.use(router):
-   * app.use(router);
-   * const citadel = createNavigationCitadel(router);
-   * citadel.initDevtools(app); // Manual init
-   * ```
-   */
-  initDevtools: (app: App) => void;
 
   /**
    * Destroy the citadel and remove navigation hooks

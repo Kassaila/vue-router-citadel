@@ -24,7 +24,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `citadel.abandonOutpost(scope, name)` — abandon outposts by scope and name
 - `citadel.getOutpostNames(scope)` — get deployed outpost names
 - `citadel.assignOutpostToRoute(routeName, outpostNames)` — dynamically assign outposts to routes
-- `citadel.initDevtools(app)` — manually initialize Vue DevTools (for late citadel creation)
 - `citadel.destroy()` — remove all hooks and clear registry
 
 #### Features
@@ -57,9 +56,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Tags showing priority and hooks count
 - State panel with outpost details (name, scope, priority, hooks, timeout)
 - Auto-refresh on deploy/abandon
-- Auto-setup via `router.install()` hook (create citadel before `app.use(router)`)
-- `citadel.initDevtools(app)` — manual init for late citadel creation
-- `setupDevtools(app, registry, logger, debug)` — low-level manual setup export
+- Vue Plugin API integration via `app.use(citadel)`
 
 #### Types
 
