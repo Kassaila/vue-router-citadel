@@ -15,12 +15,7 @@ import { __DEV__, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
 import { debugPoint, createDefaultLogger } from './helpers';
 import { createRegistry, register, unregister, getRegisteredNames } from './navigationRegistry';
 import { patrol, toNavigationGuardReturn } from './navigationOutposts';
-import {
-  setupDevtools,
-  autoSetupDevtools,
-  notifyDevtoolsRefresh,
-  clearDevtoolsApi,
-} from './devtools';
+import { setupDevtools, notifyDevtoolsRefresh, clearDevtoolsApi } from './devtools';
 
 /**
  * Creates a navigation citadel for Vue Router
@@ -176,6 +171,18 @@ export const createNavigationCitadel = (
    * Public API
    */
   const api: NavigationCitadelAPI = {
+    install(app: App): void {
+      if (!enableDevtools) {
+        return;
+      }
+
+      setupDevtools(app, registry, logger, debug);
+      debugPoint(DebugPoints.DEVTOOLS_INIT, debug, logger);
+
+      if (enableLog) {
+        logger.info('DevTools initialized via app.use(citadel)');
+      }
+    },
     deployOutpost(
       opts: NavigationOutpost<NavigationOutpostScope> | NavigationOutpost<NavigationOutpostScope>[],
     ): void {
@@ -238,19 +245,6 @@ export const createNavigationCitadel = (
       return true;
     },
 
-    initDevtools(app: App): void {
-      if (!enableDevtools) {
-        return;
-      }
-
-      setupDevtools(app, registry, logger, debug);
-      debugPoint(DebugPoints.DEVTOOLS_INIT, debug, logger);
-
-      if (enableLog) {
-        logger.info('DevTools initialized manually');
-      }
-    },
-
     destroy(): void {
       if (enableLog) {
         logger.info('Destroying citadel');
@@ -275,11 +269,6 @@ export const createNavigationCitadel = (
 
   if (options.outposts) {
     api.deployOutpost(options.outposts);
-  }
-
-  // Auto-setup DevTools (browser only)
-  if (enableDevtools) {
-    autoSetupDevtools(router, registry, logger, debug);
   }
 
   return api;

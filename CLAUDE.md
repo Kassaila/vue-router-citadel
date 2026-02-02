@@ -97,7 +97,7 @@ interface NavigationCitadelAPI {
   abandonOutpost(scope, name);
   getOutpostNames(scope);
   assignOutpostToRoute(routeName, outpostNames);
-  initDevtools(app);
+  install(app); // Vue Plugin API
   destroy();
 }
 ```

@@ -151,7 +151,6 @@ Implemented: Custom inspector with `@vue/devtools-api`.
 - Tags showing priority and hooks count
 - State panel with outpost details
 - Auto-refresh on deploy/abandon
-- `setupDevtools()` export for manual setup
 
 **Files:**
 

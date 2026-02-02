@@ -925,9 +925,6 @@ interface NavigationCitadelAPI {
     outpostNames: RouteOutpostName | RouteOutpostName[],
   ): boolean;
 
-  // Manual DevTools init (if citadel created after app.use)
-  initDevtools(app: App): void;
-
   destroy(): void;
 }
 ```
