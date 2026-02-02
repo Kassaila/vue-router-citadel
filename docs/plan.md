@@ -185,22 +185,75 @@ citadel.resetMetrics();
 
 #### Lazy Outposts
 
-Dynamic import of outpost handlers for code splitting.
+Dynamic import of outpost handlers for code splitting (like Vue Router lazy components).
 
 ```typescript
+// Eager — loaded immediately
+import { heavyAuthCheck } from './outposts/heavy-auth';
+
 citadel.deployOutpost({
-  name: 'heavy-outpost',
-  handler: () => import('./outposts/heavy').then((m) => m.default),
-  // or
-  handler: lazy(() => import('./outposts/heavy')),
+  scope: 'route',
+  name: 'auth',
+  handler: heavyAuthCheck,
+});
+
+// Lazy — loaded on first navigation
+citadel.deployOutpost({
+  scope: 'route',
+  name: 'heavy-auth',
+  handler: () => import('./outposts/heavy-auth'),
 });
 ```
 
+**How it works:**
+
+Both variants use the same API. Type is detected at deploy time by checking `handler.length`:
+
+- `handler.length >= 1` → Eager (accepts context argument)
+- `handler.length === 0` → Lazy loader (no arguments)
+
 **Implementation:**
 
-- Detect if handler returns Promise with `handler` property
-- Cache resolved handler after first load
-- Add `lazy()` helper function
+```typescript
+// In deployOutpost()
+function deployOutpost(options) {
+  const { handler } = options;
+
+  if (handler.length === 0) {
+    // Lazy — wrap once at deploy time
+    let cached: NavigationOutpost | null = null;
+
+    options.handler = async (ctx) => {
+      if (!cached) {
+        const module = await handler();
+        cached = module.default;
+      }
+      return cached(ctx);
+    };
+  }
+
+  // Eager — use as-is
+  registry.set(name, options);
+}
+```
+
+**Type updates:**
+
+```typescript
+type LazyOutpostLoader = () => Promise<{ default: NavigationOutpost }>;
+
+interface NavigationOutpostOptions {
+  handler: NavigationOutpost | LazyOutpostLoader;
+  // ...
+}
+```
+
+**Benefits:**
+
+- No helper functions needed (unlike `lazy()` wrapper)
+- Type detection once at deploy, not on every navigation
+- Same approach as Vue Router lazy components
+- Code splitting works out of the box (webpack/vite create separate chunks)
 
 ---
 
