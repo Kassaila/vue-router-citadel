@@ -35,8 +35,8 @@ breakpoints.
     - [Constants](#constants)
     - [Types](#types)
       - [NavigationOutpostContext](#navigationoutpostcontext)
+      - [NavigationOutpostHandler](#navigationoutposthandler)
       - [NavigationOutpost](#navigationoutpost)
-      - [NavigationOutpostOptions](#navigationoutpostoptions)
       - [NavigationCitadelOptions](#navigationcitadeloptions)
       - [NavigationCitadelAPI](#navigationcitadelapi)
     - [Route Meta Extension](#route-meta-extension)
@@ -572,11 +572,11 @@ interface CitadelLogger {
 
 ### Options
 
-| Option   | Default                 | Description                                       |
-| -------- | ----------------------- | ------------------------------------------------- |
-| `log`    | `__DEV__`               | Enable non-critical logs. Critical always logged. |
-| `logger` | `createDefaultLogger()` | Custom logger implementation                      |
-| `debug`  | `false`                 | Enables logging + debugger breakpoints            |
+| Option   | Type            | Default                 | Description                                       |
+| -------- | --------------- | ----------------------- | ------------------------------------------------- |
+| `log`    | `boolean`       | `__DEV__`               | Enable non-critical logs. Critical always logged. |
+| `logger` | `CitadelLogger` | `createDefaultLogger()` | Custom logger implementation                      |
+| `debug`  | `boolean`       | `false`                 | Enables logging + debugger breakpoints            |
 
 > `__DEV__` is `true` when `import.meta.env.DEV` or `NODE_ENV !== 'production'`.
 
@@ -664,13 +664,15 @@ const plainLogger: CitadelLogger = {
 
 Named debug points with console output `🟣 [DEBUG] <name>`:
 
-| Name               | Location                                                | Condition     |
-| ------------------ | ------------------------------------------------------- | ------------- |
-| `navigation-start` | Start of each hook (beforeEach/beforeResolve/afterEach) | `debug: true` |
-| `before-outpost`   | Before each outpost handler processing                  | `debug: true` |
-| `patrol-stopped`   | When outpost returns BLOCK or redirect                  | `debug: true` |
-| `timeout`          | When outpost handler times out                          | `debug: true` |
-| `error-caught`     | When outpost throws an error                            | `debug: true` |
+| Name                 | Location                                                | Condition     |
+| -------------------- | ------------------------------------------------------- | ------------- |
+| `navigation-start`   | Start of each hook (beforeEach/beforeResolve/afterEach) | `debug: true` |
+| `before-outpost`     | Before each outpost handler processing                  | `debug: true` |
+| `patrol-stopped`     | When outpost returns BLOCK or redirect                  | `debug: true` |
+| `timeout`            | When outpost handler times out                          | `debug: true` |
+| `error-caught`       | When outpost throws an error                            | `debug: true` |
+| `devtools-init`      | DevTools initialized (via install hook or existing app) | `debug: true` |
+| `devtools-inspector` | DevTools inspector registered                           | `debug: true` |
 
 ---
 
@@ -831,8 +833,8 @@ import {
 ```typescript
 import type {
   NavigationOutpostContext,
+  NavigationOutpostHandler,
   NavigationOutpost,
-  NavigationOutpostOptions,
   NavigationCitadelOptions,
   NavigationCitadelAPI,
   NavigationHook,
@@ -860,25 +862,25 @@ interface NavigationOutpostContext {
 }
 ```
 
-#### NavigationOutpost
+#### NavigationOutpostHandler
 
 Handler function signature:
 
 ```typescript
-type NavigationOutpost = (
+type NavigationOutpostHandler = (
   ctx: NavigationOutpostContext,
 ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
 ```
 
-#### NavigationOutpostOptions
+#### NavigationOutpost
 
-Options for deploying an outpost (generic parameter constrains name by scope):
+Configuration for deploying an outpost (generic parameter constrains name by scope):
 
 ```typescript
-interface NavigationOutpostOptions<S extends NavigationOutpostScope = NavigationOutpostScope> {
-  scope: S;
+interface NavigationOutpost<S extends NavigationOutpostScope = 'global'> {
+  scope?: S; // Default: 'global'
   name: OutpostNameByScope<S>; // Type-safe when registries extended
-  handler: NavigationOutpost;
+  handler: NavigationOutpostHandler;
   priority?: number; // Default: 100
   hooks?: NavigationHook[]; // Default: ['beforeEach']
   timeout?: number; // Overrides defaultTimeout
@@ -891,7 +893,7 @@ Options for creating citadel:
 
 ```typescript
 interface NavigationCitadelOptions {
-  outposts?: NavigationOutpostOptions[]; // Initial outposts to deploy
+  outposts?: NavigationOutpost[]; // Initial outposts to deploy
   log?: boolean; // Default: __DEV__
   debug?: boolean; // Default: false
   defaultPriority?: number; // Default: 100
@@ -907,8 +909,8 @@ Public API returned by `createNavigationCitadel`:
 
 ```typescript
 interface NavigationCitadelAPI {
-  deployOutpost<S extends NavigationOutpostScope>(
-    options: NavigationOutpostOptions<S> | NavigationOutpostOptions<S>[],
+  deployOutpost<S extends NavigationOutpostScope = 'global'>(
+    options: NavigationOutpost<S> | NavigationOutpost<S>[],
   ): void;
 
   // Scope-aware overloads
@@ -922,6 +924,9 @@ interface NavigationCitadelAPI {
     routeName: string,
     outpostNames: RouteOutpostName | RouteOutpostName[],
   ): boolean;
+
+  // Manual DevTools init (if citadel created after app.use)
+  initDevtools(app: App): void;
 
   destroy(): void;
 }

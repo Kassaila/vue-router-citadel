@@ -60,6 +60,7 @@
   },
   "homepage": "https://github.com/Kassaila/vue-router-citadel#readme",
   "peerDependencies": {
+    "vue": "^3.0.0",
     "vue-router": "^4.0.0"
   },
   "devDependencies": {

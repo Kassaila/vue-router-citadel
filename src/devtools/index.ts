@@ -3,6 +3,8 @@ import type { Router } from 'vue-router';
 import { setupDevToolsPlugin } from '@vue/devtools-api';
 
 import type { NavigationRegistry, CitadelLogger } from '../types';
+import { DebugPoints } from '../types';
+import { debugPoint } from '../helpers';
 import { DEVTOOLS_CONFIG, type DevToolsApi } from './types';
 import { setupInspector, refreshInspector } from './inspector';
 
@@ -17,6 +19,7 @@ let devtoolsApi: DevToolsApi | null = null;
  * @param app - Vue application instance
  * @param registry - Navigation registry
  * @param logger - Citadel logger
+ * @param debug - Enable debug breakpoints
  *
  * @example
  * ```typescript
@@ -33,6 +36,7 @@ export const setupDevtools = (
   app: App,
   registry: NavigationRegistry,
   logger: CitadelLogger,
+  debug = false,
 ): void => {
   setupDevToolsPlugin(
     {
@@ -45,17 +49,21 @@ export const setupDevtools = (
     },
     (api) => {
       devtoolsApi = api;
-      setupInspector(api, registry, logger);
+      setupInspector(api, registry, logger, debug);
     },
   );
 };
 
 /**
- * Auto-setup DevTools when router is ready
+ * Auto-setup DevTools by hooking into router.install()
+ *
+ * IMPORTANT: This only works if citadel is created BEFORE app.use(router).
+ * If citadel is created after, use citadel.initDevtools(app) instead.
  *
  * @param router - Vue Router instance
  * @param registry - Navigation registry
  * @param logger - Citadel logger
+ * @param debug - Enable debug breakpoints
  *
  * @internal
  */
@@ -63,19 +71,21 @@ export const autoSetupDevtools = (
   router: Router,
   registry: NavigationRegistry,
   logger: CitadelLogger,
+  debug = false,
 ): void => {
-  router.isReady().then(() => {
-    // Get app from router (available after router.install())
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const app = (router as any).app as App | undefined;
+  const originalInstall = router.install.bind(router);
 
-    if (app) {
-      setupDevtools(app, registry, logger);
-      logger.debug('DevTools auto-initialized');
-    } else {
-      logger.debug('DevTools auto-setup skipped: app not available on router');
-    }
-  });
+  router.install = (app: App) => {
+    // Restore original install to avoid multiple intercepts
+    router.install = originalInstall;
+
+    // Call original install
+    originalInstall(app);
+
+    // Now setup DevTools with the app
+    setupDevtools(app, registry, logger, debug);
+    debugPoint(DebugPoints.DEVTOOLS_INIT, debug, logger);
+  };
 };
 
 /**

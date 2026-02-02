@@ -75,16 +75,16 @@ declare module 'vue-router-citadel' {
 **Auth module — src/modules/auth/outposts/index.ts:**
 
 ```typescript
-import type { NavigationOutpost } from 'vue-router-citadel';
+import type { NavigationOutpostHandler } from 'vue-router-citadel';
 import { useAuthStore } from '../store';
 
-export const authCheckHandler: NavigationOutpost = ({ verdicts }) => {
+export const authCheckHandler: NavigationOutpostHandler = ({ verdicts }) => {
   const auth = useAuthStore();
   auth.checkSession();
   return verdicts.ALLOW;
 };
 
-export const requireLoginHandler: NavigationOutpost = ({ verdicts, to }) => {
+export const requireLoginHandler: NavigationOutpostHandler = ({ verdicts, to }) => {
   const auth = useAuthStore();
   if (!auth.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } };
@@ -92,7 +92,7 @@ export const requireLoginHandler: NavigationOutpost = ({ verdicts, to }) => {
   return verdicts.ALLOW;
 };
 
-export const guestOnlyHandler: NavigationOutpost = ({ verdicts }) => {
+export const guestOnlyHandler: NavigationOutpostHandler = ({ verdicts }) => {
   const auth = useAuthStore();
   if (auth.isAuthenticated) {
     return { name: 'dashboard' };
@@ -214,7 +214,7 @@ export class CitadelService {
 
 ```typescript
 import { injectable, inject } from 'inversify';
-import type { NavigationOutpostOptions } from 'vue-router-citadel';
+import type { NavigationOutpost } from 'vue-router-citadel';
 import { TOKENS } from '@/di/tokens';
 import type { AuthService } from '../services/auth.service';
 
@@ -222,7 +222,7 @@ import type { AuthService } from '../services/auth.service';
 export class AuthOutposts {
   constructor(@inject(TOKENS.AuthService) private authService: AuthService) {}
 
-  getOutposts(): NavigationOutpostOptions[] {
+  getOutposts(): NavigationOutpost[] {
     return [
       {
         scope: 'global',

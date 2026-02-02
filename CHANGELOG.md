@@ -16,13 +16,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Support for `beforeEach`, `beforeResolve`, `afterEach` hooks
 - Verdict system: `ALLOW`, `BLOCK`, redirect
 - TypeScript support with full type definitions
+- Peer dependencies: `vue@^3.0.0`, `vue-router@^4.0.0`
 
 #### API Methods
 
-- `citadel.deployOutpost(options)` — deploy one or multiple outposts
+- `citadel.deployOutpost(options)` — deploy one or multiple outposts (scope defaults to `'global'`)
 - `citadel.abandonOutpost(scope, name)` — abandon outposts by scope and name
 - `citadel.getOutpostNames(scope)` — get deployed outpost names
 - `citadel.assignOutpostToRoute(routeName, outpostNames)` — dynamically assign outposts to routes
+- `citadel.initDevtools(app)` — manually initialize Vue DevTools (for late citadel creation)
 - `citadel.destroy()` — remove all hooks and clear registry
 
 #### Features
@@ -34,6 +36,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Default error handler (`console.error` + `BLOCK`)
 - Timeout support (`defaultTimeout`, `timeout`, `onTimeout`)
 - Type-safe outpost names via declaration merging (`GlobalOutpostRegistry`, `RouteOutpostRegistry`)
+- Optional `scope` in outpost config (defaults to `'global'`)
 
 #### Developer Experience
 
@@ -44,7 +47,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `debug` option — logging + debugger breakpoints (default: `false`)
 - Colored console output: 🔵 info, 🟡 warn, 🔴 error, 🟣 debug
 - Named debug breakpoints: `navigation-start`, `before-outpost`, `patrol-stopped`, `timeout`,
-  `error-caught`
+  `error-caught`, `devtools-init`, `devtools-inspector`
 - Optimized processing — outposts sorted at deploy, direct calls from registry
 
 #### Vue DevTools Integration
@@ -54,12 +57,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Tags showing priority and hooks count
 - State panel with outpost details (name, scope, priority, hooks, timeout)
 - Auto-refresh on deploy/abandon
-- `setupDevtools(app, registry, logger)` — manual setup export
+- Auto-setup via `router.install()` hook (create citadel before `app.use(router)`)
+- `citadel.initDevtools(app)` — manual init for late citadel creation
+- `setupDevtools(app, registry, logger, debug)` — low-level manual setup export
+
+#### Types
+
+- `NavigationOutpost` — outpost configuration interface (scope optional, defaults to `'global'`)
+- `NavigationOutpostHandler` — handler function type
+- `NavigationOutpostContext` — handler context with verdicts, to, from, router, hook
+- `NavigationCitadelOptions` — citadel creation options
+- `NavigationCitadelAPI` — public API interface
 
 #### Testing
 
 - Vitest + happy-dom test setup
-- 67 tests across 5 test files
+- 68 tests across 5 test files
 - `__tests__/navigationCitadel.test.ts` — citadel creation, hooks, destroy
 - `__tests__/navigationRegistry.test.ts` — registry CRUD, priority sorting
 - `__tests__/navigationOutposts.test.ts` — patrol logic, verdicts, redirects

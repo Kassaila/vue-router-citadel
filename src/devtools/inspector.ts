@@ -1,6 +1,7 @@
 import type { NavigationRegistry, RegisteredNavigationOutpost, CitadelLogger } from '../types';
-import { NavigationHooks } from '../types';
+import { NavigationHooks, DebugPoints } from '../types';
 import { DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from '../consts';
+import { debugPoint } from '../helpers';
 import {
   DEVTOOLS_CONFIG,
   INSPECTOR_NODE_IDS,
@@ -182,6 +183,7 @@ export const setupInspector = (
   api: DevToolsApi,
   registry: NavigationRegistry,
   logger: CitadelLogger,
+  debug = false,
 ): void => {
   // Add custom inspector
   api.addInspector({
@@ -211,7 +213,7 @@ export const setupInspector = (
     }
   });
 
-  logger.debug('DevTools inspector registered');
+  debugPoint(DebugPoints.DEVTOOLS_INSPECTOR, debug, logger);
 };
 
 /**

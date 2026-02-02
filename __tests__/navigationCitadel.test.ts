@@ -90,6 +90,21 @@ describe('navigationCitadel', () => {
       citadel.destroy();
     });
 
+    it('deploys outpost with default scope (global)', () => {
+      const citadel = createNavigationCitadel(router, { log: false });
+
+      // scope is optional, defaults to 'global'
+      citadel.deployOutpost({
+        name: 'auth',
+        handler: createAllowHandler(),
+      });
+
+      expect(citadel.getOutpostNames('global')).toContain('auth');
+      expect(citadel.getOutpostNames('route')).not.toContain('auth');
+
+      citadel.destroy();
+    });
+
     it('deploys multiple outposts (array)', () => {
       const citadel = createNavigationCitadel(router, { log: false });
 

@@ -20,29 +20,31 @@ Think of it as turning your router into a fortress.
 
 <!-- TOC -->
 
-- [🧱 The Fortress Philosophy](#-the-fortress-philosophy)
-- [✨ Designed for scalable apps](#-designed-for-scalable-apps)
-- [📦 Installation](#-installation)
-- [🚀 Quick Start](#-quick-start)
-- [🎯 Outpost Scopes](#-outpost-scopes)
-- [🪝 Navigation Hooks](#-navigation-hooks)
-- [↩️ Outpost Handler Return Values](#️-outpost-handler-return-values)
-- [⏱️ Outpost Timeout](#️-outpost-timeout)
-- [📚 API](#-api)
-  - [Citadel](#citadel)
-  - [deployOutpost](#deployoutpost)
-  - [abandonOutpost](#abandonoutpost)
-  - [getOutpostNames](#getoutpostnames)
-  - [assignOutpostToRoute](#assignoutposttoroute)
-  - [destroy](#destroy)
-- [🔍 Logging & Debug](#-logging--debug)
-- [🛠️ Vue DevTools](#️-vue-devtools)
-- [🔒 Type-Safe Outpost Names](#-type-safe-outpost-names)
-- [💡 Examples](#-examples)
-- [📦 Exports](#-exports)
-- [📖 Internals](#-internals)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
+- [🏰 Vue Router Citadel](#-vue-router-citadel)
+  - [🧱 The Fortress Philosophy](#-the-fortress-philosophy)
+  - [✨ Designed for scalable apps](#-designed-for-scalable-apps)
+  - [📦 Installation](#-installation)
+  - [🚀 Quick Start](#-quick-start)
+  - [🎯 Outpost Scopes](#-outpost-scopes)
+  - [🪝 Navigation Hooks](#-navigation-hooks)
+  - [↩️ Outpost Handler Return Values](#-outpost-handler-return-values)
+  - [⏱️ Outpost Timeout](#-outpost-timeout)
+  - [📚 API](#-api)
+    - [Citadel](#citadel)
+    - [deployOutpost](#deployoutpost)
+    - [abandonOutpost](#abandonoutpost)
+    - [getOutpostNames](#getoutpostnames)
+    - [assignOutpostToRoute](#assignoutposttoroute)
+    - [initDevtools](#initdevtools)
+    - [destroy](#destroy)
+  - [🔍 Logging & Debug](#-logging--debug)
+  - [🛠️ Vue DevTools](#-vue-devtools)
+  - [🔒 Type-Safe Outpost Names](#-type-safe-outpost-names)
+  - [💡 Examples](#-examples)
+  - [📦 Exports](#-exports)
+  - [📖 Internals](#-internals)
+  - [🤝 Contributing](#-contributing)
+  - [📄 License](#-license)
 
 <!-- /TOC -->
 
@@ -81,7 +83,7 @@ npm install vue-router-citadel
 
 ```typescript
 import { createRouter, createWebHistory } from 'vue-router';
-import { createNavigationCitadel, NavigationOutpostScopes } from 'vue-router-citadel';
+import { createNavigationCitadel } from 'vue-router-citadel';
 
 const routes = [
   { path: '/', name: 'home', component: () => import('./pages/Home.vue') },
@@ -104,8 +106,7 @@ const router = createRouter({
 const citadel = createNavigationCitadel(router, {
   outposts: [
     {
-      scope: NavigationOutpostScopes.GLOBAL,
-      name: 'auth',
+      name: 'auth', // scope defaults to 'global'
       handler: ({ verdicts, to }) => {
         const isAuthenticated = Boolean(localStorage.getItem('token'));
 
@@ -265,15 +266,22 @@ citadel.deployOutpost(options);
 Deploys one or multiple navigation outposts.
 
 ```typescript
+// Global outpost (scope defaults to 'global')
 citadel.deployOutpost({
-  scope: NavigationOutpostScopes.GLOBAL, // or NavigationOutpostScopes.ROUTE
-  name: 'outpost-name',
+  name: 'auth',
   handler: ({ verdicts, to, from, router, hook }) => {
     return verdicts.ALLOW;
   },
   priority: 10, // Optional, lower = processed first
   hooks: [NavigationHooks.BEFORE_EACH], // Optional, default: ['beforeEach']
   timeout: 5000, // Optional, overrides defaultTimeout
+});
+
+// Route outpost (scope must be specified)
+citadel.deployOutpost({
+  scope: NavigationOutpostScopes.ROUTE,
+  name: 'admin-only',
+  handler: adminHandler,
 });
 
 // Deploy multiple
@@ -320,6 +328,22 @@ citadel.assignOutpostToRoute('settings', ['auth', 'verified']);
 
 Returns `true` if route was found and outposts assigned, `false` otherwise.
 
+### initDevtools
+
+```typescript
+citadel.initDevtools(app);
+```
+
+Manually initialize Vue DevTools. Use this if citadel was created after `app.use(router)`.
+
+```typescript
+app.use(router);
+
+const citadel = createNavigationCitadel(router);
+
+citadel.initDevtools(app); // Manual init needed here
+```
+
 ### destroy
 
 ```typescript
@@ -347,11 +371,11 @@ createNavigationCitadel(router, { logger: myCustomLogger });
 createNavigationCitadel(router, { debug: true });
 ```
 
-| Option   | Default                 | Description                                       |
-| -------- | ----------------------- | ------------------------------------------------- |
-| `log`    | `__DEV__`               | Enable non-critical logs. Critical always logged. |
-| `logger` | `createDefaultLogger()` | Custom `CitadelLogger` implementation             |
-| `debug`  | `false`                 | Enables logging + `debugger` breakpoints          |
+| Option   | Type            | Default                 | Description                                       |
+| -------- | --------------- | ----------------------- | ------------------------------------------------- |
+| `log`    | `boolean`       | `__DEV__`               | Enable non-critical logs. Critical always logged. |
+| `logger` | `CitadelLogger` | `createDefaultLogger()` | Custom logger implementation                      |
+| `debug`  | `boolean`       | `false`                 | Enables logging + `debugger` breakpoints          |
 
 > See [Logging & Custom Logger](./docs/internals.md#-logging--custom-logger) for custom logger
 > examples (SSR, testing) and [Debug Reference](./docs/internals.md#-debug-reference) for
@@ -372,6 +396,32 @@ createNavigationCitadel(router, { devtools: false });
 createNavigationCitadel(router, { devtools: true });
 ```
 
+**Important:** For auto-setup to work, create citadel **before** `app.use(router)`:
+
+```typescript
+// Recommended order (auto-setup works)
+const router = createRouter({ ... });
+const citadel = createNavigationCitadel(router);
+const app = createApp(App);
+
+app.use(router); // DevTools init here automatically
+app.mount('#app');
+```
+
+If you must create citadel after `app.use(router)`, use manual init:
+
+```typescript
+// Fallback (manual init)
+const app = createApp(App);
+
+app.use(router);
+
+const citadel = createNavigationCitadel(router);
+
+citadel.initDevtools(app); // Manual init
+app.mount('#app');
+```
+
 **Inspector features:**
 
 - Tree view with Global and Route outpost groups
@@ -379,9 +429,9 @@ createNavigationCitadel(router, { devtools: true });
 - State panel with outpost details (name, scope, priority, hooks, timeout)
 - Auto-refresh on deploy/abandon
 
-| Option     | Default   | Description                          |
-| ---------- | --------- | ------------------------------------ |
-| `devtools` | `__DEV__` | Enable Vue DevTools custom inspector |
+| Option     | Type      | Default   | Description                          |
+| ---------- | --------- | --------- | ------------------------------------ |
+| `devtools` | `boolean` | `__DEV__` | Enable Vue DevTools custom inspector |
 
 ## 🔒 Type-Safe Outpost Names
 
@@ -408,7 +458,7 @@ Now TypeScript validates outpost names everywhere:
 ```typescript
 // ✓ Autocomplete works, typos caught at compile time
 citadel.deployOutpost({
-  scope: 'global',
+  scope: NavigationOutpostScopes.GLOBAL,
   name: 'auth', // autocomplete: auth, maintenance
   handler: authHandler,
 });
@@ -422,7 +472,7 @@ const routes = [
 ];
 
 // ✗ TypeScript error — typo caught!
-citadel.deployOutpost({ scope: 'global', name: 'atuh', handler });
+citadel.deployOutpost({ scope: NavigationOutpostScopes.GLOBAL, name: 'atuh', handler });
 ```
 
 > Registries are optional. Without them, names fall back to `string` (no type checking).
@@ -456,6 +506,8 @@ import {
   // DevTools (manual setup)
   setupDevtools,
   // Types
+  type NavigationOutpost,
+  type NavigationOutpostHandler,
   type CitadelLogger,
 } from 'vue-router-citadel';
 ```

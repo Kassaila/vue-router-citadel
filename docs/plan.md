@@ -221,7 +221,7 @@ function deployOutpost(options) {
 
   if (handler.length === 0) {
     // Lazy — wrap once at deploy time
-    let cached: NavigationOutpost | null = null;
+    let cached: NavigationOutpostHandler | null = null;
 
     options.handler = async (ctx) => {
       if (!cached) {
@@ -240,10 +240,10 @@ function deployOutpost(options) {
 **Type updates:**
 
 ```typescript
-type LazyOutpostLoader = () => Promise<{ default: NavigationOutpost }>;
+type LazyOutpostLoader = () => Promise<{ default: NavigationOutpostHandler }>;
 
-interface NavigationOutpostOptions {
-  handler: NavigationOutpost | LazyOutpostLoader;
+interface NavigationOutpost {
+  handler: NavigationOutpostHandler | LazyOutpostLoader;
   // ...
 }
 ```
