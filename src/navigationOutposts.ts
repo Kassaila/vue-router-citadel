@@ -190,9 +190,9 @@ export const patrol = async (
   options: NavigationCitadelOptions,
   logger: CitadelLogger,
   enableLog: boolean,
+  debug = false,
 ): Promise<NavigationOutpostOutcome> => {
-  const { debug = false } = options;
-  const { hook, to } = ctx;
+  const { hook, to, from } = ctx;
 
   /**
    * 1. Collect route outpost names from matched routes + check duplicates
@@ -221,8 +221,10 @@ export const patrol = async (
   }
 
   if (enableLog) {
-    logger.info(`Patrolling ${totalCount} outposts for ${hook}`);
+    logger.info(`${hook}: ${from.path} -> ${to.path} (${totalCount} outposts)`);
   }
+
+  debugPoint(DebugPoints.NAVIGATION_START, debug, logger);
 
   /**
    * 2. Process global outposts (pre-sorted by priority)

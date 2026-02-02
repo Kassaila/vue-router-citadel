@@ -80,14 +80,8 @@ export const createNavigationCitadel = (
   const createNavigationGuardHandler =
     (hook: NavigationHook) =>
     async (to: RouteLocationNormalized, from: RouteLocationNormalized) => {
-      if (enableLog) {
-        logger.info(`${hook}: ${from.path} -> ${to.path}`);
-      }
-
-      debugPoint(DebugPoints.NAVIGATION_START, debug, logger);
-
       const ctx = createContext(to, from, hook);
-      const outcome = await patrol(registry, ctx, options, logger, enableLog);
+      const outcome = await patrol(registry, ctx, options, logger, enableLog, debug);
 
       return toNavigationGuardReturn(outcome);
     };
@@ -108,12 +102,6 @@ export const createNavigationCitadel = (
    * Register afterEach hook
    */
   const removeAfterEach = router.afterEach(async (to, from) => {
-    if (enableLog) {
-      logger.info(`${NavigationHooks.AFTER_EACH}: ${from.path} -> ${to.path}`);
-    }
-
-    debugPoint(DebugPoints.NAVIGATION_START, debug, logger);
-
     const ctx = createContext(to, from, NavigationHooks.AFTER_EACH);
 
     /**
@@ -121,7 +109,7 @@ export const createNavigationCitadel = (
      * Errors are handled by onError or logged here (critical - always)
      */
     try {
-      await patrol(registry, ctx, options, logger, enableLog);
+      await patrol(registry, ctx, options, logger, enableLog, debug);
     } catch (error) {
       // Critical: always log
       logger.error('Error in afterEach outpost:', error);
