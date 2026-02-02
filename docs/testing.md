@@ -22,7 +22,7 @@ This document describes the testing setup for vue-router-citadel and lists all t
       - [normalizeOutcome](#normalizeoutcome)
       - [toNavigationGuardReturn](#tonavigationguardreturn)
       - [patrol](#patrol)
-    - [navigationCitadel.test.ts 18 tests](#navigationcitadeltestts-18-tests)
+    - [navigationCitadel.test.ts 19 tests](#navigationcitadeltestts-18-tests)
       - [createNavigationCitadel](#createnavigationcitadel)
       - [deployOutpost](#deployoutpost)
       - [abandonOutpost](#abandonoutpost)
@@ -52,7 +52,7 @@ This document describes the testing setup for vue-router-citadel and lists all t
 | -------------- | --------- |
 | Test Framework | Vitest    |
 | Environment    | happy-dom |
-| Total Tests    | 67        |
+| Total Tests    | 68        |
 | Test Files     | 5         |
 
 ## 🚀 Quick Start
@@ -76,7 +76,7 @@ __tests__/
 │   └── setup.ts                    # Mock factories and utilities
 ├── navigationRegistry.test.ts      # Registry CRUD (12 tests)
 ├── navigationOutposts.test.ts      # Patrol logic (19 tests)
-├── navigationCitadel.test.ts       # Public API (18 tests)
+├── navigationCitadel.test.ts       # Public API (19 tests)
 ├── timeout.test.ts                 # Timeout handling (5 tests)
 └── integration.test.ts             # Full navigation flows (13 tests)
 ```
@@ -204,10 +204,11 @@ Public API testing.
 
 #### deployOutpost
 
-| Test                              | Description       |
-| --------------------------------- | ----------------- |
-| deploys single outpost            | Single object     |
-| deploys multiple outposts (array) | Array of outposts |
+| Test                                        | Description              |
+| ------------------------------------------- | ------------------------ |
+| deploys single outpost                      | Single object            |
+| deploys outpost with default scope (global) | Scope defaults to global |
+| deploys multiple outposts (array)           | Array of outposts        |
 
 #### abandonOutpost
 

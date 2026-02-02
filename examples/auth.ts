@@ -2,11 +2,11 @@
  * Auth example - global navigation outposts with BLOCK and redirect verdicts
  */
 import { createRouter, createWebHistory } from 'vue-router';
-import { createNavigationCitadel, NavigationOutpostScopes } from 'vue-router-citadel';
+import { createNavigationCitadel } from 'vue-router-citadel';
 
 // Maintenance outpost - blocks all navigation when site is under maintenance
+// scope defaults to 'global', so it can be omitted
 const maintenanceNavigationOutpost = {
-  scope: NavigationOutpostScopes.GLOBAL,
   name: 'maintenance',
   priority: 1, // highest priority, processed before other outposts
   handler: ({ verdicts }) => {
@@ -22,8 +22,7 @@ const maintenanceNavigationOutpost = {
 
 // Auth outpost - redirects to login if user is not authenticated
 const authNavigationOutpost = {
-  scope: NavigationOutpostScopes.GLOBAL,
-  name: 'auth',
+  name: 'auth', // scope defaults to 'global'
   priority: 10,
   handler: ({ verdicts, to }) => {
     const isAuthenticated = Boolean(localStorage.getItem('token'));

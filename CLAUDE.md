@@ -75,10 +75,10 @@ docs/                            # Documentation
 ## Core Types
 
 ```typescript
-interface NavigationOutpostOptions {
-  scope: 'global' | 'route';
+interface NavigationOutpost {
+  scope?: 'global' | 'route'; // Default: 'global'
   name: string;
-  handler: NavigationOutpost;
+  handler: NavigationOutpostHandler;
   priority?: number; // Default: 100 (lower = earlier)
   hooks?: NavigationHook[]; // Default: ['beforeEach']
   timeout?: number; // Per-outpost timeout override
@@ -97,6 +97,7 @@ interface NavigationCitadelAPI {
   abandonOutpost(scope, name);
   getOutpostNames(scope);
   assignOutpostToRoute(routeName, outpostNames);
+  initDevtools(app);
   destroy();
 }
 ```
@@ -174,7 +175,7 @@ Key types: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, `GlobalOutpostName`,
 
 ### Priority 1 — Before Release
 
-- [x] **Testing**: vitest + happy-dom (67 tests, 5 files)
+- [x] **Testing**: vitest + happy-dom (68 tests, 5 files)
 - [ ] **CI/CD**: GitHub Actions (ci.yml, release.yml)
 - [x] **Type-safe Outpost Names**: Declaration merging with
       GlobalOutpostRegistry/RouteOutpostRegistry
@@ -204,7 +205,7 @@ npm pack --dry-run   # Check package contents
 
 - Version: 0.1.0 (unreleased)
 - Branch: develop -> main
-- Peer dependency: vue-router@^4.0.0
+- Peer dependencies: vue@^3.0.0, vue-router@^4.0.0
 - TypeScript strict mode, ESM + CJS dual package
 
 ## Workflow Optimization

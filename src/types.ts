@@ -1,3 +1,4 @@
+import type { App } from 'vue';
 import type { RouteLocationNormalized, RouteLocationRaw, Router } from 'vue-router';
 
 /**
@@ -104,6 +105,8 @@ export const DebugPoints = {
   PATROL_STOPPED: 'patrol-stopped',
   ERROR_CAUGHT: 'error-caught',
   TIMEOUT: 'timeout',
+  DEVTOOLS_INIT: 'devtools-init',
+  DEVTOOLS_INSPECTOR: 'devtools-inspector',
 } as const;
 
 export type DebugPoint = (typeof DebugPoints)[keyof typeof DebugPoints];
@@ -169,23 +172,21 @@ export interface NavigationOutpostContext {
 export type NavigationOutpostOutcome = NavigationOutpostVerdict | RouteLocationRaw | Error;
 
 /**
- * Navigation outpost function signature
+ * Navigation outpost handler function signature
  */
-export type NavigationOutpost = (
+export type NavigationOutpostHandler = (
   ctx: NavigationOutpostContext,
 ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
 
 /**
- * Navigation outpost registration options.
+ * Navigation outpost configuration.
  * Generic parameter S constrains the name field based on scope.
  */
-export interface NavigationOutpostOptions<
-  S extends NavigationOutpostScope = NavigationOutpostScope,
-> {
+export interface NavigationOutpost<S extends NavigationOutpostScope = 'global'> {
   /**
-   * Outpost scope
+   * Outpost scope. Default: 'global'
    */
-  scope: S;
+  scope?: S;
   /**
    * Unique outpost name (type-safe when registries are extended)
    */
@@ -193,7 +194,7 @@ export interface NavigationOutpostOptions<
   /**
    * Outpost handler function
    */
-  handler: NavigationOutpost;
+  handler: NavigationOutpostHandler;
   /**
    * Priority for outposts (lower = processed first). Default: 100
    */
@@ -215,7 +216,7 @@ export interface NavigationCitadelOptions {
   /**
    * Initial outposts to deploy on citadel creation
    */
-  outposts?: NavigationOutpostOptions[];
+  outposts?: NavigationOutpost<NavigationOutpostScope>[];
   /**
    * Enable logging for non-critical events. Default: __DEV__
    * Critical events (errors, timeouts) are always logged regardless of this setting.
@@ -266,9 +267,9 @@ export interface NavigationCitadelOptions {
 }
 
 /**
- * Placed navigation outpost structure
+ * Registered navigation outpost structure (after deployment)
  */
-export type RegisteredNavigationOutpost = Omit<NavigationOutpostOptions, 'scope'>;
+export type RegisteredNavigationOutpost = Omit<NavigationOutpost<NavigationOutpostScope>, 'scope'>;
 
 /**
  * Public API returned by createNavigationCitadel
@@ -277,8 +278,8 @@ export interface NavigationCitadelAPI {
   /**
    * Deploy one or multiple outposts
    */
-  deployOutpost: <S extends NavigationOutpostScope>(
-    options: NavigationOutpostOptions<S> | NavigationOutpostOptions<S>[],
+  deployOutpost: <S extends NavigationOutpostScope = 'global'>(
+    options: NavigationOutpost<S> | NavigationOutpost<S>[],
   ) => void;
 
   /**
@@ -306,6 +307,20 @@ export interface NavigationCitadelAPI {
     routeName: string,
     outpostNames: RouteOutpostName | RouteOutpostName[],
   ) => boolean;
+
+  /**
+   * Manually initialize Vue DevTools integration.
+   * Use this if citadel was created AFTER app.use(router).
+   *
+   * @example
+   * ```typescript
+   * // If you can't create citadel before app.use(router):
+   * app.use(router);
+   * const citadel = createNavigationCitadel(router);
+   * citadel.initDevtools(app); // Manual init
+   * ```
+   */
+  initDevtools: (app: App) => void;
 
   /**
    * Destroy the citadel and remove navigation hooks

@@ -10,6 +10,6 @@ export default defineConfig({
   treeshake: true,
   sourcemap: isDev,
   minify: !isDev,
-  external: ['vue-router'],
+  external: ['vue', 'vue-router'],
   target: 'es2020',
 });

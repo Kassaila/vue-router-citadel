@@ -1,3 +1,4 @@
+import type { App } from 'vue';
 import type { Router, RouteLocationNormalized } from 'vue-router';
 
 import type {
@@ -5,7 +6,7 @@ import type {
   NavigationOutpostContext,
   NavigationCitadelAPI,
   NavigationCitadelOptions,
-  NavigationOutpostOptions,
+  NavigationOutpost,
   NavigationOutpostScope,
   NavigationHook,
 } from './types';
@@ -14,7 +15,12 @@ import { __DEV__, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
 import { debugPoint, createDefaultLogger } from './helpers';
 import { createRegistry, register, unregister, getRegisteredNames } from './navigationRegistry';
 import { patrol, toNavigationGuardReturn } from './navigationOutposts';
-import { autoSetupDevtools, notifyDevtoolsRefresh, clearDevtoolsApi } from './devtools';
+import {
+  setupDevtools,
+  autoSetupDevtools,
+  notifyDevtoolsRefresh,
+  clearDevtoolsApi,
+} from './devtools';
 
 /**
  * Creates a navigation citadel for Vue Router
@@ -24,8 +30,7 @@ import { autoSetupDevtools, notifyDevtoolsRefresh, clearDevtoolsApi } from './de
  * const citadel = createNavigationCitadel(router, {
  *   outposts: [
  *     {
- *       scope: NavigationOutpostScopes.GLOBAL,
- *       name: 'auth',
+ *       name: 'auth', // scope defaults to 'global'
  *       priority: 10,
  *       handler: async ({ verdicts, to }) => {
  *         if (!isAuthenticated && to.meta.requiresAuth) {
@@ -134,8 +139,8 @@ export const createNavigationCitadel = (
   /**
    * Deploy a single outpost
    */
-  const deployOne = (opts: NavigationOutpostOptions): void => {
-    const { scope, name, handler, priority, hooks, timeout } = opts;
+  const deployOne = (opts: NavigationOutpost<NavigationOutpostScope>): void => {
+    const { scope = 'global', name, handler, priority, hooks, timeout } = opts;
 
     if (enableLog) {
       logger.info(`Deploying ${scope} outpost: ${name}`);
@@ -171,7 +176,9 @@ export const createNavigationCitadel = (
    * Public API
    */
   const api: NavigationCitadelAPI = {
-    deployOutpost(opts: NavigationOutpostOptions | NavigationOutpostOptions[]): void {
+    deployOutpost(
+      opts: NavigationOutpost<NavigationOutpostScope> | NavigationOutpost<NavigationOutpostScope>[],
+    ): void {
       if (Array.isArray(opts)) {
         for (const opt of opts) {
           deployOne(opt);
@@ -231,6 +238,19 @@ export const createNavigationCitadel = (
       return true;
     },
 
+    initDevtools(app: App): void {
+      if (!enableDevtools) {
+        return;
+      }
+
+      setupDevtools(app, registry, logger, debug);
+      debugPoint(DebugPoints.DEVTOOLS_INIT, debug, logger);
+
+      if (enableLog) {
+        logger.info('DevTools initialized manually');
+      }
+    },
+
     destroy(): void {
       if (enableLog) {
         logger.info('Destroying citadel');
@@ -259,7 +279,7 @@ export const createNavigationCitadel = (
 
   // Auto-setup DevTools (browser only)
   if (enableDevtools) {
-    autoSetupDevtools(router, registry, logger);
+    autoSetupDevtools(router, registry, logger, debug);
   }
 
   return api;

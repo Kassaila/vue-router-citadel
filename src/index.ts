@@ -3,8 +3,8 @@
  */
 export type {
   NavigationOutpostContext,
+  NavigationOutpostHandler,
   NavigationOutpost,
-  NavigationOutpostOptions,
   NavigationCitadelOptions,
   NavigationCitadelAPI,
   NavigationHook,
