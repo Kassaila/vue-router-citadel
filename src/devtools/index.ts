@@ -2,7 +2,8 @@ import type { App } from 'vue';
 import { setupDevToolsPlugin } from '@vue/devtools-api';
 
 import type { NavigationRegistry, CitadelLogger } from '../types';
-import { DEVTOOLS_CONFIG, type DevToolsApi } from './types';
+import type { DevToolsApi } from './types';
+import { DEVTOOLS_PLUGIN_ID, DEVTOOLS_PLUGIN_LABEL, DEVTOOLS_PLUGIN_ICON } from './consts';
 import { setupInspector, refreshInspector } from './inspector';
 
 /**
@@ -28,8 +29,8 @@ export const setupDevtools = (
 ): void => {
   setupDevToolsPlugin(
     {
-      id: DEVTOOLS_CONFIG.PLUGIN_ID,
-      label: DEVTOOLS_CONFIG.PLUGIN_LABEL,
+      id: DEVTOOLS_PLUGIN_ID,
+      label: DEVTOOLS_PLUGIN_LABEL,
       packageName: 'vue-router-citadel',
       homepage: 'https://github.com/Kassaila/vue-router-citadel',
       enableEarlyProxy: true,

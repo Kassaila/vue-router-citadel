@@ -1,45 +1,51 @@
-import type { NavigationRegistry, RegisteredNavigationOutpost, CitadelLogger } from '../types';
-import { NavigationHooks, DebugPoints } from '../types';
+import type {
+  NavigationRegistry,
+  RegisteredNavigationOutpost,
+  CitadelLogger,
+  NavigationOutpostScope,
+} from '../types';
+import { NavigationHooks, NavigationOutpostScopes, DebugPoints } from '../types';
 import { DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from '../consts';
 import { debugPoint } from '../helpers';
-import {
-  DEVTOOLS_CONFIG,
-  INSPECTOR_NODE_IDS,
-  type DevToolsApi,
-  type CustomInspectorNode,
-  type CustomInspectorState,
-  type OutpostTreeNode,
+import type {
+  DevToolsApi,
+  CustomInspectorNode,
+  CustomInspectorState,
+  OutpostTreeNode,
 } from './types';
+import {
+  DEVTOOLS_INSPECTOR_ID,
+  DEVTOOLS_PLUGIN_LABEL,
+  DEVTOOLS_PLUGIN_ICON,
+  INSPECTOR_NODE_ID_ROOT,
+  INSPECTOR_NODE_ID_GLOBAL,
+  INSPECTOR_NODE_ID_ROUTE,
+  TAG_COLOR_TEXT,
+  TAG_COLOR_PRIORITY_BG,
+  TAG_COLOR_HOOKS_BG,
+  TAG_COLOR_SCOPE_GLOBAL_BG,
+  TAG_COLOR_SCOPE_ROUTE_BG,
+} from './consts';
 
 /**
- * Tag colors for DevTools inspector
+ * Gets outpost priority with default fallback
  */
-const TAG_COLORS = {
-  PRIORITY: {
-    text: 0xffffff,
-    bg: 0x42b983, // Vue green
-  },
-  HOOKS: {
-    text: 0xffffff,
-    bg: 0x3b82f6, // Blue
-  },
-  SCOPE_GLOBAL: {
-    text: 0xffffff,
-    bg: 0x8b5cf6, // Purple
-  },
-  SCOPE_ROUTE: {
-    text: 0xffffff,
-    bg: 0xf59e0b, // Amber
-  },
-} as const;
+const getOutpostPriority = (outpost: RegisteredNavigationOutpost): number =>
+  outpost.priority ?? DEFAULT_NAVIGATION_OUTPOST_PRIORITY;
+
+/**
+ * Gets outpost hooks with default fallback
+ */
+const getOutpostHooks = (outpost: RegisteredNavigationOutpost): string[] =>
+  outpost.hooks ?? [NavigationHooks.BEFORE_EACH];
 
 /**
  * Creates a tag for priority display
  */
 const createPriorityTag = (priority: number) => ({
   label: `priority: ${priority}`,
-  textColor: TAG_COLORS.PRIORITY.text,
-  backgroundColor: TAG_COLORS.PRIORITY.bg,
+  textColor: TAG_COLOR_TEXT,
+  backgroundColor: TAG_COLOR_PRIORITY_BG,
 });
 
 /**
@@ -47,8 +53,8 @@ const createPriorityTag = (priority: number) => ({
  */
 const createHooksTag = (hooks: string[]) => ({
   label: hooks.length === 1 ? hooks[0] : `${hooks.length} hooks`,
-  textColor: TAG_COLORS.HOOKS.text,
-  backgroundColor: TAG_COLORS.HOOKS.bg,
+  textColor: TAG_COLOR_TEXT,
+  backgroundColor: TAG_COLOR_HOOKS_BG,
 });
 
 /**
@@ -57,17 +63,12 @@ const createHooksTag = (hooks: string[]) => ({
 const createOutpostNode = (
   name: string,
   outpost: RegisteredNavigationOutpost,
-  scope: 'global' | 'route',
-): OutpostTreeNode => {
-  const priority = outpost.priority ?? DEFAULT_NAVIGATION_OUTPOST_PRIORITY;
-  const hooks = outpost.hooks ?? [NavigationHooks.BEFORE_EACH];
-
-  return {
-    id: `outpost-${scope}-${name}`,
-    label: name,
-    tags: [createPriorityTag(priority), createHooksTag(hooks)],
-  };
-};
+  scope: NavigationOutpostScope,
+): OutpostTreeNode => ({
+  id: `outpost-${scope}-${name}`,
+  label: name,
+  tags: [createPriorityTag(getOutpostPriority(outpost)), createHooksTag(getOutpostHooks(outpost))],
+});
 
 /**
  * Creates inspector tree structure from registry
@@ -80,7 +81,7 @@ export const createInspectorTree = (registry: NavigationRegistry): CustomInspect
   for (const name of registry.globalSorted) {
     const outpost = registry.global.get(name);
     if (outpost) {
-      globalOutposts.push(createOutpostNode(name, outpost, 'global'));
+      globalOutposts.push(createOutpostNode(name, outpost, NavigationOutpostScopes.GLOBAL));
     }
   }
 
@@ -88,35 +89,35 @@ export const createInspectorTree = (registry: NavigationRegistry): CustomInspect
   for (const name of registry.routeSorted) {
     const outpost = registry.route.get(name);
     if (outpost) {
-      routeOutposts.push(createOutpostNode(name, outpost, 'route'));
+      routeOutposts.push(createOutpostNode(name, outpost, NavigationOutpostScopes.ROUTE));
     }
   }
 
   return [
     {
-      id: INSPECTOR_NODE_IDS.ROOT,
-      label: 'Navigation Citadel',
+      id: INSPECTOR_NODE_ID_ROOT,
+      label: 'Outposts',
       children: [
         {
-          id: INSPECTOR_NODE_IDS.GLOBAL_GROUP,
-          label: `Global Outposts (${globalOutposts.length})`,
+          id: INSPECTOR_NODE_ID_GLOBAL,
+          label: `Global (${globalOutposts.length})`,
           tags: [
             {
-              label: 'global',
-              textColor: TAG_COLORS.SCOPE_GLOBAL.text,
-              backgroundColor: TAG_COLORS.SCOPE_GLOBAL.bg,
+              label: NavigationOutpostScopes.GLOBAL,
+              textColor: TAG_COLOR_TEXT,
+              backgroundColor: TAG_COLOR_SCOPE_GLOBAL_BG,
             },
           ],
           children: globalOutposts,
         },
         {
-          id: INSPECTOR_NODE_IDS.ROUTE_GROUP,
-          label: `Route Outposts (${routeOutposts.length})`,
+          id: INSPECTOR_NODE_ID_ROUTE,
+          label: `Route (${routeOutposts.length})`,
           tags: [
             {
-              label: 'route',
-              textColor: TAG_COLORS.SCOPE_ROUTE.text,
-              backgroundColor: TAG_COLORS.SCOPE_ROUTE.bg,
+              label: NavigationOutpostScopes.ROUTE,
+              textColor: TAG_COLOR_TEXT,
+              backgroundColor: TAG_COLOR_SCOPE_ROUTE_BG,
             },
           ],
           children: routeOutposts,
@@ -134,44 +135,28 @@ export const getNodeState = (
   registry: NavigationRegistry,
 ): CustomInspectorState | null => {
   // Check if it's an outpost node
-  const outpostMatch = nodeId.match(/^outpost-(global|route)-(.+)$/);
+  const outpostMatch = nodeId.match(
+    `^outpost-(${NavigationOutpostScopes.GLOBAL}|${NavigationOutpostScopes.ROUTE})-(.+)$`,
+  );
   if (!outpostMatch) {
     return null;
   }
 
   const [, scope, name] = outpostMatch;
-  const map = scope === 'global' ? registry.global : registry.route;
+  const map = scope === NavigationOutpostScopes.GLOBAL ? registry.global : registry.route;
   const outpost = map.get(name);
 
   if (!outpost) {
     return null;
   }
 
-  const priority = outpost.priority ?? DEFAULT_NAVIGATION_OUTPOST_PRIORITY;
-  const hooks = outpost.hooks ?? [NavigationHooks.BEFORE_EACH];
-
   return {
     'Outpost Details': [
-      {
-        key: 'name',
-        value: name,
-      },
-      {
-        key: 'scope',
-        value: scope,
-      },
-      {
-        key: 'priority',
-        value: priority,
-      },
-      {
-        key: 'hooks',
-        value: hooks,
-      },
-      {
-        key: 'timeout',
-        value: outpost.timeout ?? 'none (uses default)',
-      },
+      { key: 'name', value: name },
+      { key: 'scope', value: scope },
+      { key: 'priority', value: getOutpostPriority(outpost) },
+      { key: 'hooks', value: getOutpostHooks(outpost) },
+      { key: 'timeout', value: outpost.timeout ?? 'none (uses default)' },
     ],
   };
 };
@@ -185,28 +170,23 @@ export const setupInspector = (
   logger: CitadelLogger,
   debug = false,
 ): void => {
-  // Add custom inspector
   api.addInspector({
-    id: DEVTOOLS_CONFIG.INSPECTOR_ID,
-    label: DEVTOOLS_CONFIG.INSPECTOR_LABEL,
-    icon: DEVTOOLS_CONFIG.INSPECTOR_ICON,
+    id: DEVTOOLS_INSPECTOR_ID,
+    label: DEVTOOLS_PLUGIN_LABEL,
+    icon: DEVTOOLS_PLUGIN_ICON,
   });
 
-  // Handle tree requests
   api.on.getInspectorTree((payload) => {
-    if (payload.inspectorId !== DEVTOOLS_CONFIG.INSPECTOR_ID) {
+    if (payload.inspectorId !== DEVTOOLS_INSPECTOR_ID) {
       return;
     }
-
     payload.rootNodes = createInspectorTree(registry);
   });
 
-  // Handle state requests
   api.on.getInspectorState((payload) => {
-    if (payload.inspectorId !== DEVTOOLS_CONFIG.INSPECTOR_ID) {
+    if (payload.inspectorId !== DEVTOOLS_INSPECTOR_ID) {
       return;
     }
-
     const state = getNodeState(payload.nodeId, registry);
     if (state) {
       payload.state = state;
@@ -220,6 +200,6 @@ export const setupInspector = (
  * Sends refresh signal to DevTools inspector
  */
 export const refreshInspector = (api: DevToolsApi): void => {
-  api.sendInspectorTree(DEVTOOLS_CONFIG.INSPECTOR_ID);
-  api.sendInspectorState(DEVTOOLS_CONFIG.INSPECTOR_ID);
+  api.sendInspectorTree(DEVTOOLS_INSPECTOR_ID);
+  api.sendInspectorState(DEVTOOLS_INSPECTOR_ID);
 };
