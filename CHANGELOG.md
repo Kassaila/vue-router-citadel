@@ -16,7 +16,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Support for `beforeEach`, `beforeResolve`, `afterEach` hooks
 - Verdict system: `ALLOW`, `BLOCK`, redirect
 - TypeScript support with full type definitions
-- Peer dependencies: `vue@^3.0.0`, `vue-router@^4.0.0`
+- Peer dependencies: `vue@^3.0.0`, `vue-router@^4.0.0 || ^5.0.0`
 
 #### API Methods
 
@@ -57,6 +57,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - State panel with outpost details (name, scope, priority, hooks, timeout)
 - Auto-refresh on deploy/abandon
 - Vue Plugin API integration via `app.use(citadel)`
+- Tree-shakeable via dynamic import — devtools code eliminated when `devtools: false`
 
 #### Types
 
