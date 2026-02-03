@@ -384,13 +384,25 @@ createNavigationCitadel(router, { logger: myCustomLogger });
 
 // Debug mode: logging + debugger breakpoints
 createNavigationCitadel(router, { debug: true });
+
+// Custom debug handler (for reliable breakpoints)
+createNavigationCitadel(router, {
+  debug: true,
+  debugHandler: (name) => {
+    alert(name); // may be alternative to - debugger
+  },
+});
 ```
 
-| Option   | Type            | Default                 | Description                                       |
-| -------- | --------------- | ----------------------- | ------------------------------------------------- |
-| `log`    | `boolean`       | `__DEV__`               | Enable non-critical logs. Critical always logged. |
-| `logger` | `CitadelLogger` | `createDefaultLogger()` | Custom logger implementation                      |
-| `debug`  | `boolean`       | `false`                 | Enables logging + `debugger` breakpoints          |
+| Option         | Type            | Default                       | Description                                       |
+| -------------- | --------------- | ----------------------------- | ------------------------------------------------- |
+| `log`          | `boolean`       | `__DEV__`                     | Enable non-critical logs. Critical always logged. |
+| `logger`       | `CitadelLogger` | `createDefaultLogger()`       | Custom logger implementation                      |
+| `debug`        | `boolean`       | `false`                       | Enables logging + `debugger` breakpoints          |
+| `debugHandler` | `DebugHandler`  | `createDefaultDebugHandler()` | Custom debug handler for breakpoints              |
+
+> **Note:** Bundlers like Vite/esbuild may strip `debugger` statements from dependencies during
+> optimization. If breakpoints don't work, provide a custom `debugHandler` in your app code.
 
 > See [Logging & Custom Logger](./docs/internals.md#-logging--custom-logger) for custom logger
 > examples (SSR, testing) and [Debug Reference](./docs/internals.md#-debug-reference) for
@@ -432,6 +444,14 @@ const citadel = createNavigationCitadel(router, { devtools: false });
 - Tags showing priority and hooks count
 - State panel with outpost details (name, scope, priority, hooks, timeout)
 - Auto-refresh on deploy/abandon
+
+**Settings panel:**
+
+The DevTools settings panel allows runtime control of logging:
+
+- **Log level**: `Off | Log | Log + Debug` — toggle logging and debug breakpoints
+- Settings persist in `localStorage` and override citadel options
+- Priority: `localStorage → citadel options → defaults (__DEV__)`
 
 | Option     | Type      | Default   | Description                          |
 | ---------- | --------- | --------- | ------------------------------------ |
@@ -505,13 +525,18 @@ import {
   NavigationOutpostScopes,
   NavigationHooks,
   NavigationOutpostVerdicts,
+  DebugPoints,
   // Logger utilities
   createDefaultLogger,
+  // Debug utilities
+  createDefaultDebugHandler,
   // Types
   type NavigationOutpost,
   type NavigationOutpostHandler,
   type LazyOutpostLoader,
   type CitadelLogger,
+  type DebugHandler,
+  type DebugPoint,
 } from 'vue-router-citadel';
 ```
 

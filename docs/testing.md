@@ -32,6 +32,8 @@ This document describes the testing setup for vue-router-citadel and lists all t
     - [timeout.test.ts 5 tests](#timeouttestts-5-tests)
     - [lazy.test.ts 12 tests](#lazytestts-12-tests)
     - [integration.test.ts 13 tests](#integrationtestts-13-tests)
+    - [devtools-settings.test.ts 19 tests](#devtools-settingstestts-19-tests)
+    - [debugHandler.test.ts 10 tests](#debughandlertestts-10-tests)
       - [navigation flow](#navigation-flow)
       - [error handling](#error-handling)
       - [hooks](#hooks)
@@ -53,8 +55,8 @@ This document describes the testing setup for vue-router-citadel and lists all t
 | -------------- | --------- |
 | Test Framework | Vitest    |
 | Environment    | happy-dom |
-| Total Tests    | 80        |
-| Test Files     | 6         |
+| Total Tests    | 109       |
+| Test Files     | 8         |
 
 ## 🚀 Quick Start
 
@@ -80,7 +82,9 @@ __tests__/
 ├── navigationCitadel.test.ts       # Public API (19 tests)
 ├── timeout.test.ts                 # Timeout handling (5 tests)
 ├── lazy.test.ts                    # Lazy loading (12 tests)
-└── integration.test.ts             # Full navigation flows (13 tests)
+├── integration.test.ts             # Full navigation flows (13 tests)
+├── devtools-settings.test.ts       # DevTools settings (19 tests)
+└── debugHandler.test.ts            # Debug handler (10 tests)
 ```
 
 ## 🔧 Test Helpers
@@ -353,18 +357,118 @@ Full navigation flows with real router.
 
 ---
 
+### devtools-settings.test.ts (19 tests)
+
+DevTools settings and localStorage persistence.
+
+#### getStoredLogLevel
+
+| Test                                  | Description                   |
+| ------------------------------------- | ----------------------------- |
+| returns null when localStorage empty  | No stored value               |
+| returns stored value when valid       | Valid 'off', 'log', 'debug'   |
+| returns null for invalid stored value | Invalid values ignored        |
+| handles localStorage errors           | Catches exceptions gracefully |
+
+#### setStoredLogLevel
+
+| Test                        | Description           |
+| --------------------------- | --------------------- |
+| stores value                | Saves to localStorage |
+| handles localStorage errors | Catches exceptions    |
+
+#### optionsToLogLevel
+
+| Test                                    | Description           |
+| --------------------------------------- | --------------------- |
+| returns DEBUG when debug option is true | debug: true → 'debug' |
+| returns LOG when log option is true     | log: true → 'log'     |
+| returns LOG when defaultValue is true   | Falls back to default |
+| returns OFF when all false              | No logging            |
+
+#### logLevelToState
+
+| Test                              | Description   |
+| --------------------------------- | ------------- |
+| OFF returns log:false debug:false | State mapping |
+| LOG returns log:true debug:false  | State mapping |
+| DEBUG returns log:true debug:true | State mapping |
+
+#### stateToLogLevel
+
+| Test                                   | Description     |
+| -------------------------------------- | --------------- |
+| returns OFF when log:false debug:false | Reverse mapping |
+| returns LOG when log:true debug:false  | Reverse mapping |
+| returns DEBUG when log:true debug:true | Reverse mapping |
+
+#### initializeRuntimeState
+
+| Test                                       | Description           |
+| ------------------------------------------ | --------------------- |
+| uses localStorage value if present         | localStorage priority |
+| falls back to options when no localStorage | Options priority      |
+| falls back to defaults when no options     | Default priority      |
+
+#### updateRuntimeState
+
+| Test                                    | Description              |
+| --------------------------------------- | ------------------------ |
+| updates state and saves to localStorage | State mutation + persist |
+
+#### createSettingsDefinition
+
+| Test                                | Description             |
+| ----------------------------------- | ----------------------- |
+| creates settings with current value | DevTools settings shape |
+
+---
+
+### debugHandler.test.ts (10 tests)
+
+Debug handler invocation and custom handlers.
+
+#### debugPoint function
+
+| Test                                        | Description              |
+| ------------------------------------------- | ------------------------ |
+| calls logger.debug when debug is true       | Debug logging            |
+| calls debugHandler when debug is true       | Handler invocation       |
+| does not call logger.debug when debug false | No logging when disabled |
+| does not call debugHandler when debug false | No handler when disabled |
+| passes debug point name to handler          | Correct name passed      |
+
+#### createDefaultDebugHandler
+
+| Test                                | Description             |
+| ----------------------------------- | ----------------------- |
+| returns a function                  | Factory returns handler |
+| handler can be called without error | Handler is callable     |
+
+#### debugHandler in citadel
+
+| Test                                            | Description              |
+| ----------------------------------------------- | ------------------------ |
+| uses custom debugHandler when provided          | Custom handler used      |
+| uses default debugHandler when not provided     | Default handler fallback |
+| debugHandler receives correct debug point names | Names passed correctly   |
+
+---
+
 ## ✍️ Writing New Tests
 
 ### 1. Choose the Right File
 
-| If testing...         | Add to...                    |
-| --------------------- | ---------------------------- |
-| Registry functions    | `navigationRegistry.test.ts` |
-| Outcome/patrol logic  | `navigationOutposts.test.ts` |
-| Public API            | `navigationCitadel.test.ts`  |
-| Timeout behavior      | `timeout.test.ts`            |
-| Lazy loading          | `lazy.test.ts`               |
-| Full navigation flows | `integration.test.ts`        |
+| If testing...          | Add to...                    |
+| ---------------------- | ---------------------------- |
+| Registry functions     | `navigationRegistry.test.ts` |
+| Outcome/patrol logic   | `navigationOutposts.test.ts` |
+| Public API             | `navigationCitadel.test.ts`  |
+| Timeout behavior       | `timeout.test.ts`            |
+| Lazy loading           | `lazy.test.ts`               |
+| Full navigation flows  | `integration.test.ts`        |
+| DevTools settings      | `devtools-settings.test.ts`  |
+| Debug handler behavior | `debugHandler.test.ts`       |
 
 ### 2. Use Existing Helpers
 

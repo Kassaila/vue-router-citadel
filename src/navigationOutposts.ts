@@ -8,6 +8,7 @@ import type {
   NavigationOutpostOutcome,
   RegisteredNavigationOutpost,
 } from './types';
+import type { CitadelRuntimeState } from './devtools/types';
 import {
   NavigationHooks,
   NavigationOutpostVerdicts,
@@ -122,12 +123,13 @@ const processOutpost = async (
   ctx: NavigationOutpostContext,
   options: NavigationCitadelOptions,
   logger: CitadelLogger,
+  runtimeState: CitadelRuntimeState,
 ): Promise<NavigationOutpostOutcome> => {
-  const { debug = false, onError, defaultTimeout, onTimeout } = options;
+  const { onError, defaultTimeout, onTimeout } = options;
   const { router } = ctx;
   const timeout = outpost.timeout ?? defaultTimeout;
 
-  debugPoint(DebugPoints.BEFORE_OUTPOST, debug, logger);
+  debugPoint(DebugPoints.BEFORE_OUTPOST, runtimeState.debug, logger, options.debugHandler);
 
   try {
     /**
@@ -152,7 +154,7 @@ const processOutpost = async (
     if (isTimeoutError(error)) {
       // Critical: always log
       logger.warn(`Outpost "${outpost.name}" timed out after ${timeout}ms`);
-      debugPoint(DebugPoints.TIMEOUT, debug, logger);
+      debugPoint(DebugPoints.TIMEOUT, runtimeState.debug, logger, options.debugHandler);
 
       if (onTimeout) {
         const timeoutOutcome = await onTimeout(outpost.name, ctx);
@@ -177,7 +179,7 @@ const processOutpost = async (
      * Critical: always log
      */
     logger.error(`Outpost "${outpost.name}" threw error:`, error);
-    debugPoint(DebugPoints.ERROR_CAUGHT, debug, logger);
+    debugPoint(DebugPoints.ERROR_CAUGHT, runtimeState.debug, logger, options.debugHandler);
 
     return NavigationOutpostVerdicts.BLOCK;
   }
@@ -196,10 +198,10 @@ export const patrol = async (
   ctx: NavigationOutpostContext,
   options: NavigationCitadelOptions,
   logger: CitadelLogger,
-  enableLog: boolean,
-  debug = false,
+  runtimeState: CitadelRuntimeState,
 ): Promise<NavigationOutpostOutcome> => {
   const { hook, to, from } = ctx;
+  const enableLog = runtimeState.log || runtimeState.debug;
 
   /**
    * 1. Collect route outpost names from matched routes + check duplicates
@@ -231,7 +233,7 @@ export const patrol = async (
     logger.info(`${hook}: ${from.path} -> ${to.path} (${totalCount} outposts)`);
   }
 
-  debugPoint(DebugPoints.NAVIGATION_START, debug, logger);
+  debugPoint(DebugPoints.NAVIGATION_START, runtimeState.debug, logger, options.debugHandler);
 
   /**
    * 2. Process global outposts (pre-sorted by priority)
@@ -249,14 +251,14 @@ export const patrol = async (
       logger.info(`Processing outpost ${processedCount}/${totalCount}: "${name}" [${hook}]`);
     }
 
-    const outcome = await processOutpost(outpost, ctx, options, logger);
+    const outcome = await processOutpost(outpost, ctx, options, logger, runtimeState);
 
     if (outcome !== NavigationOutpostVerdicts.ALLOW) {
       if (enableLog) {
         logger.warn(`Patrol stopped by outpost "${name}":`, outcome);
       }
 
-      debugPoint(DebugPoints.PATROL_STOPPED, debug, logger);
+      debugPoint(DebugPoints.PATROL_STOPPED, runtimeState.debug, logger, options.debugHandler);
 
       return outcome;
     }
@@ -288,14 +290,14 @@ export const patrol = async (
       logger.info(`Processing outpost ${processedCount}/${totalCount}: "${name}" [${hook}]`);
     }
 
-    const outcome = await processOutpost(outpost, ctx, options, logger);
+    const outcome = await processOutpost(outpost, ctx, options, logger, runtimeState);
 
     if (outcome !== NavigationOutpostVerdicts.ALLOW) {
       if (enableLog) {
         logger.warn(`Patrol stopped by outpost "${name}":`, outcome);
       }
 
-      debugPoint(DebugPoints.PATROL_STOPPED, debug, logger);
+      debugPoint(DebugPoints.PATROL_STOPPED, runtimeState.debug, logger, options.debugHandler);
 
       return outcome;
     }

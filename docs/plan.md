@@ -52,6 +52,8 @@
 - [x] Type-safe outpost names (declaration merging with `GlobalOutpostRegistry` /
       `RouteOutpostRegistry`)
 - [x] Vue DevTools integration (`devtools` option, custom inspector)
+- [x] DevTools Settings panel (Log level selector, localStorage persistence)
+- [x] Custom `debugHandler` option (solves bundler stripping `debugger` statements)
 
 ### Build
 
@@ -72,16 +74,19 @@ Implemented: `defaultTimeout`, `timeout`, `onTimeout`
 
 #### ~~Testing~~ ✅
 
-Implemented: vitest + happy-dom, 67 tests across 5 test files.
+Implemented: vitest + happy-dom, 109 tests across 8 test files.
 
 ```
-src/__tests__/
+__tests__/
 ├── helpers/setup.ts             # Mock router, logger, handlers
-├── navigationCitadel.test.ts    # 18 tests
+├── navigationCitadel.test.ts    # 19 tests
 ├── navigationRegistry.test.ts   # 12 tests
 ├── navigationOutposts.test.ts   # 19 tests
 ├── timeout.test.ts              # 5 tests
-└── integration.test.ts          # 13 tests
+├── integration.test.ts          # 13 tests
+├── lazy.test.ts                 # 12 tests
+├── devtools-settings.test.ts    # 19 tests
+└── debugHandler.test.ts         # 10 tests
 ```
 
 ---

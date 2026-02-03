@@ -2,9 +2,11 @@ import type { App } from 'vue';
 import { setupDevToolsPlugin } from '@vue/devtools-api';
 
 import type { NavigationRegistry, CitadelLogger } from '../types';
-import type { DevToolsApi } from './types';
+import { __DEV__ } from '../consts';
+import type { DevToolsApi, CitadelRuntimeState, LogLevel } from './types';
 import { DEVTOOLS_PLUGIN_ID, DEVTOOLS_PLUGIN_LABEL, DEVTOOLS_PLUGIN_ICON } from './consts';
 import { setupInspector, refreshInspector } from './inspector';
+import { initializeRuntimeState, updateRuntimeState, createSettingsDefinition } from './settings';
 
 /**
  * Stored DevTools API reference for refresh operations
@@ -17,7 +19,9 @@ let devtoolsApi: DevToolsApi | null = null;
  * @param app - Vue application instance
  * @param registry - Navigation registry
  * @param logger - Citadel logger
- * @param debug - Enable debug breakpoints
+ * @param runtimeState - Mutable runtime state (log, debug)
+ * @param optionLog - Original log option from citadel creation
+ * @param optionDebug - Original debug option from citadel creation
  *
  * @internal
  */
@@ -25,8 +29,15 @@ export const setupDevtools = (
   app: App,
   registry: NavigationRegistry,
   logger: CitadelLogger,
-  debug = false,
+  runtimeState: CitadelRuntimeState,
+  optionLog?: boolean,
+  optionDebug?: boolean,
 ): void => {
+  // Initialize runtime state from localStorage → citadel options → defaults
+  const initialState = initializeRuntimeState(optionLog, optionDebug, __DEV__);
+  runtimeState.log = initialState.log;
+  runtimeState.debug = initialState.debug;
+
   setupDevToolsPlugin(
     {
       id: DEVTOOLS_PLUGIN_ID,
@@ -35,10 +46,19 @@ export const setupDevtools = (
       homepage: 'https://github.com/Kassaila/vue-router-citadel',
       enableEarlyProxy: true,
       app,
+      settings: createSettingsDefinition(runtimeState),
     },
     (api) => {
       devtoolsApi = api;
-      setupInspector(api, registry, logger, debug);
+
+      // Listen for settings changes from DevTools UI
+      api.on.setPluginSettings((payload) => {
+        if (payload.key === 'logLevel') {
+          updateRuntimeState(runtimeState, payload.newValue as LogLevel);
+        }
+      });
+
+      setupInspector(api, registry, logger, runtimeState.debug);
     },
   );
 };
