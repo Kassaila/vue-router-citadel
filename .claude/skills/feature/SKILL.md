@@ -1,8 +1,8 @@
 ---
 name: feature
 description:
-  Start feature development following the project workflow from CLAUDE.md. Creates or updates
-  docs/current-feature.md with proposal.
+  Start feature development workflow. Creates temp/<feature-name>/feature.md with proposal. Use
+  kebab-case for feature names.
 disable-model-invocation: true
 ---
 
@@ -13,11 +13,15 @@ Start feature development workflow for vue-router-citadel.
 - Branch: !`git branch --show-current`
 - Recent commits: !`git log --oneline -5`
 - Uncommitted changes: !`git status --short`
+- Existing features: !`ls -1 temp/ 2>/dev/null || echo "(none)"`
 
 ## Workflow
 
-1. **Check existing feature file**: Read `/docs/current-feature.md` if it exists
-2. **Create/Update proposal** with these sections:
+1. **Parse feature name**: Convert `$ARGUMENTS` to kebab-case (e.g., "Lazy Outposts" →
+   "lazy-outposts")
+2. **Check existing**: Read `temp/<feature-name>/feature.md` if directory exists
+3. **Create directory**: `temp/<feature-name>/` if it doesn't exist
+4. **Create/Update proposal** at `temp/<feature-name>/feature.md`:
 
 ```markdown
 # Feature: [Name]
@@ -44,12 +48,14 @@ Start feature development workflow for vue-router-citadel.
 - [ ] Update docs/ if needed
 ```
 
-3. **Ask clarifying questions** about requirements if needed
+5. **Ask clarifying questions** about requirements if needed
 
 ## Important
 
-- This file is in `.gitignore` - it's a working document
+- `temp/` directory is in `.gitignore` — working documents, not committed
+- Each feature has its own directory for all related files (notes, research, etc.)
 - Follow the checklist during implementation
 - Update all docs after implementation is complete
+- Directories are kept after feature completion (manual cleanup when needed)
 
 Feature request: $ARGUMENTS

@@ -4,7 +4,7 @@ dist/
 .DS_Store
 
 # Development
-docs/current-feature.md
+temp/
 
 # Claude Code (local settings are personal, not shared)
 .claude/settings.local.json
