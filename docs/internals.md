@@ -21,6 +21,7 @@ breakpoints.
   - [🔄 Complete Navigation Example](#-complete-navigation-example)
   - [📚 API Usage](#-api-usage)
     - [createNavigationCitadel](#createnavigationcitadel)
+    - [install](#install)
     - [deployOutpost](#deployoutpost)
     - [abandonOutpost](#abandonoutpost)
     - [getOutpostNames](#getoutpostnames)
@@ -30,7 +31,7 @@ breakpoints.
     - [Registry Structure](#registry-structure)
     - [Outpost Processing](#outpost-processing)
     - [Outpost Timeout](#outpost-timeout)
-    - [🦥 Lazy Outposts](#-lazy-outposts)
+    - [ Lazy Outposts](#-lazy-outposts)
     - [Outpost Error Handling](#outpost-error-handling)
   - [📋 Logging Reference](#-logging-reference)
   - [🐛 Debug Reference](#-debug-reference)
@@ -347,18 +348,31 @@ const citadel = createNavigationCitadel(router, {
   debug: false, // Enable logging + debugger breakpoints (default: false)
   debugHandler: myDebugHandler, // Custom debug handler (default: createDefaultDebugHandler())
   devtools: true, // Enable Vue DevTools integration (default: __DEV__)
-  defaultPriority: 100, // Default priority for outposts
-  defaultTimeout: 10000, // Default timeout for outposts in ms (default: undefined)
   onError: (error, ctx) => {
     // Custom error handler (default: console.error + BLOCK)
     return { name: 'error' };
   },
+  defaultPriority: 100, // Default priority for outposts
+  defaultTimeout: 10000, // Default timeout for outposts in ms (default: undefined)
   onTimeout: (outpostName, ctx) => {
     // Custom timeout handler (default: console.warn + BLOCK)
     return { name: 'error' };
   },
 });
 ```
+
+### install
+
+Installs citadel as a Vue plugin. Required for DevTools integration.
+
+```typescript
+const app = createApp(App);
+app.use(router);
+app.use(citadel); // DevTools initialized here
+app.mount('#app');
+```
+
+Returns `void`.
 
 ### deployOutpost
 
@@ -388,6 +402,8 @@ citadel.deployOutpost({
 citadel.deployOutpost([outpost1, outpost2, outpost3]);
 ```
 
+Returns `void`.
+
 ### abandonOutpost
 
 Removes outpost(s) by scope and name.
@@ -400,7 +416,8 @@ citadel.abandonOutpost(NavigationOutpostScopes.GLOBAL, 'auth');
 citadel.abandonOutpost(NavigationOutpostScopes.ROUTE, ['admin-only', 'premium']);
 ```
 
-Returns `true` if outpost was found and removed, `false` otherwise.
+Returns `true` if outpost was found and removed. When passing an array, returns `true` only if
+**all** outposts were removed, `false` if any were not found.
 
 ### getOutpostNames
 
@@ -410,6 +427,8 @@ Returns array of deployed outpost names for a given scope.
 citadel.getOutpostNames(NavigationOutpostScopes.GLOBAL); // ['auth', 'analytics']
 citadel.getOutpostNames(NavigationOutpostScopes.ROUTE); // ['admin-only', 'premium']
 ```
+
+Returns `[]` if no outposts are deployed for the given scope.
 
 ### assignOutpostToRoute
 
@@ -424,7 +443,8 @@ citadel.assignOutpostToRoute('admin', 'admin-only');
 citadel.assignOutpostToRoute('settings', ['auth', 'verified']);
 ```
 
-Returns `true` if route was found and outposts assigned, `false` otherwise.
+Returns `true` if route was found and outposts assigned, `false` otherwise. Duplicates are
+automatically filtered — calling multiple times with the same outpost name is safe.
 
 ### destroy
 
@@ -435,7 +455,7 @@ citadel instance.
 citadel.destroy();
 ```
 
-After calling `destroy()`, the citadel instance should not be used.
+Returns `void`. After calling `destroy()`, the citadel instance should not be used.
 
 ---
 
@@ -530,7 +550,7 @@ flowchart TD
     B -->|No| D{defaultTimeout<br/>defined?}
 
     C -->|"> 0"| E[Use outpost.timeout]
-    C -->|"0 or Infinity"| F[No timeout]
+    C -->|"0"| F[No timeout - disabled]
 
     D -->|Yes| G[Use defaultTimeout]
     D -->|No| F
@@ -640,7 +660,7 @@ citadel.deployOutpost({
 
 Result: `heavy-api` has 30 seconds and completes successfully. `unlimited` has no timeout.
 
-### 🦥 Lazy Outposts
+### Lazy Outposts
 
 Lazy outposts load their handler modules on-demand, enabling code splitting for heavy dependencies.
 
@@ -663,6 +683,9 @@ flowchart TD
     L --> N[Continue patrol]
     M --> N
 ```
+
+> **Note:** Module loading (`import()`) has NO timeout. Timeout applies only to handler execution
+> after loading.
 
 **Key behavior:**
 
@@ -846,13 +869,16 @@ const plainLogger: CitadelLogger = {
 | Processing outpost                    | 🔵 `logger.info`  | No       |
 | Deploying outpost                     | 🔵 `logger.info`  | No       |
 | Abandoning outpost                    | 🔵 `logger.info`  | No       |
+| Assigned outposts to route            | 🔵 `logger.info`  | No       |
+| DevTools initialized                  | 🔵 `logger.info`  | No       |
+| Destroying citadel                    | 🔵 `logger.info`  | No       |
 | Patrol stopped                        | 🟡 `logger.warn`  | No       |
 | Duplicate outposts                    | 🟡 `logger.warn`  | **Yes**  |
 | Outpost not found                     | 🟡 `logger.warn`  | **Yes**  |
 | Route not found                       | 🟡 `logger.warn`  | **Yes**  |
 | Outpost timeout                       | 🟡 `logger.warn`  | **Yes**  |
 | Outpost error                         | 🔴 `logger.error` | **Yes**  |
-| afterEach error                       | 🔴 `logger.error` | **Yes**  |
+| afterEach patrol error                | 🔴 `logger.error` | **Yes**  |
 
 > **Critical** events are always logged via `logger`. **Non-critical** only when `log: true`.
 >
@@ -882,7 +908,7 @@ Named debug points with console output `🟣 [DEBUG] <name>`:
 
 By default, debug points trigger `debugger` statements. However, bundlers like Vite/esbuild may
 strip `debugger` from dependencies during optimization. To ensure reliable breakpoints, provide a
-custom `debugHandler`:
+custom `debugHandler`. It is called at **every debug point** listed above when `debug: true`:
 
 ```typescript
 const citadel = createNavigationCitadel(router, {

@@ -3,6 +3,7 @@ import type {
   RegisteredNavigationOutpost,
   CitadelLogger,
   NavigationOutpostScope,
+  DebugHandler,
 } from '../types';
 import { NavigationHooks, NavigationOutpostScopes, DebugPoints } from '../types';
 import { DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from '../consts';
@@ -191,6 +192,7 @@ export const setupInspector = (
   registry: NavigationRegistry,
   logger: CitadelLogger,
   debug = false,
+  debugHandler?: DebugHandler,
 ): void => {
   api.addInspector({
     id: DEVTOOLS_INSPECTOR_ID,
@@ -217,7 +219,7 @@ export const setupInspector = (
     },
   );
 
-  debugPoint(DebugPoints.DEVTOOLS_INSPECTOR, debug, logger);
+  debugPoint(DebugPoints.DEVTOOLS_INSPECTOR, debug, logger, debugHandler);
 };
 
 /**

@@ -253,14 +253,15 @@ citadel.deployOutpost({
 
 ## 📚 API
 
-| Method                                      | Description                 |
-| ------------------------------------------- | --------------------------- |
-| `createNavigationCitadel(router, options?)` | Creates citadel instance    |
-| `deployOutpost(options)`                    | Deploys outpost(s)          |
-| `abandonOutpost(scope, name)`               | Removes outpost(s)          |
-| `getOutpostNames(scope)`                    | Returns deployed names      |
-| `assignOutpostToRoute(routeName, names)`    | Assigns outposts to route   |
-| `destroy()`                                 | Removes hooks, clears state |
+| Method                                      | Description                   |
+| ------------------------------------------- | ----------------------------- |
+| `createNavigationCitadel(router, options?)` | Creates citadel instance      |
+| `install(app)`                              | Vue plugin install (DevTools) |
+| `deployOutpost(options)`                    | Deploys outpost(s)            |
+| `abandonOutpost(scope, name)`               | Removes outpost(s)            |
+| `getOutpostNames(scope)`                    | Returns deployed names        |
+| `assignOutpostToRoute(routeName, names)`    | Assigns outposts to route     |
+| `destroy()`                                 | Removes hooks, clears state   |
 
 ```typescript
 // Deploy outpost
@@ -351,6 +352,8 @@ See [examples](./examples) directory for more usage patterns:
 
 ## 📦 Exports
 
+Common imports for most use cases:
+
 ```typescript
 import {
   createNavigationCitadel,
@@ -362,8 +365,8 @@ import {
 } from 'vue-router-citadel';
 ```
 
-> See [Exports Reference](./docs/internals.md#-exports-reference) for all constants, types, and
-> interfaces.
+> See [Exports Reference](./docs/internals.md#-exports-reference) for all exports including
+> `DebugPoints`, `createDefaultLogger`, `CitadelLogger`, and type-safe name types.
 
 ## 📖 Internals
 
