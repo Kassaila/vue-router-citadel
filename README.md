@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/vue-router-citadel.svg)](https://www.npmjs.com/package/vue-router-citadel)
 [![license](https://img.shields.io/npm/l/vue-router-citadel.svg)](https://github.com/Kassaila/vue-router-citadel/blob/main/LICENSE)
 
-**Structured navigation defense for Vue Router 4.**
+**Structured navigation defense for Vue Router 4 & 5.**
 
 Citadel is a middleware-driven navigation control system for Vue Router that lets you build
 **layered, predictable, and scalable route protection**.
@@ -376,6 +376,8 @@ createNavigationCitadel(router, { debug: true });
 ## 🛠️ Vue DevTools
 
 Citadel integrates with Vue DevTools, providing a custom inspector to view deployed outposts.
+
+> **Note:** When `devtools: false`, devtools code is tree-shaken from the bundle via dynamic import.
 
 ```typescript
 import { createApp } from 'vue';

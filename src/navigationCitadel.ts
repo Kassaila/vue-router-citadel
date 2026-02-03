@@ -15,7 +15,32 @@ import { __DEV__, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
 import { debugPoint, createDefaultLogger } from './helpers';
 import { createRegistry, register, unregister, getRegisteredNames } from './navigationRegistry';
 import { patrol, toNavigationGuardReturn } from './navigationOutposts';
-import { setupDevtools, notifyDevtoolsRefresh, clearDevtoolsApi } from './devtools';
+
+/**
+ * Dynamic devtools import for tree-shaking
+ * When devtools: false, bundlers eliminate this code entirely
+ */
+type DevtoolsModule = typeof import('./devtools');
+
+let devtoolsModule: DevtoolsModule | null = null;
+let devtoolsLoadFailed = false;
+
+const loadDevtools = async (): Promise<DevtoolsModule | null> => {
+  if (devtoolsLoadFailed) {
+    return null;
+  }
+
+  if (!devtoolsModule) {
+    try {
+      devtoolsModule = await import('./devtools');
+    } catch {
+      devtoolsLoadFailed = true;
+      return null;
+    }
+  }
+
+  return devtoolsModule;
+};
 
 /**
  * Creates a navigation citadel for Vue Router
@@ -133,7 +158,7 @@ export const createNavigationCitadel = (
 
     // Notify DevTools of change
     if (enableDevtools) {
-      notifyDevtoolsRefresh();
+      loadDevtools().then((mod) => mod?.notifyDevtoolsRefresh());
     }
   };
 
@@ -149,7 +174,7 @@ export const createNavigationCitadel = (
 
     // Notify DevTools of change
     if (enableDevtools && result) {
-      notifyDevtoolsRefresh();
+      loadDevtools().then((mod) => mod?.notifyDevtoolsRefresh());
     }
 
     return result;
@@ -164,12 +189,18 @@ export const createNavigationCitadel = (
         return;
       }
 
-      setupDevtools(app, registry, logger, debug);
-      debugPoint(DebugPoints.DEVTOOLS_INIT, debug, logger);
+      loadDevtools().then((mod) => {
+        if (!mod) {
+          return;
+        }
 
-      if (enableLog) {
-        logger.info('DevTools initialized via app.use(citadel)');
-      }
+        mod.setupDevtools(app, registry, logger, debug);
+        debugPoint(DebugPoints.DEVTOOLS_INIT, debug, logger);
+
+        if (enableLog) {
+          logger.info('DevTools initialized via app.use(citadel)');
+        }
+      });
     },
     deployOutpost(
       opts: NavigationOutpost<NavigationOutpostScope> | NavigationOutpost<NavigationOutpostScope>[],
@@ -250,7 +281,7 @@ export const createNavigationCitadel = (
 
       // Clear DevTools API reference
       if (enableDevtools) {
-        clearDevtoolsApi();
+        loadDevtools().then((mod) => mod?.clearDevtoolsApi());
       }
     },
   };

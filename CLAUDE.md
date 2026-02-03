@@ -205,7 +205,7 @@ npm pack --dry-run   # Check package contents
 
 - Version: 0.1.0 (unreleased)
 - Branch: develop -> main
-- Peer dependencies: vue@^3.0.0, vue-router@^4.0.0
+- Peer dependencies: vue@^3.0.0, vue-router@^4.0.0 || ^5.0.0
 - TypeScript strict mode, ESM + CJS dual package
 
 ## Workflow Optimization
