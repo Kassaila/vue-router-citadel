@@ -112,6 +112,21 @@ export const DebugPoints = {
 export type DebugPoint = (typeof DebugPoints)[keyof typeof DebugPoints];
 
 /**
+ * Debug handler function signature.
+ * Called at debug points when debug mode is enabled.
+ *
+ * @example
+ * ```typescript
+ * // Custom debug handler with debugger statement
+ * const debugHandler: DebugHandler = (name) => {
+ *   console.trace(`Debug point: ${name}`);
+ *   debugger; // Will work because it's in your code, not library code
+ * };
+ * ```
+ */
+export type DebugHandler = (name: DebugPoint) => void;
+
+/**
  * Logger interface for citadel.
  * Implement this interface to provide custom logging behavior.
  *
@@ -254,6 +269,22 @@ export interface NavigationCitadelOptions {
    * Enable debug mode (logging + debugger breakpoints at key points). Default: false
    */
   debug?: boolean;
+  /**
+   * Custom debug handler called at debug points when debug mode is enabled.
+   * Use this to add your own debugger statement (Vite won't strip it from your code).
+   *
+   * @example
+   * ```typescript
+   * createNavigationCitadel(router, {
+   *   debug: true,
+   *   debugHandler: (name) => {
+   *     console.trace(`Debug: ${name}`);
+   *     debugger; // Works because it's in your code
+   *   },
+   * });
+   * ```
+   */
+  debugHandler?: DebugHandler;
   /**
    * Enable Vue DevTools integration. Default: __DEV__
    * When enabled, registers a custom inspector showing deployed outposts.

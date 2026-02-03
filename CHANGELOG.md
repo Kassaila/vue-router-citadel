@@ -59,6 +59,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Auto-refresh on deploy/abandon
 - Vue Plugin API integration via `app.use(citadel)`
 - Tree-shakeable via dynamic import — devtools code eliminated when `devtools: false`
+- **Settings panel** — runtime Log level selector (`Off | Log | Log + Debug`)
+- Settings persist in `localStorage` with priority: `localStorage → citadel options → defaults`
+
+#### Debug Handler
+
+- `debugHandler` option — custom debug handler for reliable breakpoints (default:
+  `createDefaultDebugHandler()`)
+- Exports: `DebugHandler`, `DebugPoint`, `DebugPoints`, `createDefaultDebugHandler`
+- Solves bundler issue where `debugger` statements are stripped from dependencies
 
 #### Types
 
@@ -72,13 +81,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 #### Testing
 
 - Vitest + happy-dom test setup
-- 80 tests across 6 test files
+- 109 tests across 8 test files
 - `__tests__/navigationCitadel.test.ts` — citadel creation, hooks, destroy
 - `__tests__/navigationRegistry.test.ts` — registry CRUD, priority sorting
 - `__tests__/navigationOutposts.test.ts` — patrol logic, verdicts, redirects
 - `__tests__/timeout.test.ts` — timeout handling, onTimeout callback
 - `__tests__/integration.test.ts` — end-to-end navigation scenarios
 - `__tests__/lazy.test.ts` — lazy loading, caching, retry, timeout behavior
+- `__tests__/devtools-settings.test.ts` — DevTools settings, localStorage persistence
+- `__tests__/debugHandler.test.ts` — debugHandler invocation, custom handlers
 - `docs/testing.md` — testing guide and test case reference
 
 #### Documentation

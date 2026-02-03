@@ -12,4 +12,8 @@ export default defineConfig({
   minify: !isDev,
   external: ['vue', 'vue-router'],
   target: 'es2020',
+  esbuildOptions(options) {
+    // Don't drop debugger statements - needed for debug mode
+    options.drop = [];
+  },
 });

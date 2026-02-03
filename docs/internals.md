@@ -27,6 +27,7 @@ breakpoints.
     - [Outpost Error Handling](#outpost-error-handling)
   - [📋 Logging Reference](#-logging-reference)
   - [🐛 Debug Reference](#-debug-reference)
+  - [🛠️ DevTools Settings](#-devtools-settings)
   - [🔒 Type-Safe Outpost Names](#-type-safe-outpost-names)
     - [How It Works](#how-it-works)
     - [Simple Example](#simple-example)
@@ -757,6 +758,125 @@ Named debug points with console output `🟣 [DEBUG] <name>`:
 > **Note:** `navigation-start` breakpoint only triggers when there are outposts to process for the
 > current hook. Hooks with no registered outposts skip the breakpoint entirely.
 
+### Custom Debug Handler
+
+By default, debug points trigger `debugger` statements. However, bundlers like Vite/esbuild may
+strip `debugger` from dependencies during optimization. To ensure reliable breakpoints, provide a
+custom `debugHandler`:
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  debug: true,
+  debugHandler: (name) => {
+    console.trace(`Debug point: ${name}`);
+    debugger; // In your app code — bundlers won't strip this
+  },
+});
+```
+
+**Debug handler interface:**
+
+```typescript
+type DebugHandler = (name: DebugPoint) => void;
+
+// DebugPoint values (exported as DebugPoints constant)
+type DebugPoint =
+  | 'navigation-start'
+  | 'before-outpost'
+  | 'patrol-stopped'
+  | 'timeout'
+  | 'error-caught'
+  | 'devtools-init'
+  | 'devtools-inspector';
+```
+
+**Exports:**
+
+```typescript
+import {
+  createDefaultDebugHandler, // Factory for default handler
+  DebugPoints, // Constant with all debug point names
+  type DebugHandler, // Handler type
+  type DebugPoint, // Debug point name type
+} from 'vue-router-citadel';
+```
+
+**Use cases for custom debugHandler:**
+
+- **Reliable breakpoints** — `debugger` in your code isn't stripped by bundlers
+- **Conditional breakpoints** — only break on specific debug points
+- **Logging** — `console.trace()` for stack traces without stopping
+- **Testing** — mock handler to verify debug points are triggered
+
+---
+
+## 🛠️ DevTools Settings
+
+The Vue DevTools integration includes a settings panel for runtime configuration of logging and
+debug modes.
+
+### Log Level Selector
+
+A button-group selector with three options:
+
+| Option          | `log`   | `debug` | Description                  |
+| --------------- | ------- | ------- | ---------------------------- |
+| **Off**         | `false` | `false` | No logging                   |
+| **Log**         | `true`  | `false` | Non-critical logging enabled |
+| **Log + Debug** | `true`  | `true`  | Logging + debug breakpoints  |
+
+### Settings Priority
+
+Settings are resolved in this order (first available wins):
+
+```
+localStorage → citadel options → defaults (__DEV__)
+```
+
+1. **localStorage** — if user changed settings via DevTools, persisted value is used
+2. **citadel options** — `log` and `debug` options passed to `createNavigationCitadel`
+3. **defaults** — `log: __DEV__`, `debug: false`
+
+### localStorage Persistence
+
+Settings are stored in localStorage with the key:
+
+```
+vue-router-citadel:settings:logLevel
+```
+
+Values: `off`, `log`, `debug`
+
+When changed via DevTools, the new value is immediately:
+
+1. Applied to the runtime state (takes effect on next navigation)
+2. Persisted to localStorage (survives page refresh)
+
+### Implementation Details
+
+```mermaid
+flowchart TD
+    A[Citadel created] --> B{localStorage has logLevel?}
+    B -->|Yes| C[Use stored value]
+    B -->|No| D{options.debug?}
+    D -->|true| E["Log + Debug"]
+    D -->|false| F{options.log?}
+    F -->|true| G[Log]
+    F -->|false| H{__DEV__?}
+    H -->|true| G
+    H -->|false| I[Off]
+
+    C --> J[Set runtimeState]
+    E --> J
+    G --> J
+    I --> J
+
+    J --> K[Register DevTools]
+    K --> L[User changes setting]
+    L --> M[Update runtimeState]
+    M --> N[Save to localStorage]
+```
+
 ---
 
 ## 🔒 Type-Safe Outpost Names
@@ -902,6 +1022,7 @@ import {
   NavigationOutpostScopes,
   NavigationHooks,
   NavigationOutpostVerdicts,
+  DebugPoints,
 } from 'vue-router-citadel';
 ```
 
@@ -910,6 +1031,7 @@ import {
 | `NavigationOutpostScopes`   | `GLOBAL`, `ROUTE`                             | Outpost scope determining when it's processed |
 | `NavigationHooks`           | `BEFORE_EACH`, `BEFORE_RESOLVE`, `AFTER_EACH` | Vue Router navigation hooks                   |
 | `NavigationOutpostVerdicts` | `ALLOW`, `BLOCK`                              | Handler return verdicts                       |
+| `DebugPoints`               | `NAVIGATION_START`, `BEFORE_OUTPOST`, etc.    | Named debug breakpoint identifiers            |
 
 ### Types
 
@@ -922,6 +1044,10 @@ import type {
   NavigationCitadelAPI,
   NavigationHook,
   NavigationOutpostScope,
+  CitadelLogger,
+  // Debug types
+  DebugHandler,
+  DebugPoint,
   // Type-safe outpost names
   GlobalOutpostRegistry,
   RouteOutpostRegistry,
@@ -978,7 +1104,10 @@ Options for creating citadel:
 interface NavigationCitadelOptions {
   outposts?: NavigationOutpost[]; // Initial outposts to deploy
   log?: boolean; // Default: __DEV__
+  logger?: CitadelLogger; // Default: createDefaultLogger()
   debug?: boolean; // Default: false
+  debugHandler?: DebugHandler; // Default: createDefaultDebugHandler()
+  devtools?: boolean; // Default: __DEV__
   defaultPriority?: number; // Default: 100
   defaultTimeout?: number; // Default: undefined (no timeout)
   onError?: (error: Error, ctx: NavigationOutpostContext) => NavigationOutpostOutcome;

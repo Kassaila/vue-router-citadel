@@ -14,9 +14,10 @@ import type {
 } from './types';
 import { NavigationHooks, NavigationOutpostVerdicts, DebugPoints } from './types';
 import { __DEV__, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
-import { debugPoint, createDefaultLogger } from './helpers';
+import { debugPoint, createDefaultLogger, createDefaultDebugHandler } from './helpers';
 import { createRegistry, register, unregister, getRegisteredNames } from './navigationRegistry';
 import { patrol, toNavigationGuardReturn } from './navigationOutposts';
+import type { CitadelRuntimeState } from './devtools/types';
 
 /**
  * Dynamic devtools import for tree-shaking
@@ -71,15 +72,36 @@ export const createNavigationCitadel = (
   options: NavigationCitadelOptions = {},
 ): NavigationCitadelAPI => {
   const {
-    log = __DEV__,
-    debug = false,
+    log: optionLog,
+    debug: optionDebug,
     devtools = __DEV__,
     defaultPriority = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
   } = options;
   const logger = options.logger ?? createDefaultLogger();
-  const enableLog = log || debug;
+  const debugHandler = options.debugHandler ?? createDefaultDebugHandler();
   const enableDevtools = devtools && typeof window !== 'undefined';
   const registry = createRegistry();
+
+  /**
+   * Resolved options with defaults applied
+   */
+  const resolvedOptions: NavigationCitadelOptions = {
+    ...options,
+    debugHandler,
+  };
+
+  /**
+   * Mutable runtime state for log/debug settings
+   * Can be modified via DevTools at runtime
+   * Initialized with: localStorage → citadel options → defaults
+   */
+  const runtimeState: CitadelRuntimeState = {
+    log: optionLog ?? __DEV__,
+    debug: optionDebug ?? false,
+  };
+
+  // Initialize from localStorage if DevTools enabled (deferred to setupDevtools)
+  // For now, use citadel options as initial values
 
   /**
    * Store cleanup functions for navigation hooks
@@ -102,13 +124,18 @@ export const createNavigationCitadel = (
   });
 
   /**
+   * Helper to check if logging is enabled (log OR debug)
+   */
+  const isLogEnabled = (): boolean => runtimeState.log || runtimeState.debug;
+
+  /**
    * Factory to create guard handler for beforeEach/beforeResolve
    */
   const createNavigationGuardHandler =
     (hook: NavigationHook) =>
     async (to: RouteLocationNormalized, from: RouteLocationNormalized) => {
       const ctx = createContext(to, from, hook);
-      const outcome = await patrol(registry, ctx, options, logger, enableLog, debug);
+      const outcome = await patrol(registry, ctx, resolvedOptions, logger, runtimeState);
 
       return toNavigationGuardReturn(outcome);
     };
@@ -136,11 +163,11 @@ export const createNavigationCitadel = (
      * Errors are handled by onError or logged here (critical - always)
      */
     try {
-      await patrol(registry, ctx, options, logger, enableLog, debug);
+      await patrol(registry, ctx, resolvedOptions, logger, runtimeState);
     } catch (error) {
       // Critical: always log
       logger.error('Error in afterEach outpost:', error);
-      debugPoint(DebugPoints.ERROR_CAUGHT, debug, logger);
+      debugPoint(DebugPoints.ERROR_CAUGHT, runtimeState.debug, logger, debugHandler);
     }
   });
 
@@ -187,7 +214,7 @@ export const createNavigationCitadel = (
       return loadPromise;
     };
 
-    if (enableLog) {
+    if (isLogEnabled()) {
       logger.info(`Deploying ${scope} outpost: ${name}${lazy ? ' (lazy)' : ''}`);
     }
 
@@ -209,7 +236,7 @@ export const createNavigationCitadel = (
    * Abandon a single outpost
    */
   const abandonOne = (scope: NavigationOutpostScope, name: string): boolean => {
-    if (enableLog) {
+    if (isLogEnabled()) {
       logger.info(`Abandoning ${scope} outpost: ${name}`);
     }
 
@@ -237,10 +264,10 @@ export const createNavigationCitadel = (
           return;
         }
 
-        mod.setupDevtools(app, registry, logger, debug);
-        debugPoint(DebugPoints.DEVTOOLS_INIT, debug, logger);
+        mod.setupDevtools(app, registry, logger, runtimeState, optionLog, optionDebug);
+        debugPoint(DebugPoints.DEVTOOLS_INIT, runtimeState.debug, logger, debugHandler);
 
-        if (enableLog) {
+        if (isLogEnabled()) {
           logger.info('DevTools initialized via app.use(citadel)');
         }
       });
@@ -302,7 +329,7 @@ export const createNavigationCitadel = (
         }
       }
 
-      if (enableLog) {
+      if (isLogEnabled()) {
         logger.info(`Assigned outposts [${names.join(', ')}] to route "${routeName}"`);
       }
 
@@ -310,7 +337,7 @@ export const createNavigationCitadel = (
     },
 
     destroy(): void {
-      if (enableLog) {
+      if (isLogEnabled()) {
         logger.info('Destroying citadel');
       }
 

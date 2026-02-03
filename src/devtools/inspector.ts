@@ -198,22 +198,24 @@ export const setupInspector = (
     icon: DEVTOOLS_PLUGIN_ICON,
   });
 
-  api.on.getInspectorTree((payload) => {
+  api.on.getInspectorTree((payload: { inspectorId: string; rootNodes: CustomInspectorNode[] }) => {
     if (payload.inspectorId !== DEVTOOLS_INSPECTOR_ID) {
       return;
     }
     payload.rootNodes = createInspectorTree(registry);
   });
 
-  api.on.getInspectorState((payload) => {
-    if (payload.inspectorId !== DEVTOOLS_INSPECTOR_ID) {
-      return;
-    }
-    const state = getNodeState(payload.nodeId, registry);
-    if (state) {
-      payload.state = state;
-    }
-  });
+  api.on.getInspectorState(
+    (payload: { inspectorId: string; nodeId: string; state: CustomInspectorState | null }) => {
+      if (payload.inspectorId !== DEVTOOLS_INSPECTOR_ID) {
+        return;
+      }
+      const state = getNodeState(payload.nodeId, registry);
+      if (state) {
+        payload.state = state;
+      }
+    },
+  );
 
   debugPoint(DebugPoints.DEVTOOLS_INSPECTOR, debug, logger);
 };

@@ -17,6 +17,9 @@ export type {
   OutpostName,
   // Logger
   CitadelLogger,
+  // Debug
+  DebugHandler,
+  DebugPoint,
   // Lazy loading
   LazyOutpostLoader,
 } from './types';
@@ -24,12 +27,17 @@ export type {
 /**
  * Constants
  */
-export { NavigationHooks, NavigationOutpostVerdicts, NavigationOutpostScopes } from './types';
+export {
+  NavigationHooks,
+  NavigationOutpostVerdicts,
+  NavigationOutpostScopes,
+  DebugPoints,
+} from './types';
 
 /**
- * Logger utilities
+ * Logger and debug utilities
  */
-export { createDefaultLogger } from './helpers';
+export { createDefaultLogger, createDefaultDebugHandler } from './helpers';
 
 /**
  * Main factory
