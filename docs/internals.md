@@ -23,6 +23,7 @@ breakpoints.
     - [Registry Structure](#registry-structure)
     - [Outpost Processing](#outpost-processing)
     - [Outpost Timeout](#outpost-timeout)
+    - [🦥 Lazy Outposts](#-lazy-outposts)
     - [Outpost Error Handling](#outpost-error-handling)
   - [📋 Logging Reference](#-logging-reference)
   - [🐛 Debug Reference](#-debug-reference)
@@ -517,6 +518,81 @@ citadel.deployOutpost({
 ```
 
 Result: `heavy-api` has 30 seconds and completes successfully. `unlimited` has no timeout.
+
+### 🦥 Lazy Outposts
+
+Lazy outposts load their handler modules on-demand, enabling code splitting for heavy dependencies.
+
+```mermaid
+flowchart TD
+    A[processOutpost called] --> B[getHandler]
+    B --> C{Handler cached?}
+    C -->|Yes| D[Return cached handler]
+    C -->|No| E{Lazy outpost?}
+    E -->|No| F[Cache eager handler]
+    E -->|Yes| G["Load module: import()"]
+    G --> H{Load successful?}
+    H -->|Yes| I[Cache handler from module.default]
+    H -->|No| J[Throw error - allows retry]
+    F --> D
+    I --> D
+    D --> K{Timeout configured?}
+    K -->|Yes| L["Promise.race([handler(ctx), timeout])"]
+    K -->|No| M["handler(ctx)"]
+    L --> N[Continue patrol]
+    M --> N
+```
+
+**Key behavior:**
+
+- Module loading has **no timeout** — network latency is unpredictable
+- `timeout` applies **only to handler execution** after loading
+- If load fails, error is passed to `onError` and **retry is allowed** on next navigation
+- After first successful load, handler is **cached** — subsequent calls are instant
+
+**Example: Lazy outpost with heavy dependencies**
+
+```typescript
+// src/outposts/premium.ts — loaded only when needed
+import { z } from 'zod'; // Heavy dependency
+import type { NavigationOutpostHandler } from 'vue-router-citadel';
+
+const handler: NavigationOutpostHandler = ({ verdicts, to }) => {
+  const schema = z.object({ tier: z.enum(['free', 'premium']) });
+  const result = schema.safeParse(to.meta);
+
+  if (!result.success || result.data.tier !== 'premium') {
+    return { name: 'upgrade' };
+  }
+
+  return verdicts.ALLOW;
+};
+
+export default handler;
+```
+
+```typescript
+// main.ts — premium outpost is lazy-loaded
+citadel.deployOutpost({
+  name: 'premium-check',
+  lazy: true,
+  timeout: 500, // 500ms for handler execution (loading not counted)
+  handler: () => import('./outposts/premium'),
+});
+```
+
+**Timeline example:**
+
+| Event                | Time  | Notes                   |
+| -------------------- | ----- | ----------------------- |
+| Navigation starts    | 0ms   |                         |
+| Module load starts   | 0ms   | No timeout              |
+| Module loaded        | 800ms | Slow network, but OK    |
+| Handler starts       | 800ms | Timeout starts (500ms)  |
+| Handler completes    | 900ms | 100ms execution < 500ms |
+| Navigation completes | 900ms | Success                 |
+
+If handler took 600ms (> 500ms timeout), it would timeout — but loading time is never counted.
 
 ### Outpost Error Handling
 

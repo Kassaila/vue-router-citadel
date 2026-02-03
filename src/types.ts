@@ -179,10 +179,19 @@ export type NavigationOutpostHandler = (
 ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
 
 /**
+ * Lazy outpost loader — returns a module with default export
+ */
+export type LazyOutpostLoader = () => Promise<{ default: NavigationOutpostHandler }>;
+
+/**
  * Navigation outpost configuration.
  * Generic parameter S constrains the name field based on scope.
+ * Generic parameter L constrains handler type based on lazy flag.
  */
-export interface NavigationOutpost<S extends NavigationOutpostScope = 'global'> {
+export interface NavigationOutpost<
+  S extends NavigationOutpostScope = 'global',
+  L extends boolean = false,
+> {
   /**
    * Outpost scope. Default: 'global'
    */
@@ -192,9 +201,11 @@ export interface NavigationOutpost<S extends NavigationOutpostScope = 'global'> 
    */
   name: OutpostNameByScope<S>;
   /**
-   * Outpost handler function
+   * Outpost handler function.
+   * When lazy: true, must be a function returning Promise<{ default: NavigationOutpostHandler }>.
+   * When lazy: false (default), must be a NavigationOutpostHandler.
    */
-  handler: NavigationOutpostHandler;
+  handler: L extends true ? LazyOutpostLoader : NavigationOutpostHandler;
   /**
    * Priority for outposts (lower = processed first). Default: 100
    */
@@ -205,8 +216,14 @@ export interface NavigationOutpost<S extends NavigationOutpostScope = 'global'> 
   hooks?: NavigationHook[];
   /**
    * Timeout for this outpost in milliseconds. Overrides defaultTimeout.
+   * Note: For lazy outposts, timeout applies only to handler execution, not module loading.
    */
   timeout?: number;
+  /**
+   * Mark handler as lazy-loaded. Default: false.
+   * When true, handler must return Promise<{ default: NavigationOutpostHandler }>.
+   */
+  lazy?: L;
 }
 
 /**
@@ -216,7 +233,7 @@ export interface NavigationCitadelOptions {
   /**
    * Initial outposts to deploy on citadel creation
    */
-  outposts?: NavigationOutpost<NavigationOutpostScope>[];
+  outposts?: NavigationOutpost<NavigationOutpostScope, boolean>[];
   /**
    * Enable logging for non-critical events. Default: __DEV__
    * Critical events (errors, timeouts) are always logged regardless of this setting.
@@ -269,7 +286,34 @@ export interface NavigationCitadelOptions {
 /**
  * Registered navigation outpost structure (after deployment)
  */
-export type RegisteredNavigationOutpost = Omit<NavigationOutpost<NavigationOutpostScope>, 'scope'>;
+export interface RegisteredNavigationOutpost {
+  /**
+   * Unique outpost name
+   */
+  name: string;
+  /**
+   * Priority for outposts (lower = processed first)
+   */
+  priority?: number;
+  /**
+   * Hooks this outpost should run on
+   */
+  hooks?: NavigationHook[];
+  /**
+   * Timeout for this outpost in milliseconds
+   */
+  timeout?: number;
+  /**
+   * Whether this outpost is lazy-loaded
+   */
+  lazy: boolean;
+  /**
+   * Returns the handler, loading it if lazy.
+   * For eager outposts, returns immediately.
+   * For lazy outposts, loads the module on first call and caches it.
+   */
+  getHandler: () => Promise<NavigationOutpostHandler>;
+}
 
 /**
  * Public API returned by createNavigationCitadel
@@ -283,8 +327,8 @@ export interface NavigationCitadelAPI {
   /**
    * Deploy one or multiple outposts
    */
-  deployOutpost: <S extends NavigationOutpostScope = 'global'>(
-    options: NavigationOutpost<S> | NavigationOutpost<S>[],
+  deployOutpost: <S extends NavigationOutpostScope = 'global', L extends boolean = false>(
+    options: NavigationOutpost<S, L> | NavigationOutpost<S, L>[],
   ) => void;
 
   /**

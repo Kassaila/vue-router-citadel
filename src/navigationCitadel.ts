@@ -9,6 +9,8 @@ import type {
   NavigationOutpost,
   NavigationOutpostScope,
   NavigationHook,
+  NavigationOutpostHandler,
+  LazyOutpostLoader,
 } from './types';
 import { NavigationHooks, NavigationOutpostVerdicts, DebugPoints } from './types';
 import { __DEV__, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
@@ -147,14 +149,55 @@ export const createNavigationCitadel = (
   /**
    * Deploy a single outpost
    */
-  const deployOne = (opts: NavigationOutpost<NavigationOutpostScope>): void => {
-    const { scope = 'global', name, handler, priority, hooks, timeout } = opts;
+  const deployOne = (opts: NavigationOutpost<NavigationOutpostScope, boolean>): void => {
+    const { scope = 'global', name, handler, priority, hooks, timeout, lazy = false } = opts;
+
+    // Create getHandler wrapper
+    let cachedHandler: NavigationOutpostHandler | null = null;
+    let loadPromise: Promise<NavigationOutpostHandler> | null = null;
+
+    const getHandler = async (): Promise<NavigationOutpostHandler> => {
+      // Return cached if available
+      if (cachedHandler) {
+        return cachedHandler;
+      }
+
+      // Eager — cache and return
+      if (!lazy) {
+        cachedHandler = handler as NavigationOutpostHandler;
+        return cachedHandler;
+      }
+
+      // Lazy — load module (retry allowed when loadPromise is null)
+      if (!loadPromise) {
+        loadPromise = (handler as LazyOutpostLoader)()
+          .then((mod) => {
+            if (!mod.default || typeof mod.default !== 'function') {
+              throw new Error(`Lazy outpost "${name}" must export default handler`);
+            }
+            cachedHandler = mod.default;
+            return cachedHandler;
+          })
+          .catch((err) => {
+            loadPromise = null; // Allow retry on next call
+            throw err instanceof Error ? err : new Error(String(err));
+          });
+      }
+
+      return loadPromise;
+    };
 
     if (enableLog) {
-      logger.info(`Deploying ${scope} outpost: ${name}`);
+      logger.info(`Deploying ${scope} outpost: ${name}${lazy ? ' (lazy)' : ''}`);
     }
 
-    register(registry, scope, { name, handler, priority, hooks, timeout }, defaultPriority, logger);
+    register(
+      registry,
+      scope,
+      { name, getHandler, lazy, priority, hooks, timeout },
+      defaultPriority,
+      logger,
+    );
 
     // Notify DevTools of change
     if (enableDevtools) {
@@ -203,7 +246,9 @@ export const createNavigationCitadel = (
       });
     },
     deployOutpost(
-      opts: NavigationOutpost<NavigationOutpostScope> | NavigationOutpost<NavigationOutpostScope>[],
+      opts:
+        | NavigationOutpost<NavigationOutpostScope, boolean>
+        | NavigationOutpost<NavigationOutpostScope, boolean>[],
     ): void {
       if (Array.isArray(opts)) {
         for (const opt of opts) {

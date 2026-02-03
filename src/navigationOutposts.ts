@@ -131,11 +131,18 @@ const processOutpost = async (
 
   try {
     /**
-     * Run handler with optional timeout
+     * 1. Load handler (no timeout — network latency is separate)
+     * For eager outposts, returns immediately from cache.
+     * For lazy outposts, loads module on first call.
+     */
+    const handler = await outpost.getHandler();
+
+    /**
+     * 2. Execute handler (timeout applies only to execution)
      */
     const outcome = timeout
-      ? await Promise.race([outpost.handler(ctx), createTimeoutPromise(timeout)])
-      : await outpost.handler(ctx);
+      ? await Promise.race([handler(ctx), createTimeoutPromise(timeout)])
+      : await handler(ctx);
 
     return normalizeOutcome(outcome, router);
   } catch (error) {

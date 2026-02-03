@@ -17,6 +17,8 @@ export type {
   OutpostName,
   // Logger
   CitadelLogger,
+  // Lazy loading
+  LazyOutpostLoader,
 } from './types';
 
 /**

@@ -29,6 +29,7 @@ Think of it as turning your router into a fortress.
   - [🪝 Navigation Hooks](#-navigation-hooks)
   - [↩️ Outpost Handler Return Values](#-outpost-handler-return-values)
   - [⏱️ Outpost Timeout](#-outpost-timeout)
+  - [🦥 Lazy Outposts](#-lazy-outposts)
   - [📚 API](#-api)
     - [Citadel](#citadel)
     - [deployOutpost](#deployoutpost)
@@ -235,6 +236,27 @@ citadel.deployOutpost({
 
 > See [Outpost Timeout](./docs/internals.md#outpost-timeout) for diagrams and detailed examples.
 
+## 🦥 Lazy Outposts
+
+Load heavy outpost handlers on-demand for better code splitting.
+
+```typescript
+// Eager — loaded immediately (default)
+import { authCheck } from './outposts/auth';
+
+citadel.deployOutpost({ name: 'auth', handler: authCheck });
+
+// Lazy — loaded on first navigation
+citadel.deployOutpost({
+  name: 'heavy-validation',
+  lazy: true,
+  handler: () => import('./outposts/heavy-validation'),
+});
+```
+
+> See [Lazy Outposts](./docs/internals.md#-lazy-outposts) for how it works, timeout behavior, and
+> detailed examples.
+
 ## 📚 API
 
 ### Citadel
@@ -283,6 +305,7 @@ citadel.deployOutpost({
   priority: 10, // Optional, lower = processed first
   hooks: [NavigationHooks.BEFORE_EACH], // Optional, default: ['beforeEach']
   timeout: 5000, // Optional, overrides defaultTimeout
+  lazy: false, // Optional, enable lazy loading (default: false)
 });
 
 // Route outpost (scope must be specified)
@@ -487,6 +510,7 @@ import {
   // Types
   type NavigationOutpost,
   type NavigationOutpostHandler,
+  type LazyOutpostLoader,
   type CitadelLogger,
 } from 'vue-router-citadel';
 ```

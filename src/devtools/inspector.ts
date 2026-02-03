@@ -25,6 +25,7 @@ import {
   TAG_COLOR_HOOKS_BG,
   TAG_COLOR_SCOPE_GLOBAL_BG,
   TAG_COLOR_SCOPE_ROUTE_BG,
+  TAG_COLOR_LAZY_BG,
 } from './consts';
 
 /**
@@ -58,17 +59,37 @@ const createHooksTag = (hooks: string[]) => ({
 });
 
 /**
+ * Creates a tag for lazy-loaded outposts
+ */
+const createLazyTag = () => ({
+  label: 'lazy',
+  textColor: TAG_COLOR_TEXT,
+  backgroundColor: TAG_COLOR_LAZY_BG,
+});
+
+/**
  * Creates tree node for a single outpost
  */
 const createOutpostNode = (
   name: string,
   outpost: RegisteredNavigationOutpost,
   scope: NavigationOutpostScope,
-): OutpostTreeNode => ({
-  id: `outpost-${scope}-${name}`,
-  label: name,
-  tags: [createPriorityTag(getOutpostPriority(outpost)), createHooksTag(getOutpostHooks(outpost))],
-});
+): OutpostTreeNode => {
+  const tags = [
+    createPriorityTag(getOutpostPriority(outpost)),
+    createHooksTag(getOutpostHooks(outpost)),
+  ];
+
+  if (outpost.lazy) {
+    tags.push(createLazyTag());
+  }
+
+  return {
+    id: `outpost-${scope}-${name}`,
+    label: name,
+    tags,
+  };
+};
 
 /**
  * Creates inspector tree structure from registry
@@ -157,6 +178,7 @@ export const getNodeState = (
       { key: 'priority', value: getOutpostPriority(outpost) },
       { key: 'hooks', value: getOutpostHooks(outpost) },
       { key: 'timeout', value: outpost.timeout ?? 'none (uses default)' },
+      { key: 'lazy', value: outpost.lazy },
     ],
   };
 };

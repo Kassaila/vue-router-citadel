@@ -34,6 +34,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Route validation for redirect returns
 - Default error handler (`console.error` + `BLOCK`)
 - Timeout support (`defaultTimeout`, `timeout`, `onTimeout`)
+- Lazy outposts (`lazy: true`) — load handler modules on-demand for code splitting
 - Type-safe outpost names via declaration merging (`GlobalOutpostRegistry`, `RouteOutpostRegistry`)
 - Optional `scope` in outpost config (defaults to `'global'`)
 
@@ -63,6 +64,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - `NavigationOutpost` — outpost configuration interface (scope optional, defaults to `'global'`)
 - `NavigationOutpostHandler` — handler function type
+- `LazyOutpostLoader` — lazy loader function type for code splitting
 - `NavigationOutpostContext` — handler context with verdicts, to, from, router, hook
 - `NavigationCitadelOptions` — citadel creation options
 - `NavigationCitadelAPI` — public API interface
@@ -70,12 +72,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 #### Testing
 
 - Vitest + happy-dom test setup
-- 68 tests across 5 test files
+- 80 tests across 6 test files
 - `__tests__/navigationCitadel.test.ts` — citadel creation, hooks, destroy
 - `__tests__/navigationRegistry.test.ts` — registry CRUD, priority sorting
 - `__tests__/navigationOutposts.test.ts` — patrol logic, verdicts, redirects
 - `__tests__/timeout.test.ts` — timeout handling, onTimeout callback
 - `__tests__/integration.test.ts` — end-to-end navigation scenarios
+- `__tests__/lazy.test.ts` — lazy loading, caching, retry, timeout behavior
 - `docs/testing.md` — testing guide and test case reference
 
 #### Documentation

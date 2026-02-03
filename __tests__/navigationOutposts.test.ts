@@ -10,6 +10,7 @@ import {
   createAllowHandler,
   createBlockHandler,
   createRedirectHandler,
+  createRegisteredOutpost,
 } from './helpers/setup';
 
 describe('navigationOutposts', () => {
@@ -107,14 +108,14 @@ describe('navigationOutposts', () => {
       register(
         registry,
         'global',
-        {
+        createRegisteredOutpost({
           name: 'second',
           priority: 20,
           handler: () => {
             order.push('second');
             return 'allow';
           },
-        },
+        }),
         100,
         mockLogger,
       );
@@ -122,14 +123,14 @@ describe('navigationOutposts', () => {
       register(
         registry,
         'global',
-        {
+        createRegisteredOutpost({
           name: 'first',
           priority: 10,
           handler: () => {
             order.push('first');
             return 'allow';
           },
-        },
+        }),
         100,
         mockLogger,
       );
@@ -145,14 +146,14 @@ describe('navigationOutposts', () => {
       register(
         registry,
         'global',
-        {
+        createRegisteredOutpost({
           name: 'blocker',
           priority: 10,
           handler: () => {
             order.push('blocker');
             return 'block';
           },
-        },
+        }),
         100,
         mockLogger,
       );
@@ -160,14 +161,14 @@ describe('navigationOutposts', () => {
       register(
         registry,
         'global',
-        {
+        createRegisteredOutpost({
           name: 'after',
           priority: 20,
           handler: () => {
             order.push('after');
             return 'allow';
           },
-        },
+        }),
         100,
         mockLogger,
       );
@@ -182,10 +183,10 @@ describe('navigationOutposts', () => {
       register(
         registry,
         'global',
-        {
+        createRegisteredOutpost({
           name: 'redirector',
           handler: createRedirectHandler({ name: 'login' }),
-        },
+        }),
         100,
         mockLogger,
       );
@@ -201,14 +202,14 @@ describe('navigationOutposts', () => {
       register(
         registry,
         'global',
-        {
+        createRegisteredOutpost({
           name: 'beforeEach',
           hooks: [NavigationHooks.BEFORE_EACH],
           handler: () => {
             order.push('beforeEach');
             return 'allow';
           },
-        },
+        }),
         100,
         mockLogger,
       );
@@ -216,14 +217,14 @@ describe('navigationOutposts', () => {
       register(
         registry,
         'global',
-        {
+        createRegisteredOutpost({
           name: 'beforeResolve',
           hooks: [NavigationHooks.BEFORE_RESOLVE],
           handler: () => {
             order.push('beforeResolve');
             return 'allow';
           },
-        },
+        }),
         100,
         mockLogger,
       );
@@ -261,14 +262,14 @@ describe('navigationOutposts', () => {
       register(
         registry,
         'global',
-        {
+        createRegisteredOutpost({
           name: 'global-guard',
           priority: 10,
           handler: () => {
             order.push('global');
             return 'allow';
           },
-        },
+        }),
         100,
         mockLogger,
       );
@@ -276,14 +277,14 @@ describe('navigationOutposts', () => {
       register(
         registry,
         'route',
-        {
+        createRegisteredOutpost({
           name: 'route-guard',
           priority: 10,
           handler: () => {
             order.push('route');
             return 'allow';
           },
-        },
+        }),
         100,
         mockLogger,
       );
@@ -326,7 +327,7 @@ describe('navigationOutposts', () => {
       register(
         registry,
         'route',
-        { name: 'shared', handler: createAllowHandler() },
+        createRegisteredOutpost({ name: 'shared', handler: createAllowHandler() }),
         100,
         mockLogger,
       );

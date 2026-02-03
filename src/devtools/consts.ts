@@ -24,3 +24,4 @@ export const TAG_COLOR_PRIORITY_BG = 0x42b983; // Vue green
 export const TAG_COLOR_HOOKS_BG = 0x3b82f6; // Blue
 export const TAG_COLOR_SCOPE_GLOBAL_BG = 0x8b5cf6; // Purple
 export const TAG_COLOR_SCOPE_ROUTE_BG = 0xf59e0b; // Amber
+export const TAG_COLOR_LAZY_BG = 0xec4899; // Pink
