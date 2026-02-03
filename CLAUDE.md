@@ -64,6 +64,10 @@ __tests__/                       # Tests (vitest)
 
 examples/                        # Usage examples (auth, hooks, nested routes)
 docs/                            # Documentation
+temp/                            # Feature workspaces (gitignored)
+├── <feature-name>/              # One directory per feature
+│   ├── feature.md               # Plan and checklist
+│   └── *.md                     # Notes, research, context
 ```
 
 ## Key Concepts
@@ -226,7 +230,7 @@ npm pack --dry-run   # Check package contents
 /test <file>         # Run specific test file
 /build               # Build with tsup
 /coverage            # Run tests with coverage report
-/feature <name>      # Start feature workflow (creates docs/current-feature.md)
+/feature <name>      # Start feature workflow (creates temp/<name>/feature.md)
 /release-check       # Pre-release verification (format, build, tests, pack)
 ```
 
@@ -249,13 +253,25 @@ npm pack --dry-run   # Check package contents
 
 Use `/feature <name>` to start this workflow automatically.
 
-1. **Start**: Run `/feature <name>` or clear `/docs/current-feature.md` from previous feature
-2. **Before implementation**: Create `/docs/current-feature.md` (or update if exists) with proposal
-   (problem, solution, files to modify, checklist)
-3. **Implementation**: Follow the checklist, mark items as done
-4. **After implementation**: Update all docs (use `docs-updater` agent or manually)
+**Structure:**
 
-Note: `/docs/current-feature.md` is in `.gitignore` — it's a working document, not committed.
+```
+temp/                          # in .gitignore
+├── <feature-name>/            # kebab-case
+│   ├── feature.md             # plan, checklist
+│   └── *.md                   # notes, research, context
+```
+
+**Flow:**
+
+1. **Start**: Run `/feature <name>` — creates `temp/<name>/feature.md`
+2. **Before implementation**: Fill in the proposal (problem, solution, files to modify, checklist)
+3. **Implementation**: Follow the checklist, mark items as done
+4. **Context files**: Add any notes, research, intermediate results to the same directory
+5. **After implementation**: Update all docs (use `docs-updater` agent or manually)
+
+Note: `temp/` is in `.gitignore` — working documents are not committed. Directories are kept after
+feature completion for reference; clean up manually when no longer needed.
 
 **CRITICAL**: This flow is MANDATORY for any feature implementation. Even if:
 
@@ -263,13 +279,13 @@ Note: `/docs/current-feature.md` is in `.gitignore` — it's a working document,
 - Plan was already created in a previous session
 - It seems obvious and tempting to just start coding
 
-A plan from the prompt != `/docs/current-feature.md`. You must:
+A plan from the prompt != `temp/<name>/feature.md`. You must:
 
-1. Copy the plan to `/docs/current-feature.md`
+1. Copy the plan to `temp/<name>/feature.md`
 2. Add a checklist if missing
 3. Follow the flow as usual
 
-DO NOT use TaskCreate/TaskUpdate as a replacement for `/docs/current-feature.md`.
+DO NOT use TaskCreate/TaskUpdate as a replacement for `temp/<name>/feature.md`.
 
 ### File Editing
 
