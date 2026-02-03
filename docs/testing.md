@@ -30,6 +30,7 @@ This document describes the testing setup for vue-router-citadel and lists all t
       - [assignOutpostToRoute](#assignoutposttoroute)
       - [destroy](#destroy)
     - [timeout.test.ts 5 tests](#timeouttestts-5-tests)
+    - [lazy.test.ts 12 tests](#lazytestts-12-tests)
     - [integration.test.ts 13 tests](#integrationtestts-13-tests)
       - [navigation flow](#navigation-flow)
       - [error handling](#error-handling)
@@ -52,8 +53,8 @@ This document describes the testing setup for vue-router-citadel and lists all t
 | -------------- | --------- |
 | Test Framework | Vitest    |
 | Environment    | happy-dom |
-| Total Tests    | 68        |
-| Test Files     | 5         |
+| Total Tests    | 80        |
+| Test Files     | 6         |
 
 ## 🚀 Quick Start
 
@@ -78,6 +79,7 @@ __tests__/
 ├── navigationOutposts.test.ts      # Patrol logic (19 tests)
 ├── navigationCitadel.test.ts       # Public API (19 tests)
 ├── timeout.test.ts                 # Timeout handling (5 tests)
+├── lazy.test.ts                    # Lazy loading (12 tests)
 └── integration.test.ts             # Full navigation flows (13 tests)
 ```
 
@@ -85,15 +87,16 @@ __tests__/
 
 Located in `__tests__/helpers/setup.ts`:
 
-| Helper                              | Description                                  |
-| ----------------------------------- | -------------------------------------------- |
-| `createMockRouter(routes?)`         | Creates vue-router with memory history       |
-| `createMockLogger()`                | Logger that captures calls for assertions    |
-| `createAllowHandler()`              | Returns `'allow'` verdict                    |
-| `createBlockHandler()`              | Returns `'block'` verdict                    |
-| `createRedirectHandler(to)`         | Returns redirect location                    |
-| `createDelayedHandler(ms, outcome)` | Async handler with delay (for timeout tests) |
-| `createErrorHandler(message)`       | Throws error with message                    |
+| Helper                              | Description                                   |
+| ----------------------------------- | --------------------------------------------- |
+| `createMockRouter(routes?)`         | Creates vue-router with memory history        |
+| `createMockLogger()`                | Logger that captures calls for assertions     |
+| `createAllowHandler()`              | Returns `'allow'` verdict                     |
+| `createBlockHandler()`              | Returns `'block'` verdict                     |
+| `createRedirectHandler(to)`         | Returns redirect location                     |
+| `createDelayedHandler(ms, outcome)` | Async handler with delay (for timeout tests)  |
+| `createErrorHandler(message)`       | Throws error with message                     |
+| `createRegisteredOutpost(options)`  | Creates RegisteredNavigationOutpost for tests |
 
 ### Example Usage
 
@@ -258,6 +261,54 @@ Timeout functionality.
 
 ---
 
+### lazy.test.ts (12 tests)
+
+Lazy outpost loading functionality.
+
+#### loading behavior
+
+| Test                                         | Description                   |
+| -------------------------------------------- | ----------------------------- |
+| should load lazy outpost on first navigation | Module loaded on demand       |
+| should cache handler after first load        | Subsequent calls use cache    |
+| should not load eager outpost lazily         | Eager handlers work as before |
+
+#### error handling
+
+| Test                                               | Description                 |
+| -------------------------------------------------- | --------------------------- |
+| should handle module load error                    | onError called on load fail |
+| should throw error if module has no default export | Invalid module format       |
+| should allow retry after load error                | Retry on next navigation    |
+
+#### timeout behavior
+
+| Test                                                        | Description              |
+| ----------------------------------------------------------- | ------------------------ |
+| should apply timeout only to handler execution, not loading | Loading time not counted |
+| should timeout if handler execution exceeds timeout         | Execution timeout works  |
+
+#### logging
+
+| Test                                        | Description             |
+| ------------------------------------------- | ----------------------- |
+| should log lazy flag when deploying         | "(lazy)" in log message |
+| should not log lazy flag for eager outposts | No "(lazy)" for eager   |
+
+#### mixed eager and lazy outposts
+
+| Test                                                     | Description             |
+| -------------------------------------------------------- | ----------------------- |
+| should process eager and lazy outposts in priority order | Priority ordering works |
+
+#### getOutpostNames
+
+| Test                                                | Description       |
+| --------------------------------------------------- | ----------------- |
+| should return names of both eager and lazy outposts | Both types listed |
+
+---
+
 ### integration.test.ts (13 tests)
 
 Full navigation flows with real router.
@@ -312,6 +363,7 @@ Full navigation flows with real router.
 | Outcome/patrol logic  | `navigationOutposts.test.ts` |
 | Public API            | `navigationCitadel.test.ts`  |
 | Timeout behavior      | `timeout.test.ts`            |
+| Lazy loading          | `lazy.test.ts`               |
 | Full navigation flows | `integration.test.ts`        |
 
 ### 2. Use Existing Helpers

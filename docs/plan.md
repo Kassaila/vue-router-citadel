@@ -182,77 +182,24 @@ citadel.resetMetrics();
 
 ---
 
-#### Lazy Outposts
+#### ~~Lazy Outposts~~ ✅
 
-Dynamic import of outpost handlers for code splitting (like Vue Router lazy components).
+Implemented: `lazy: true` option for on-demand handler loading.
 
-```typescript
-// Eager — loaded immediately
-import { heavyAuthCheck } from './outposts/heavy-auth';
+**Features:**
 
-citadel.deployOutpost({
-  scope: 'route',
-  name: 'auth',
-  handler: heavyAuthCheck,
-});
+- `lazy` option in outpost config
+- Handler module loaded on first navigation, then cached
+- Timeout applies only to handler execution, not module loading
+- Retry allowed after load failure
+- DevTools shows `lazy` tag
 
-// Lazy — loaded on first navigation
-citadel.deployOutpost({
-  scope: 'route',
-  name: 'heavy-auth',
-  handler: () => import('./outposts/heavy-auth'),
-});
-```
+**Files:**
 
-**How it works:**
-
-Both variants use the same API. Type is detected at deploy time by checking `handler.length`:
-
-- `handler.length >= 1` → Eager (accepts context argument)
-- `handler.length === 0` → Lazy loader (no arguments)
-
-**Implementation:**
-
-```typescript
-// In deployOutpost()
-function deployOutpost(options) {
-  const { handler } = options;
-
-  if (handler.length === 0) {
-    // Lazy — wrap once at deploy time
-    let cached: NavigationOutpostHandler | null = null;
-
-    options.handler = async (ctx) => {
-      if (!cached) {
-        const module = await handler();
-        cached = module.default;
-      }
-      return cached(ctx);
-    };
-  }
-
-  // Eager — use as-is
-  registry.set(name, options);
-}
-```
-
-**Type updates:**
-
-```typescript
-type LazyOutpostLoader = () => Promise<{ default: NavigationOutpostHandler }>;
-
-interface NavigationOutpost {
-  handler: NavigationOutpostHandler | LazyOutpostLoader;
-  // ...
-}
-```
-
-**Benefits:**
-
-- No helper functions needed (unlike `lazy()` wrapper)
-- Type detection once at deploy, not on every navigation
-- Same approach as Vue Router lazy components
-- Code splitting works out of the box (webpack/vite create separate chunks)
+- `src/types.ts` — `LazyOutpostLoader` type, conditional typing
+- `src/navigationCitadel.ts` — `getHandler` wrapper with caching
+- `src/navigationOutposts.ts` — separated loading from execution
+- `__tests__/lazy.test.ts` — 12 tests
 
 ---
 

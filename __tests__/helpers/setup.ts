@@ -1,5 +1,10 @@
 import { createRouter, createMemoryHistory, type RouteRecordRaw } from 'vue-router';
-import type { CitadelLogger } from '../../src/types';
+import type {
+  CitadelLogger,
+  NavigationOutpostHandler,
+  RegisteredNavigationOutpost,
+  NavigationHook,
+} from '../../src/types';
 
 /**
  * Creates a mock router for testing
@@ -85,6 +90,28 @@ export const createDelayedHandler = (ms: number, outcome: 'allow' | 'block' = 'a
 export const createErrorHandler = (message: string) => {
   return () => {
     throw new Error(message);
+  };
+};
+
+/**
+ * Creates a RegisteredNavigationOutpost for testing
+ */
+export const createRegisteredOutpost = (options: {
+  name: string;
+  handler: NavigationOutpostHandler;
+  priority?: number;
+  hooks?: NavigationHook[];
+  timeout?: number;
+  lazy?: boolean;
+}): RegisteredNavigationOutpost => {
+  const { name, handler, priority, hooks, timeout, lazy = false } = options;
+  return {
+    name,
+    priority,
+    hooks,
+    timeout,
+    lazy,
+    getHandler: () => Promise.resolve(handler),
   };
 };
 
