@@ -23,6 +23,8 @@ pipelines
 | `docs/plan.md`      | Development roadmap and TODO priorities    |
 | `CONTRIBUTING.md`   | Guide for contributors                     |
 | `CHANGELOG.md`      | Release notes                              |
+| `.claude/skills/`   | Slash commands for Claude Code             |
+| `.claude/agents/`   | Custom subagents for Claude Code           |
 
 ## Repository Structure
 
@@ -47,6 +49,18 @@ __tests__/                       # Tests (vitest)
 ├── navigationOutposts.test.ts
 ├── timeout.test.ts
 └── integration.test.ts
+
+.claude/                         # Claude Code configuration
+├── skills/                      # Slash commands (/test, /build, etc.)
+│   ├── test/SKILL.md
+│   ├── build/SKILL.md
+│   ├── coverage/SKILL.md
+│   ├── feature/SKILL.md
+│   └── release-check/SKILL.md
+└── agents/                      # Custom subagents
+    ├── test-runner.md
+    ├── code-reviewer.md
+    └── docs-updater.md
 
 examples/                        # Usage examples (auth, hooks, nested routes)
 docs/                            # Documentation
@@ -133,6 +147,8 @@ npm run format:check # Check formatting
 | Utilities/Logger    | `src/helpers.ts`            |
 | DevTools            | `src/devtools/`             |
 | Tests               | `__tests__/*.test.ts`       |
+| Claude Skills       | `.claude/skills/`           |
+| Claude Agents       | `.claude/agents/`           |
 
 ## Code Patterns
 
@@ -190,6 +206,8 @@ Key types: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, `GlobalOutpostName`,
 
 ## Commands
 
+### npm scripts
+
 ```bash
 npm install          # Install dependencies
 npm run build        # Build for production
@@ -200,6 +218,23 @@ npm run test:coverage # Run tests with coverage
 npm run format       # Format code
 npm pack --dry-run   # Check package contents
 ```
+
+### Slash Commands (Skills)
+
+```bash
+/test                # Run vitest tests
+/test <file>         # Run specific test file
+/build               # Build with tsup
+/coverage            # Run tests with coverage report
+/feature <name>      # Start feature workflow (creates docs/current-feature.md)
+/release-check       # Pre-release verification (format, build, tests, pack)
+```
+
+### Custom Agents
+
+- **test-runner**: Runs tests and analyzes failures (haiku, fast)
+- **code-reviewer**: Reviews code for TypeScript/Vue Router patterns (sonnet)
+- **docs-updater**: Updates documentation after changes (sonnet)
 
 ## Current State
 
@@ -212,11 +247,13 @@ npm pack --dry-run   # Check package contents
 
 ### Feature Development Flow
 
-1. **Start**: Clear `/docs/current-feature.md` from previous feature
+Use `/feature <name>` to start this workflow automatically.
+
+1. **Start**: Run `/feature <name>` or clear `/docs/current-feature.md` from previous feature
 2. **Before implementation**: Create `/docs/current-feature.md` (or update if exists) with proposal
    (problem, solution, files to modify, checklist)
 3. **Implementation**: Follow the checklist, mark items as done
-4. **After implementation**: Update all docs (README.md, CLAUDE.md, CHANGELOG.md, docs/, etc.)
+4. **After implementation**: Update all docs (use `docs-updater` agent or manually)
 
 Note: `/docs/current-feature.md` is in `.gitignore` — it's a working document, not committed.
 
