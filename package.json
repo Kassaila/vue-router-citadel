@@ -31,8 +31,14 @@
     "test:coverage": "vitest run --coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check:types": "tsc --noEmit",
+    "check:format": "npm run format:check",
+    "check:all": "npm run check:format && npm run check:types && npm run test:run",
+    "release:check": "npm run check:all && npm run build && npm pack --dry-run",
+    "release:publish": "npm run release:check && npm publish",
+    "release:publish:beta": "npm run release:check && npm publish --tag beta",
     "prepare": "husky",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run check:types && npm run test:run"
   },
   "lint-staged": {
     "*.{ts,js,json,md}": "prettier --write"
@@ -67,6 +73,7 @@
     "@vue/devtools-api": "^8.0.5"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.18",
     "@vue/test-utils": "^2.4.6",
     "happy-dom": "^20.4.0",
     "husky": "^9.0.0",

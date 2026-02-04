@@ -34,7 +34,9 @@ describe('timeout', () => {
     // Navigation should be blocked due to timeout
     expect(router.currentRoute.value.name).toBe('home');
     expect(
-      mockLogger.calls.some((c) => c.level === 'warn' && c.args[0].includes('timed out')),
+      mockLogger.calls.some(
+        (c) => c.level === 'warn' && (c.args[0] as string).includes('timed out'),
+      ),
     ).toBe(true);
 
     citadel.destroy();
@@ -111,7 +113,9 @@ describe('timeout', () => {
 
     // Navigation should succeed
     expect(router.currentRoute.value.name).toBe('dashboard');
-    expect(mockLogger.calls.some((c) => c.args[0]?.includes?.('timed out'))).toBe(false);
+    expect(mockLogger.calls.some((c) => (c.args[0] as string)?.includes?.('timed out'))).toBe(
+      false,
+    );
 
     citadel.destroy();
   });
@@ -132,7 +136,9 @@ describe('timeout', () => {
     await router.push('/dashboard');
 
     expect(router.currentRoute.value.name).toBe('dashboard');
-    expect(mockLogger.calls.some((c) => c.args[0]?.includes?.('timed out'))).toBe(false);
+    expect(mockLogger.calls.some((c) => (c.args[0] as string)?.includes?.('timed out'))).toBe(
+      false,
+    );
 
     citadel.destroy();
   });

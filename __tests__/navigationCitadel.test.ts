@@ -269,7 +269,9 @@ describe('navigationCitadel', () => {
 
       expect(result).toBe(false);
       expect(
-        mockLogger.calls.some((c) => c.level === 'warn' && c.args[0].includes('not found')),
+        mockLogger.calls.some(
+          (c) => c.level === 'warn' && (c.args[0] as string).includes('not found'),
+        ),
       ).toBe(true);
 
       citadel.destroy();
@@ -290,6 +292,64 @@ describe('navigationCitadel', () => {
 
       expect(citadel.getOutpostNames('global')).toHaveLength(0);
       expect(citadel.getOutpostNames('route')).toHaveLength(0);
+    });
+  });
+
+  describe('install', () => {
+    it('is callable as Vue plugin', () => {
+      const citadel = createNavigationCitadel(router, { log: false, devtools: false });
+
+      // install() should be callable without throwing
+      expect(() => {
+        citadel.install({ config: {}, use: vi.fn() } as unknown as import('vue').App);
+      }).not.toThrow();
+
+      citadel.destroy();
+    });
+
+    it('does nothing when devtools disabled', () => {
+      const citadel = createNavigationCitadel(router, { log: false, devtools: false });
+
+      const mockApp = { config: {}, use: vi.fn() } as unknown as import('vue').App;
+
+      // Should not throw and should do nothing
+      citadel.install(mockApp);
+
+      citadel.destroy();
+    });
+  });
+
+  describe('logging', () => {
+    it('logs assignOutpostToRoute when log enabled', () => {
+      const citadel = createNavigationCitadel(router, {
+        log: true,
+        logger: mockLogger,
+      });
+
+      citadel.assignOutpostToRoute('dashboard', 'premium');
+
+      expect(
+        mockLogger.calls.some(
+          (c) => c.level === 'info' && (c.args[0] as string).includes('Assigned outposts'),
+        ),
+      ).toBe(true);
+
+      citadel.destroy();
+    });
+
+    it('logs destroy when log enabled', () => {
+      const citadel = createNavigationCitadel(router, {
+        log: true,
+        logger: mockLogger,
+      });
+
+      citadel.destroy();
+
+      expect(
+        mockLogger.calls.some(
+          (c) => c.level === 'info' && (c.args[0] as string).includes('Destroying'),
+        ),
+      ).toBe(true);
     });
   });
 });

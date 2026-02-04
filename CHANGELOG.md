@@ -50,6 +50,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `error-caught`, `devtools-init`, `devtools-inspector`
 - Optimized processing — outposts sorted at deploy, direct calls from registry
 
+#### NPM Scripts
+
+- `check:types` — TypeScript type checking (`tsc --noEmit`)
+- `check:format` — format check alias
+- `check:all` — full validation chain (format + types + tests)
+- `release:check` — pre-release verification (check:all + build + pack --dry-run)
+- `release:publish` — publish to npm with full checks
+- `release:publish:beta` — publish beta version
+
 #### Vue DevTools Integration
 
 - `devtools` option — enable/disable Vue DevTools integration (default: `__DEV__`)
@@ -81,7 +90,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 #### Testing
 
 - Vitest + happy-dom test setup
-- 109 tests across 8 test files
+- 134 tests across 9 test files
 - `__tests__/navigationCitadel.test.ts` — citadel creation, hooks, destroy
 - `__tests__/navigationRegistry.test.ts` — registry CRUD, priority sorting
 - `__tests__/navigationOutposts.test.ts` — patrol logic, verdicts, redirects
