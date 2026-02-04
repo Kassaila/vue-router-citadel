@@ -264,7 +264,15 @@ export const createNavigationCitadel = (
           return;
         }
 
-        mod.setupDevtools(app, registry, logger, runtimeState, optionLog, optionDebug);
+        mod.setupDevtools(
+          app,
+          registry,
+          logger,
+          runtimeState,
+          optionLog,
+          optionDebug,
+          debugHandler,
+        );
         debugPoint(DebugPoints.DEVTOOLS_INIT, runtimeState.debug, logger, debugHandler);
 
         if (isLogEnabled()) {

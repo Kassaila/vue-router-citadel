@@ -31,12 +31,6 @@ Think of it as turning your router into a fortress.
   - [⏱️ Outpost Timeout](#-outpost-timeout)
   - [🦥 Lazy Outposts](#-lazy-outposts)
   - [📚 API](#-api)
-    - [Citadel](#citadel)
-    - [deployOutpost](#deployoutpost)
-    - [abandonOutpost](#abandonoutpost)
-    - [getOutpostNames](#getoutpostnames)
-    - [assignOutpostToRoute](#assignoutposttoroute)
-    - [destroy](#destroy)
   - [🔍 Logging & Debug](#-logging--debug)
   - [🛠️ Vue DevTools](#-vue-devtools)
   - [🔒 Type-Safe Outpost Names](#-type-safe-outpost-names)
@@ -259,140 +253,35 @@ citadel.deployOutpost({
 
 ## 📚 API
 
-### Citadel
+| Method                                      | Description                   |
+| ------------------------------------------- | ----------------------------- |
+| `createNavigationCitadel(router, options?)` | Creates citadel instance      |
+| `install(app)`                              | Vue plugin install (DevTools) |
+| `deployOutpost(options)`                    | Deploys outpost(s)            |
+| `abandonOutpost(scope, name)`               | Removes outpost(s)            |
+| `getOutpostNames(scope)`                    | Returns deployed names        |
+| `assignOutpostToRoute(routeName, names)`    | Assigns outposts to route     |
+| `destroy()`                                 | Removes hooks, clears state   |
 
 ```typescript
-createNavigationCitadel(router, options?)
-```
-
-Creates a navigation citadel instance.
-
-```typescript
-const citadel = createNavigationCitadel(router, {
-  outposts: [], // Initial outposts to deploy on creation
-  log: true, // Enable non-critical logging (default: __DEV__)
-  logger: myLogger, // Custom logger (default: createDefaultLogger())
-  debug: false, // Enable logging + debugger breakpoints (default: false)
-  devtools: true, // Enable Vue DevTools integration (default: __DEV__)
-  defaultPriority: 100, // Default priority for outposts
-  defaultTimeout: 10000, // Default timeout for outposts in ms (default: undefined)
-  onError: (error, ctx) => {
-    // Custom error handler (default: console.error + BLOCK)
-    return { name: 'error' };
-  },
-  onTimeout: (outpostName, ctx) => {
-    // Custom timeout handler (default: console.warn + BLOCK)
-    return { name: 'error' };
-  },
-});
-```
-
-### deployOutpost
-
-```typescript
-citadel.deployOutpost(options);
-```
-
-Deploys one or multiple navigation outposts.
-
-```typescript
-// Global outpost (scope defaults to 'global')
+// Deploy outpost
 citadel.deployOutpost({
   name: 'auth',
-  handler: ({ verdicts, to, from, router, hook }) => {
+  handler: ({ verdicts, to }) => {
+    if (to.meta.requiresAuth && !isAuthenticated()) {
+      return { name: 'login' };
+    }
     return verdicts.ALLOW;
   },
-  priority: 10, // Optional, lower = processed first
-  hooks: [NavigationHooks.BEFORE_EACH], // Optional, default: ['beforeEach']
-  timeout: 5000, // Optional, overrides defaultTimeout
-  lazy: false, // Optional, enable lazy loading (default: false)
 });
 
-// Route outpost (scope must be specified)
-citadel.deployOutpost({
-  scope: NavigationOutpostScopes.ROUTE,
-  name: 'admin-only',
-  handler: adminHandler,
-});
-
-// Deploy multiple
-citadel.deployOutpost([outpost1, outpost2, outpost3]);
+// Remove outpost
+citadel.abandonOutpost(NavigationOutpostScopes.GLOBAL, 'auth');
 ```
 
-### abandonOutpost
-
-```typescript
-citadel.abandonOutpost(scope, name);
-```
-
-Removes outpost(s) by scope and name.
-
-```typescript
-citadel.abandonOutpost(NavigationOutpostScopes.ROUTE, 'outpost-name');
-citadel.abandonOutpost(NavigationOutpostScopes.ROUTE, ['name1', 'name2']);
-```
-
-### getOutpostNames
-
-```typescript
-citadel.getOutpostNames(scope);
-```
-
-Returns array of deployed outpost names.
-
-```typescript
-citadel.getOutpostNames(NavigationOutpostScopes.GLOBAL); // ['auth', 'analytics']
-```
-
-### assignOutpostToRoute
-
-```typescript
-citadel.assignOutpostToRoute(routeName, outpostNames);
-```
-
-Assigns outpost(s) to an existing route dynamically.
-
-```typescript
-citadel.assignOutpostToRoute('admin', 'admin-only');
-citadel.assignOutpostToRoute('settings', ['auth', 'verified']);
-```
-
-Returns `true` if route was found and outposts assigned, `false` otherwise.
-
-### destroy
-
-```typescript
-citadel.destroy();
-```
-
-Removes all navigation hooks and clears registry.
-
-> See [API Internals](./docs/internals.md#️-api-internals) for registry structure and outpost
-> processing diagrams.
+> See [API Usage](./docs/internals.md#-api-usage) for all options and detailed examples.
 
 ## 🔍 Logging & Debug
-
-```typescript
-// Default: log enabled in dev (__DEV__), default console logger
-createNavigationCitadel(router);
-
-// Disable non-critical logging
-createNavigationCitadel(router, { log: false });
-
-// Custom logger
-createNavigationCitadel(router, { logger: myCustomLogger });
-
-// Debug mode: logging + debugger breakpoints
-createNavigationCitadel(router, { debug: true });
-
-// Custom debug handler (for reliable breakpoints)
-createNavigationCitadel(router, {
-  debug: true,
-  debugHandler: (name) => {
-    alert(name); // may be alternative to - debugger
-  },
-});
-```
 
 | Option         | Type            | Default                       | Description                                       |
 | -------------- | --------------- | ----------------------------- | ------------------------------------------------- |
@@ -401,108 +290,54 @@ createNavigationCitadel(router, {
 | `debug`        | `boolean`       | `false`                       | Enables logging + `debugger` breakpoints          |
 | `debugHandler` | `DebugHandler`  | `createDefaultDebugHandler()` | Custom debug handler for breakpoints              |
 
-> **Note:** Bundlers like Vite/esbuild may strip `debugger` statements from dependencies during
-> optimization. If breakpoints don't work, provide a custom `debugHandler` in your app code.
+```typescript
+createNavigationCitadel(router, { log: false }); // Disable non-critical logging
+createNavigationCitadel(router, { debug: true }); // Enable debug breakpoints
+```
 
 > See [Logging & Custom Logger](./docs/internals.md#-logging--custom-logger) for custom logger
-> examples (SSR, testing) and [Debug Reference](./docs/internals.md#-debug-reference) for
-> breakpoints.
+> examples and [Debug Reference](./docs/internals.md#-debug-reference) for breakpoint details.
 
 ## 🛠️ Vue DevTools
 
-Citadel integrates with Vue DevTools, providing a custom inspector to view deployed outposts.
-
-> **Note:** When `devtools: false`, devtools code is tree-shaken from the bundle via dynamic import.
+Custom inspector for viewing deployed outposts. Enabled automatically in development.
 
 ```typescript
-import { createApp } from 'vue';
-import { createRouter } from 'vue-router';
-import { createNavigationCitadel } from 'vue-router-citadel';
-import App from './App.vue';
-
-const router = createRouter({
-  /* ... */
-});
-const citadel = createNavigationCitadel(router);
-
-const app = createApp(App);
-
-app.use(router);
-app.use(citadel); // DevTools enabled automatically (default: __DEV__)
-app.mount('#app');
+app.use(citadel); // DevTools enabled (default: __DEV__)
 ```
-
-**Disable DevTools:**
-
-```typescript
-const citadel = createNavigationCitadel(router, { devtools: false });
-```
-
-**Inspector features:**
-
-- Tree view with Global and Route outpost groups
-- Tags showing priority and hooks count
-- State panel with outpost details (name, scope, priority, hooks, timeout)
-- Auto-refresh on deploy/abandon
-
-**Settings panel:**
-
-The DevTools settings panel allows runtime control of logging:
-
-- **Log level**: `Off | Log | Log + Debug` — toggle logging and debug breakpoints
-- Settings persist in `localStorage` and override citadel options
-- Priority: `localStorage → citadel options → defaults (__DEV__)`
 
 | Option     | Type      | Default   | Description                          |
 | ---------- | --------- | --------- | ------------------------------------ |
 | `devtools` | `boolean` | `__DEV__` | Enable Vue DevTools custom inspector |
 
+> See [DevTools Integration](./docs/internals.md#-devtools-integration) for inspector features and
+> settings panel details.
+
 ## 🔒 Type-Safe Outpost Names
 
-Enable autocomplete and compile-time validation for outpost names using TypeScript declaration
-merging.
+Enable autocomplete and compile-time validation using TypeScript declaration merging.
 
 ```typescript
-// src/outposts.d.ts (or env.d.ts)
+// src/outposts.d.ts
 declare module 'vue-router-citadel' {
   interface GlobalOutpostRegistry {
     auth: true;
-    maintenance: true;
   }
-
   interface RouteOutpostRegistry {
     'admin-only': true;
-    'premium': true;
   }
 }
 ```
 
-Now TypeScript validates outpost names everywhere:
-
 ```typescript
-// ✓ Autocomplete works, typos caught at compile time
-citadel.deployOutpost({
-  scope: NavigationOutpostScopes.GLOBAL,
-  name: 'auth', // autocomplete: auth, maintenance
-  handler: authHandler,
-});
-
-// ✓ Route meta is also typed
-const routes = [
-  {
-    path: '/admin',
-    meta: { outposts: ['admin-only', 'premium'] }, // autocomplete works
-  },
-];
-
-// ✗ TypeScript error — typo caught!
-citadel.deployOutpost({ scope: NavigationOutpostScopes.GLOBAL, name: 'atuh', handler });
+citadel.deployOutpost({ name: 'auth', handler }); // ✓ autocomplete
+citadel.deployOutpost({ name: 'typo', handler }); // ✗ TypeScript error
 ```
 
-> Registries are optional. Without them, names fall back to `string` (no type checking).
+> Registries are optional. Without them, names fall back to `string`.
 >
-> See [Type-Safe Outpost Names](./docs/internals.md#-type-safe-outpost-names) for modular
-> architecture and DI examples.
+> See [Type-Safe Outpost Names](./docs/internals.md#-type-safe-outpost-names) for advanced patterns
+> and naming conventions.
 
 ## 💡 Examples
 
@@ -517,31 +352,21 @@ See [examples](./examples) directory for more usage patterns:
 
 ## 📦 Exports
 
+Common imports for most use cases:
+
 ```typescript
 import {
-  // Main factory
   createNavigationCitadel,
-  // Constants
   NavigationOutpostScopes,
   NavigationHooks,
   NavigationOutpostVerdicts,
-  DebugPoints,
-  // Logger utilities
-  createDefaultLogger,
-  // Debug utilities
-  createDefaultDebugHandler,
-  // Types
   type NavigationOutpost,
   type NavigationOutpostHandler,
-  type LazyOutpostLoader,
-  type CitadelLogger,
-  type DebugHandler,
-  type DebugPoint,
 } from 'vue-router-citadel';
 ```
 
-> See [Exports Reference](./docs/internals.md#-exports-reference) for all constants, types, and
-> interfaces.
+> See [Exports Reference](./docs/internals.md#-exports-reference) for all exports including
+> `DebugPoints`, `createDefaultLogger`, `CitadelLogger`, and type-safe name types.
 
 ## 📖 Internals
 
