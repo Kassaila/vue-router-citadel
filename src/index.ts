@@ -3,8 +3,8 @@
  */
 export type {
   NavigationOutpostContext,
+  NavigationOutpostHandler,
   NavigationOutpost,
-  NavigationOutpostOptions,
   NavigationCitadelOptions,
   NavigationCitadelAPI,
   NavigationHook,
@@ -15,12 +15,29 @@ export type {
   GlobalOutpostName,
   RouteOutpostName,
   OutpostName,
+  // Logger
+  CitadelLogger,
+  // Debug
+  DebugHandler,
+  DebugPoint,
+  // Lazy loading
+  LazyOutpostLoader,
 } from './types';
 
 /**
  * Constants
  */
-export { NavigationHooks, NavigationOutpostVerdicts, NavigationOutpostScopes } from './types';
+export {
+  NavigationHooks,
+  NavigationOutpostVerdicts,
+  NavigationOutpostScopes,
+  DebugPoints,
+} from './types';
+
+/**
+ * Logger and debug utilities
+ */
+export { createDefaultLogger, createDefaultDebugHandler } from './helpers';
 
 /**
  * Main factory

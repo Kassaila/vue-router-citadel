@@ -2,15 +2,11 @@
  * Global different hooks example - global outposts using beforeEach, beforeResolve, afterEach hooks
  */
 import { createRouter, createWebHistory } from 'vue-router';
-import {
-  createNavigationCitadel,
-  NavigationOutpostScopes,
-  NavigationHooks,
-} from 'vue-router-citadel';
+import { createNavigationCitadel, NavigationHooks } from 'vue-router-citadel';
 
 // Auth outpost (beforeEach) - checks authentication on every navigation
+// scope defaults to 'global', so it can be omitted
 const authNavigationOutpost = {
-  scope: NavigationOutpostScopes.GLOBAL,
   name: 'auth',
   priority: 10,
   handler: ({ verdicts, to }) => {
@@ -26,7 +22,6 @@ const authNavigationOutpost = {
 
 // Data loader outpost (beforeResolve) - loads async data before component resolves
 const dataLoaderNavigationOutpost = {
-  scope: NavigationOutpostScopes.GLOBAL,
   name: 'data-loader',
   hooks: [NavigationHooks.BEFORE_RESOLVE],
   handler: async ({ verdicts, to }) => {
@@ -38,7 +33,6 @@ const dataLoaderNavigationOutpost = {
 
 // Analytics outpost (afterEach) - tracks page views after navigation completes
 const analyticsNavigationOutpost = {
-  scope: NavigationOutpostScopes.GLOBAL,
   name: 'analytics',
   hooks: [NavigationHooks.AFTER_EACH],
   handler: ({ verdicts, to }) => {
@@ -50,7 +44,6 @@ const analyticsNavigationOutpost = {
 
 // Page title outpost (afterEach) - updates document title after navigation completes
 const pageTitleNavigationOutpost = {
-  scope: NavigationOutpostScopes.GLOBAL,
   name: 'page-title',
   hooks: [NavigationHooks.AFTER_EACH],
   handler: ({ verdicts, to }) => {

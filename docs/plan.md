@@ -19,15 +19,18 @@
 - [x] `src/index.ts` — entry point, exports
 - [x] `src/types.ts` — TypeScript types and interfaces
 - [x] `src/consts.ts` — constants (LOG_PREFIX, DEFAULT_PRIORITY)
-- [x] `src/helpers.ts` — utility functions (debugPoint)
+- [x] `src/helpers.ts` — utilities (debugPoint, logger)
 - [x] `src/navigationCitadel.ts` — main factory
 - [x] `src/navigationRegistry.ts` — outposts registry
 - [x] `src/navigationOutposts.ts` — patrol logic
+- [x] `src/devtools/` — Vue DevTools integration
 
 ### Documentation
 
 - [x] `README.md` — API reference with section links to internals
 - [x] `docs/internals.md` — deep dive with Mermaid diagrams
+- [x] `docs/testing.md` — testing guide and all test cases
+- [x] `CONTRIBUTING.md` — contributor guide
 - [x] `CHANGELOG.md` — release notes
 - [x] Usage examples (`examples/`)
 - [x] Exports Reference section (constants + types)
@@ -39,13 +42,18 @@
 - [x] Priority-based processing (global + route)
 - [x] Route outposts deduplication with warning
 - [x] Route validation for redirects
-- [x] `log` / `debug` options with colored output (🔵 info, 🟡 warn, 🔴 error, 🟣 debug)
+- [x] `log` / `logger` / `debug` options with colored output (🔵 info, 🟡 warn, 🔴 error, 🟣 debug)
+- [x] Custom logger support via `CitadelLogger` interface (`createDefaultLogger`)
+- [x] Critical events always logged (errors, timeouts, missing routes)
 - [x] Named debug breakpoints (navigation-start, before-outpost, patrol-stopped, error-caught)
 - [x] Default error handler (`console.error` + `BLOCK`)
 - [x] `assignOutpostToRoute()` method
 - [x] Optimized processing (sorting at deploy, direct registry calls)
 - [x] Type-safe outpost names (declaration merging with `GlobalOutpostRegistry` /
       `RouteOutpostRegistry`)
+- [x] Vue DevTools integration (`devtools` option, custom inspector)
+- [x] DevTools Settings panel (Log level selector, localStorage persistence)
+- [x] Custom `debugHandler` option (solves bundler stripping `debugger` statements)
 
 ### Build
 
@@ -64,79 +72,33 @@ Implemented: `defaultTimeout`, `timeout`, `onTimeout`
 
 ---
 
-#### Testing
+#### ~~Testing~~ ✅
 
-**Setup:**
-
-1. Install: `npm install -D vitest @vue/test-utils vue vue-router happy-dom`
-2. Add to `package.json`: `"test": "vitest"`, `"test:coverage": "vitest --coverage"`
-3. Create `vitest.config.ts`
-
-**Test files:**
+Implemented: vitest + happy-dom, 109 tests across 8 test files.
 
 ```
-src/__tests__/
-├── navigationCitadel.test.ts    # createNavigationCitadel, destroy
-├── navigationRegistry.test.ts   # deploy, abandon, getOutposts, sorting
-├── navigationOutposts.test.ts   # patrol, deduplication
-├── timeout.test.ts              # timeout functionality
-└── integration.test.ts          # full navigation flow
+__tests__/
+├── helpers/setup.ts             # Mock router, logger, handlers
+├── navigationCitadel.test.ts    # 19 tests
+├── navigationRegistry.test.ts   # 12 tests
+├── navigationOutposts.test.ts   # 19 tests
+├── timeout.test.ts              # 5 tests
+├── integration.test.ts          # 13 tests
+├── lazy.test.ts                 # 12 tests
+├── devtools-settings.test.ts    # 19 tests
+└── debugHandler.test.ts         # 10 tests
 ```
-
-**Test cases:**
-
-- `createNavigationCitadel` — returns API, registers hooks
-- `deployOutpost` — single, multiple, priority sorting, duplicate warning
-- `abandonOutpost` — single, multiple, returns boolean
-- `getOutpostNames` — returns names by scope
-- `assignOutpostToRoute` — assigns, returns false if not found
-- `patrol` — ALLOW/BLOCK/redirect flow
-- Deduplication — warning logged, outpost runs once
-- `onError` — custom handler called, default BLOCK
-- Timeout — handler times out, onTimeout called
 
 ---
 
-#### CI/CD
+#### ~~CI/CD~~ ✅
 
-**`.github/workflows/ci.yml`:**
+Implemented: GitHub Actions workflows for CI and Release.
 
-```yaml
-name: CI
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: npm ci
-      - run: npm run build
-      - run: npm test
-```
+**Files:**
 
-**`.github/workflows/release.yml`:**
-
-```yaml
-name: Release
-on:
-  push:
-    tags: ['v*']
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20, registry-url: 'https://registry.npmjs.org' }
-      - run: npm ci
-      - run: npm run build
-      - run: npm test
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-```
+- `.github/workflows/ci.yml` — runs on push/PR to main/develop (format, types, tests, build)
+- `.github/workflows/release.yml` — runs on `v*` tags (full checks + npm publish with provenance)
 
 ---
 
@@ -151,23 +113,23 @@ See [Type-Safe Outpost Names](./internals.md#-type-safe-outpost-names) for usage
 
 ### Priority 2 — Post-Release
 
-#### DevTools Integration
+#### ~~DevTools Integration~~ ✅
 
-Vue DevTools plugin for visualizing outposts and navigation flow.
+Implemented: Custom inspector with `@vue/devtools-api`.
 
 **Features:**
 
-- List of deployed outposts (global/route, priority, hooks)
-- Navigation timeline with outpost processing
-- Outpost processing time
-- Click to see outpost source location
+- `devtools` option (default: `__DEV__`)
+- Custom inspector with outpost tree (Global/Route groups)
+- Tags showing priority and hooks count
+- State panel with outpost details
+- Auto-refresh on deploy/abandon
 
-**Implementation:**
+**Files:**
 
-- Use `@vue/devtools-api`
-- Create `src/devtools.ts`
-- Register on `createNavigationCitadel` if devtools available
-- Export `setupDevtools(citadel)` for manual setup
+- `src/devtools/index.ts` — setup functions, auto-init
+- `src/devtools/inspector.ts` — custom inspector logic
+- `src/devtools/types.ts` — DevTools-specific types
 
 ---
 
@@ -193,24 +155,24 @@ citadel.resetMetrics();
 
 ---
 
-#### Lazy Outposts
+#### ~~Lazy Outposts~~ ✅
 
-Dynamic import of outpost handlers for code splitting.
+Implemented: `lazy: true` option for on-demand handler loading.
 
-```typescript
-citadel.deployOutpost({
-  name: 'heavy-outpost',
-  handler: () => import('./outposts/heavy').then((m) => m.default),
-  // or
-  handler: lazy(() => import('./outposts/heavy')),
-});
-```
+**Features:**
 
-**Implementation:**
+- `lazy` option in outpost config
+- Handler module loaded on first navigation, then cached
+- Timeout applies only to handler execution, not module loading
+- Retry allowed after load failure
+- DevTools shows `lazy` tag
 
-- Detect if handler returns Promise with `handler` property
-- Cache resolved handler after first load
-- Add `lazy()` helper function
+**Files:**
+
+- `src/types.ts` — `LazyOutpostLoader` type, conditional typing
+- `src/navigationCitadel.ts` — `getHandler` wrapper with caching
+- `src/navigationOutposts.ts` — separated loading from execution
+- `__tests__/lazy.test.ts` — 12 tests
 
 ---
 
@@ -274,23 +236,32 @@ Interactive demo for trying the library.
 ## Project Structure
 
 ```
-src/
-├── index.ts
+src/                             # Source code
+├── index.ts                     # Public API exports
 ├── types.ts
 ├── consts.ts
 ├── helpers.ts
 ├── navigationCitadel.ts
 ├── navigationOutposts.ts
 ├── navigationRegistry.ts
-└── __tests__/
-    ├── navigationCitadel.test.ts
-    ├── navigationRegistry.test.ts
-    ├── navigationOutposts.test.ts
-    └── integration.test.ts
+└── devtools/                    # Vue DevTools integration
+    ├── index.ts
+    ├── inspector.ts
+    └── types.ts
+
+__tests__/                       # Tests
+├── helpers/setup.ts
+├── navigationCitadel.test.ts
+├── navigationRegistry.test.ts
+├── navigationOutposts.test.ts
+├── timeout.test.ts
+└── integration.test.ts
 
 docs/
 ├── internals.md
-└── plan.md
+├── plan.md
+├── release.md
+└── testing.md
 
 examples/
 ├── auth.ts
@@ -298,7 +269,7 @@ examples/
 ├── nested-routes.ts
 └── route-multiple-hooks.ts
 
-.github/workflows/
+.github/workflows/               # TODO
 ├── ci.yml
 └── release.yml
 ```
