@@ -21,6 +21,7 @@ pipelines
 | `docs/internals.md` | Deep dive with Mermaid diagrams            |
 | `docs/testing.md`   | Testing guide and all test cases           |
 | `docs/plan.md`      | Development roadmap and TODO priorities    |
+| `docs/release.md`   | Release guide for maintainers              |
 | `CONTRIBUTING.md`   | Guide for contributors                     |
 | `CHANGELOG.md`      | Release notes                              |
 | `.claude/skills/`   | Slash commands for Claude Code             |
@@ -196,18 +197,18 @@ Key types: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, `GlobalOutpostName`,
 
 ## Development Roadmap (see docs/plan.md)
 
-### Priority 1 — Before Release
+### Priority 1 — Before Release ✅
 
-- [x] **Testing**: vitest + happy-dom (68 tests, 5 files)
-- [ ] **CI/CD**: GitHub Actions (ci.yml, release.yml)
+- [x] **Testing**: vitest + happy-dom (109 tests, 8 files)
+- [x] **CI/CD**: GitHub Actions (ci.yml, release.yml)
 - [x] **Type-safe Outpost Names**: Declaration merging with
       GlobalOutpostRegistry/RouteOutpostRegistry
 
 ### Priority 2 — Post-Release
 
 - [x] DevTools Integration (Vue DevTools custom inspector)
+- [x] Lazy Outposts (dynamic import for code splitting)
 - [ ] Metrics (performance tracking per outpost)
-- [ ] Lazy Outposts (dynamic import for code splitting)
 - [ ] JSON Schema for config validation
 - [ ] Interactive Playground
 

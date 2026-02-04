@@ -91,46 +91,14 @@ __tests__/
 
 ---
 
-#### CI/CD
+#### ~~CI/CD~~ ✅
 
-**`.github/workflows/ci.yml`:**
+Implemented: GitHub Actions workflows for CI and Release.
 
-```yaml
-name: CI
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: npm ci
-      - run: npm run build
-      - run: npm test
-```
+**Files:**
 
-**`.github/workflows/release.yml`:**
-
-```yaml
-name: Release
-on:
-  push:
-    tags: ['v*']
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20, registry-url: 'https://registry.npmjs.org' }
-      - run: npm ci
-      - run: npm run build
-      - run: npm test
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-```
+- `.github/workflows/ci.yml` — runs on push/PR to main/develop (format, types, tests, build)
+- `.github/workflows/release.yml` — runs on `v*` tags (full checks + npm publish with provenance)
 
 ---
 
@@ -291,7 +259,9 @@ __tests__/                       # Tests
 
 docs/
 ├── internals.md
-└── plan.md
+├── plan.md
+├── release.md
+└── testing.md
 
 examples/
 ├── auth.ts
