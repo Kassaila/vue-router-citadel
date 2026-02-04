@@ -98,7 +98,7 @@ describe('navigationOutposts', () => {
     });
 
     it('returns ALLOW when no outposts', async () => {
-      const result = await patrol(registry, ctx, {}, mockLogger, false);
+      const result = await patrol(registry, ctx, {}, mockLogger, { log: false, debug: false });
       expect(result).toBe('allow');
     });
 
@@ -135,7 +135,7 @@ describe('navigationOutposts', () => {
         mockLogger,
       );
 
-      await patrol(registry, ctx, {}, mockLogger, false);
+      await patrol(registry, ctx, {}, mockLogger, { log: false, debug: false });
 
       expect(order).toEqual(['first', 'second']);
     });
@@ -173,7 +173,7 @@ describe('navigationOutposts', () => {
         mockLogger,
       );
 
-      const result = await patrol(registry, ctx, {}, mockLogger, false);
+      const result = await patrol(registry, ctx, {}, mockLogger, { log: false, debug: false });
 
       expect(result).toBe('block');
       expect(order).toEqual(['blocker']);
@@ -191,7 +191,7 @@ describe('navigationOutposts', () => {
         mockLogger,
       );
 
-      const result = await patrol(registry, ctx, {}, mockLogger, false);
+      const result = await patrol(registry, ctx, {}, mockLogger, { log: false, debug: false });
 
       expect(result).toEqual({ name: 'login' });
     });
@@ -229,7 +229,7 @@ describe('navigationOutposts', () => {
         mockLogger,
       );
 
-      await patrol(registry, ctx, {}, mockLogger, false);
+      await patrol(registry, ctx, {}, mockLogger, { log: false, debug: false });
 
       expect(order).toEqual(['beforeEach']);
     });
@@ -289,7 +289,7 @@ describe('navigationOutposts', () => {
         mockLogger,
       );
 
-      await patrol(registry, ctxWithMeta, {}, mockLogger, false);
+      await patrol(registry, ctxWithMeta, {}, mockLogger, { log: false, debug: false });
 
       expect(order).toEqual(['global', 'route']);
     });
@@ -332,10 +332,12 @@ describe('navigationOutposts', () => {
         mockLogger,
       );
 
-      await patrol(registry, ctxWithDuplicates, {}, mockLogger, false);
+      await patrol(registry, ctxWithDuplicates, {}, mockLogger, { log: false, debug: false });
 
       expect(
-        mockLogger.calls.some((c) => c.level === 'warn' && c.args[0].includes('Duplicate')),
+        mockLogger.calls.some(
+          (c) => c.level === 'warn' && (c.args[0] as string).includes('Duplicate'),
+        ),
       ).toBe(true);
     });
 
@@ -361,7 +363,10 @@ describe('navigationOutposts', () => {
       };
 
       // Should not throw, just skip missing outposts
-      const result = await patrol(registry, ctxWithMeta, {}, mockLogger, false);
+      const result = await patrol(registry, ctxWithMeta, {}, mockLogger, {
+        log: false,
+        debug: false,
+      });
 
       expect(result).toBe('allow');
     });

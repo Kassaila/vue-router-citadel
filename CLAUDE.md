@@ -123,13 +123,16 @@ interface NavigationCitadelAPI {
 ## Build & Test Commands
 
 ```bash
-npm run build        # Production build (ESM + CJS)
-npm run build:dev    # Development build with sourcemaps
-npm run test         # Run tests in watch mode
-npm run test:run     # Run tests once
-npm run test:coverage # Run tests with coverage
-npm run format       # Format with Prettier
-npm run format:check # Check formatting
+npm run build          # Production build (ESM + CJS)
+npm run build:dev      # Development build with sourcemaps
+npm run test           # Run tests in watch mode
+npm run test:run       # Run tests once
+npm run test:coverage  # Run tests with coverage
+npm run format         # Format with Prettier
+npm run format:check   # Check formatting
+npm run check:types    # TypeScript type checking
+npm run check:all      # Full validation (format + types + tests)
+npm run release:check  # Pre-release (check:all + build + pack)
 ```
 
 ## Architecture Notes
@@ -213,14 +216,28 @@ Key types: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, `GlobalOutpostName`,
 ### npm scripts
 
 ```bash
-npm install          # Install dependencies
-npm run build        # Build for production
-npm run build:dev    # Build for development
-npm run test         # Run tests (watch mode)
-npm run test:run     # Run tests once
-npm run test:coverage # Run tests with coverage
-npm run format       # Format code
-npm pack --dry-run   # Check package contents
+# Build
+npm run build              # Production build (ESM + CJS)
+npm run build:dev          # Development build with sourcemaps
+
+# Test
+npm run test               # Run tests (watch mode)
+npm run test:run           # Run tests once
+npm run test:coverage      # Run tests with coverage
+
+# Format
+npm run format             # Format code
+npm run format:check       # Check formatting
+
+# Check (read-only validations)
+npm run check:types        # TypeScript type checking
+npm run check:format       # Alias for format:check
+npm run check:all          # format + types + tests
+
+# Release
+npm run release:check      # check:all + build + pack --dry-run
+npm run release:publish    # release:check + npm publish
+npm run release:publish:beta # release:check + npm publish --tag beta
 ```
 
 ### Slash Commands (Skills)

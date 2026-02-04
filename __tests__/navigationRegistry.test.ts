@@ -7,7 +7,7 @@ import {
   getRegisteredNames,
 } from '../src/navigationRegistry';
 import type { NavigationRegistry } from '../src/types';
-import { createMockLogger, createAllowHandler } from './helpers/setup';
+import { createMockLogger, createAllowHandler, createRegisteredOutpost } from './helpers/setup';
 
 describe('navigationRegistry', () => {
   let registry: NavigationRegistry;
@@ -34,7 +34,7 @@ describe('navigationRegistry', () => {
       register(
         registry,
         'global',
-        { name: 'auth', handler: createAllowHandler() },
+        createRegisteredOutpost({ name: 'auth', handler: createAllowHandler() }),
         100,
         mockLogger,
       );
@@ -47,7 +47,7 @@ describe('navigationRegistry', () => {
       register(
         registry,
         'route',
-        { name: 'admin-only', handler: createAllowHandler() },
+        createRegisteredOutpost({ name: 'admin-only', handler: createAllowHandler() }),
         100,
         mockLogger,
       );
@@ -57,15 +57,17 @@ describe('navigationRegistry', () => {
     });
 
     it('warns on duplicate and replaces existing', () => {
-      const handler1 = createAllowHandler();
-      const handler2 = createAllowHandler();
+      const outpost1 = createRegisteredOutpost({ name: 'auth', handler: createAllowHandler() });
+      const outpost2 = createRegisteredOutpost({ name: 'auth', handler: createAllowHandler() });
 
-      register(registry, 'global', { name: 'auth', handler: handler1 }, 100, mockLogger);
-      register(registry, 'global', { name: 'auth', handler: handler2 }, 100, mockLogger);
+      register(registry, 'global', outpost1, 100, mockLogger);
+      register(registry, 'global', outpost2, 100, mockLogger);
 
-      expect(registry.global.get('auth')?.handler).toBe(handler2);
+      expect(registry.global.get('auth')?.getHandler).toBe(outpost2.getHandler);
       expect(
-        mockLogger.calls.some((c) => c.level === 'warn' && c.args[0].includes('already exists')),
+        mockLogger.calls.some(
+          (c) => c.level === 'warn' && (c.args[0] as string).includes('already exists'),
+        ),
       ).toBe(true);
     });
 
@@ -73,21 +75,21 @@ describe('navigationRegistry', () => {
       register(
         registry,
         'global',
-        { name: 'low', handler: createAllowHandler(), priority: 50 },
+        createRegisteredOutpost({ name: 'low', handler: createAllowHandler(), priority: 50 }),
         100,
         mockLogger,
       );
       register(
         registry,
         'global',
-        { name: 'high', handler: createAllowHandler(), priority: 10 },
+        createRegisteredOutpost({ name: 'high', handler: createAllowHandler(), priority: 10 }),
         100,
         mockLogger,
       );
       register(
         registry,
         'global',
-        { name: 'default', handler: createAllowHandler() },
+        createRegisteredOutpost({ name: 'default', handler: createAllowHandler() }),
         100,
         mockLogger,
       );
@@ -99,14 +101,14 @@ describe('navigationRegistry', () => {
       register(
         registry,
         'global',
-        { name: 'explicit', handler: createAllowHandler(), priority: 50 },
+        createRegisteredOutpost({ name: 'explicit', handler: createAllowHandler(), priority: 50 }),
         100,
         mockLogger,
       );
       register(
         registry,
         'global',
-        { name: 'default', handler: createAllowHandler() },
+        createRegisteredOutpost({ name: 'default', handler: createAllowHandler() }),
         100,
         mockLogger,
       );
@@ -121,7 +123,7 @@ describe('navigationRegistry', () => {
       register(
         registry,
         'global',
-        { name: 'auth', handler: createAllowHandler() },
+        createRegisteredOutpost({ name: 'auth', handler: createAllowHandler() }),
         100,
         mockLogger,
       );
@@ -142,14 +144,14 @@ describe('navigationRegistry', () => {
       register(
         registry,
         'global',
-        { name: 'first', handler: createAllowHandler(), priority: 10 },
+        createRegisteredOutpost({ name: 'first', handler: createAllowHandler(), priority: 10 }),
         100,
         mockLogger,
       );
       register(
         registry,
         'global',
-        { name: 'second', handler: createAllowHandler(), priority: 20 },
+        createRegisteredOutpost({ name: 'second', handler: createAllowHandler(), priority: 20 }),
         100,
         mockLogger,
       );
@@ -165,14 +167,14 @@ describe('navigationRegistry', () => {
       register(
         registry,
         'global',
-        { name: 'auth', handler: createAllowHandler() },
+        createRegisteredOutpost({ name: 'auth', handler: createAllowHandler() }),
         100,
         mockLogger,
       );
       register(
         registry,
         'global',
-        { name: 'logger', handler: createAllowHandler() },
+        createRegisteredOutpost({ name: 'logger', handler: createAllowHandler() }),
         100,
         mockLogger,
       );
@@ -188,7 +190,7 @@ describe('navigationRegistry', () => {
       register(
         registry,
         'route',
-        { name: 'admin-only', handler: createAllowHandler() },
+        createRegisteredOutpost({ name: 'admin-only', handler: createAllowHandler() }),
         100,
         mockLogger,
       );

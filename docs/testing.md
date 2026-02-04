@@ -22,7 +22,7 @@ This document describes the testing setup for vue-router-citadel and lists all t
       - [normalizeOutcome](#normalizeoutcome)
       - [toNavigationGuardReturn](#tonavigationguardreturn)
       - [patrol](#patrol)
-    - [navigationCitadel.test.ts 19 tests](#navigationcitadeltestts-18-tests)
+    - [navigationCitadel.test.ts 23 tests](#navigationcitadeltestts-23-tests)
       - [createNavigationCitadel](#createnavigationcitadel)
       - [deployOutpost](#deployoutpost)
       - [abandonOutpost](#abandonoutpost)
@@ -33,7 +33,8 @@ This document describes the testing setup for vue-router-citadel and lists all t
     - [lazy.test.ts 12 tests](#lazytestts-12-tests)
     - [integration.test.ts 13 tests](#integrationtestts-13-tests)
     - [devtools-settings.test.ts 19 tests](#devtools-settingstestts-19-tests)
-    - [debugHandler.test.ts 10 tests](#debughandlertestts-10-tests)
+    - [devtools-inspector.test.ts 19 tests](#devtools-inspectortestts-19-tests)
+    - [debugHandler.test.ts 12 tests](#debughandlertestts-12-tests)
       - [navigation flow](#navigation-flow)
       - [error handling](#error-handling)
       - [hooks](#hooks)
@@ -55,8 +56,9 @@ This document describes the testing setup for vue-router-citadel and lists all t
 | -------------- | --------- |
 | Test Framework | Vitest    |
 | Environment    | happy-dom |
-| Total Tests    | 109       |
-| Test Files     | 8         |
+| Total Tests    | 134       |
+| Test Files     | 9         |
+| Coverage       | 91%       |
 
 ## 🚀 Quick Start
 
@@ -79,12 +81,13 @@ __tests__/
 │   └── setup.ts                    # Mock factories and utilities
 ├── navigationRegistry.test.ts      # Registry CRUD (12 tests)
 ├── navigationOutposts.test.ts      # Patrol logic (19 tests)
-├── navigationCitadel.test.ts       # Public API (19 tests)
+├── navigationCitadel.test.ts       # Public API (23 tests)
 ├── timeout.test.ts                 # Timeout handling (5 tests)
 ├── lazy.test.ts                    # Lazy loading (12 tests)
 ├── integration.test.ts             # Full navigation flows (13 tests)
 ├── devtools-settings.test.ts       # DevTools settings (19 tests)
-└── debugHandler.test.ts            # Debug handler (10 tests)
+├── devtools-inspector.test.ts      # DevTools inspector (19 tests)
+└── debugHandler.test.ts            # Debug handler (12 tests)
 ```
 
 ## 🔧 Test Helpers
@@ -196,7 +199,7 @@ Outcome normalization and patrol logic.
 
 ---
 
-### navigationCitadel.test.ts (18 tests)
+### navigationCitadel.test.ts (23 tests)
 
 Public API testing.
 
@@ -248,6 +251,20 @@ Public API testing.
 | Test                              | Description |
 | --------------------------------- | ----------- |
 | removes hooks and clears registry | Cleanup     |
+
+#### install
+
+| Test                                | Description              |
+| ----------------------------------- | ------------------------ |
+| is callable as Vue plugin           | Plugin API compatibility |
+| does nothing when devtools disabled | No-op when disabled      |
+
+#### logging
+
+| Test                                       | Description         |
+| ------------------------------------------ | ------------------- |
+| logs assignOutpostToRoute when log enabled | Assignment logging  |
+| logs destroy when log enabled              | Destruction logging |
 
 ---
 
@@ -424,9 +441,54 @@ DevTools settings and localStorage persistence.
 
 ---
 
-### debugHandler.test.ts (10 tests)
+### devtools-inspector.test.ts (19 tests)
 
-Debug handler invocation and custom handlers.
+DevTools custom inspector functionality.
+
+#### createInspectorTree
+
+| Test                                      | Description          |
+| ----------------------------------------- | -------------------- |
+| should create empty tree when no outposts | Empty registry case  |
+| should include global outposts in tree    | Global scope in tree |
+| should include route outposts in tree     | Route scope in tree  |
+| should add priority tag to outpost nodes  | Priority display     |
+| should add hooks tag to outpost nodes     | Hooks count display  |
+| should add lazy tag for lazy outposts     | Lazy indicator       |
+
+#### getNodeState
+
+| Test                                                    | Description          |
+| ------------------------------------------------------- | -------------------- |
+| should return null for non-outpost nodes                | Root node handling   |
+| should return null for invalid node id                  | Invalid ID handling  |
+| should return state for global outpost node             | Global outpost state |
+| should return state for route outpost node              | Route outpost state  |
+| should return null for non-existent outpost             | Missing outpost      |
+| should show "none (uses default)" for undefined timeout | Timeout display      |
+
+#### setupInspector
+
+| Test                                                   | Description            |
+| ------------------------------------------------------ | ---------------------- |
+| should add inspector to DevTools API                   | Inspector registration |
+| should register getInspectorTree callback              | Tree callback          |
+| should register getInspectorState callback             | State callback         |
+| should populate rootNodes on getInspectorTree callback | Tree population        |
+| should ignore getInspectorTree for other inspectors    | Inspector ID check     |
+| should populate state on getInspectorState callback    | State population       |
+
+#### refreshInspector
+
+| Test                                                 | Description   |
+| ---------------------------------------------------- | ------------- |
+| should call sendInspectorTree and sendInspectorState | Refresh calls |
+
+---
+
+### debugHandler.test.ts (12 tests)
+
+Debug handler invocation, custom handlers, and default logger.
 
 #### debugPoint function
 
@@ -436,6 +498,7 @@ Debug handler invocation and custom handlers.
 | calls debugHandler when debug is true       | Handler invocation       |
 | does not call logger.debug when debug false | No logging when disabled |
 | does not call debugHandler when debug false | No handler when disabled |
+| works without debugHandler (optional)       | Optional handler         |
 | passes debug point name to handler          | Correct name passed      |
 
 #### createDefaultDebugHandler
@@ -445,13 +508,19 @@ Debug handler invocation and custom handlers.
 | returns a function                  | Factory returns handler |
 | handler can be called without error | Handler is callable     |
 
-#### debugHandler in citadel
+#### custom debugHandler integration
 
-| Test                                            | Description              |
-| ----------------------------------------------- | ------------------------ |
-| uses custom debugHandler when provided          | Custom handler used      |
-| uses default debugHandler when not provided     | Default handler fallback |
-| debugHandler receives correct debug point names | Names passed correctly   |
+| Test                                     | Description         |
+| ---------------------------------------- | ------------------- |
+| should use custom debugHandler           | Custom handler used |
+| should allow debugHandler custom actions | Custom tracing      |
+
+#### createDefaultLogger
+
+| Test                                    | Description         |
+| --------------------------------------- | ------------------- |
+| should return logger with all methods   | Logger shape        |
+| should call console methods with prefix | Prefix verification |
 
 ---
 
@@ -459,16 +528,17 @@ Debug handler invocation and custom handlers.
 
 ### 1. Choose the Right File
 
-| If testing...          | Add to...                    |
-| ---------------------- | ---------------------------- |
-| Registry functions     | `navigationRegistry.test.ts` |
-| Outcome/patrol logic   | `navigationOutposts.test.ts` |
-| Public API             | `navigationCitadel.test.ts`  |
-| Timeout behavior       | `timeout.test.ts`            |
-| Lazy loading           | `lazy.test.ts`               |
-| Full navigation flows  | `integration.test.ts`        |
-| DevTools settings      | `devtools-settings.test.ts`  |
-| Debug handler behavior | `debugHandler.test.ts`       |
+| If testing...         | Add to...                    |
+| --------------------- | ---------------------------- |
+| Registry functions    | `navigationRegistry.test.ts` |
+| Outcome/patrol logic  | `navigationOutposts.test.ts` |
+| Public API            | `navigationCitadel.test.ts`  |
+| Timeout behavior      | `timeout.test.ts`            |
+| Lazy loading          | `lazy.test.ts`               |
+| Full navigation flows | `integration.test.ts`        |
+| DevTools settings     | `devtools-settings.test.ts`  |
+| DevTools inspector    | `devtools-inspector.test.ts` |
+| Debug handler/logger  | `debugHandler.test.ts`       |
 
 ### 2. Use Existing Helpers
 

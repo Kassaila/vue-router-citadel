@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { debugPoint, createDefaultDebugHandler } from '../src/helpers';
+import { debugPoint, createDefaultDebugHandler, createDefaultLogger } from '../src/helpers';
 import { DebugPoints } from '../src/types';
 import type { CitadelLogger, DebugHandler } from '../src/types';
 
@@ -120,6 +120,49 @@ describe('debugHandler', () => {
       debugPoint(DebugPoints.BEFORE_OUTPOST, true, mockLogger, customHandler);
 
       expect(traces).toEqual(['trace: navigation-start', 'trace: before-outpost']);
+    });
+  });
+
+  describe('createDefaultLogger', () => {
+    it('should return logger with all required methods', () => {
+      const logger = createDefaultLogger();
+
+      expect(typeof logger.info).toBe('function');
+      expect(typeof logger.warn).toBe('function');
+      expect(typeof logger.error).toBe('function');
+      expect(typeof logger.debug).toBe('function');
+    });
+
+    it('should call console methods with prefix', () => {
+      const logger = createDefaultLogger();
+
+      const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      logger.info('test info');
+      logger.warn('test warn');
+      logger.error('test error');
+      logger.debug('test debug');
+
+      expect(infoSpy).toHaveBeenCalledWith(
+        expect.stringContaining('NavigationCitadel'),
+        'test info',
+      );
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('NavigationCitadel'),
+        'test error',
+      );
+      // warn and debug use console.log
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('NavigationCitadel'),
+        'test warn',
+      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('[DEBUG]'), 'test debug');
+
+      infoSpy.mockRestore();
+      warnSpy.mockRestore();
+      errorSpy.mockRestore();
     });
   });
 });
