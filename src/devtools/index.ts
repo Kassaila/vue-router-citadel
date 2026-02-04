@@ -1,7 +1,7 @@
 import type { App } from 'vue';
 import { setupDevToolsPlugin } from '@vue/devtools-api';
 
-import type { NavigationRegistry, CitadelLogger } from '../types';
+import type { NavigationRegistry, CitadelLogger, DebugHandler } from '../types';
 import { __DEV__ } from '../consts';
 import type { DevToolsApi, CitadelRuntimeState, LogLevel } from './types';
 import { DEVTOOLS_PLUGIN_ID, DEVTOOLS_PLUGIN_LABEL, DEVTOOLS_PLUGIN_ICON } from './consts';
@@ -32,6 +32,7 @@ export const setupDevtools = (
   runtimeState: CitadelRuntimeState,
   optionLog?: boolean,
   optionDebug?: boolean,
+  debugHandler?: DebugHandler,
 ): void => {
   // Initialize runtime state from localStorage → citadel options → defaults
   const initialState = initializeRuntimeState(optionLog, optionDebug, __DEV__);
@@ -58,7 +59,7 @@ export const setupDevtools = (
         }
       });
 
-      setupInspector(api, registry, logger, runtimeState.debug);
+      setupInspector(api, registry, logger, runtimeState.debug, debugHandler);
     },
   );
 };
