@@ -3,7 +3,8 @@ name: feature
 description:
   Start feature development workflow. Creates temp/<feature-name>/feature.md with proposal. Use
   kebab-case for feature names.
-disable-model-invocation: true
+metadata:
+  claude-disable-model-invocation: 'true'
 ---
 
 Start feature development workflow for vue-router-citadel.

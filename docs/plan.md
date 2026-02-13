@@ -7,131 +7,73 @@
 ### Infrastructure
 
 - [x] Project structure (`src/`, `examples/`)
-- [x] `.gitignore`
+- [x] `.gitignore`, `tsconfig.json` (ES2020, ESNext, strict)
 - [x] `package.json` (name, version, exports, peerDependencies)
-- [x] `tsconfig.json` (ES2020, ESNext, strict)
 - [x] Build system — `tsup` (ESM, CJS, .d.ts)
 - [x] Code formatting — Prettier + Husky + lint-staged
 - [x] LICENSE (MIT)
+- [x] CI/CD — GitHub Actions (`ci.yml`, `release.yml`)
 
 ### Source Code
 
-- [x] `src/index.ts` — entry point, exports
-- [x] `src/types.ts` — TypeScript types and interfaces
-- [x] `src/consts.ts` — constants (LOG_PREFIX, DEFAULT_PRIORITY)
-- [x] `src/helpers.ts` — utilities (debugPoint, logger)
-- [x] `src/navigationCitadel.ts` — main factory
-- [x] `src/navigationRegistry.ts` — outposts registry
-- [x] `src/navigationOutposts.ts` — patrol logic
-- [x] `src/devtools/` — Vue DevTools integration
+- [x] Core modules: `index.ts`, `types.ts`, `consts.ts`, `helpers.ts`
+- [x] `navigationCitadel.ts` — main factory
+- [x] `navigationRegistry.ts` — outposts registry
+- [x] `navigationOutposts.ts` — patrol logic
+- [x] `devtools/` — Vue DevTools integration
+
+### Features
+
+- [x] Global and route-scoped outposts (scope defaults to `'global'`)
+- [x] Priority-based processing (global + route)
+- [x] Route outposts deduplication with warning
+- [x] Route outposts inheritance from parent routes
+- [x] Route validation for redirects
+- [x] Verdict system: `ALLOW`, `BLOCK`, redirect
+- [x] `log` / `logger` / `debug` options with colored output
+- [x] Custom logger support via `CitadelLogger` interface (`createDefaultLogger`)
+- [x] Critical events always logged (errors, timeouts, missing routes)
+- [x] Named debug breakpoints (navigation-start, before-outpost, patrol-stopped, timeout,
+      error-caught, devtools-init, devtools-inspector)
+- [x] Custom `debugHandler` option (`createDefaultDebugHandler`)
+- [x] Default error handler (`console.error` + `BLOCK`)
+- [x] Timeout support (`defaultTimeout`, `timeout`, `onTimeout`)
+- [x] Lazy outposts (`lazy: true`) — on-demand handler loading for code splitting
+- [x] `assignOutpostToRoute()` method
+- [x] Optimized processing (sorting at deploy, direct registry calls)
+- [x] Type-safe outpost names (`GlobalOutpostRegistry` / `RouteOutpostRegistry`)
+- [x] Vue DevTools integration (`devtools` option, custom inspector, settings panel)
+- [x] Tree-shakeable devtools via dynamic import
+- [x] Vue Plugin API (`app.use(citadel)`)
+
+### NPM Scripts
+
+- [x] `build`, `build:dev`
+- [x] `check:types`, `check:format`, `check:all`
+- [x] `release:check`, `release:publish`, `release:publish:beta`
+
+### Testing
+
+- [x] Vitest + happy-dom — 134 tests across 9 test files
 
 ### Documentation
 
 - [x] `README.md` — API reference with section links to internals
 - [x] `docs/internals.md` — deep dive with Mermaid diagrams
 - [x] `docs/testing.md` — testing guide and all test cases
+- [x] `docs/type-safe-names-advanced.md` — advanced patterns (DI, modules)
+- [x] `docs/release.md` — release process for maintainers
 - [x] `CONTRIBUTING.md` — contributor guide
 - [x] `CHANGELOG.md` — release notes
 - [x] Usage examples (`examples/`)
 - [x] Exports Reference section (constants + types)
 - [x] Logging & Debug sections with colored output reference
 
-### Features
-
-- [x] Global and route-scoped outposts
-- [x] Priority-based processing (global + route)
-- [x] Route outposts deduplication with warning
-- [x] Route validation for redirects
-- [x] `log` / `logger` / `debug` options with colored output (🔵 info, 🟡 warn, 🔴 error, 🟣 debug)
-- [x] Custom logger support via `CitadelLogger` interface (`createDefaultLogger`)
-- [x] Critical events always logged (errors, timeouts, missing routes)
-- [x] Named debug breakpoints (navigation-start, before-outpost, patrol-stopped, error-caught)
-- [x] Default error handler (`console.error` + `BLOCK`)
-- [x] `assignOutpostToRoute()` method
-- [x] Optimized processing (sorting at deploy, direct registry calls)
-- [x] Type-safe outpost names (declaration merging with `GlobalOutpostRegistry` /
-      `RouteOutpostRegistry`)
-- [x] Vue DevTools integration (`devtools` option, custom inspector)
-- [x] DevTools Settings panel (Log level selector, localStorage persistence)
-- [x] Custom `debugHandler` option (solves bundler stripping `debugger` statements)
-
-### Build
-
-- [x] `npm run build` — production (minified)
-- [x] `npm run build:dev` — development (sourcemap)
-
 ---
 
 ## TODO
 
-### Priority 1 — Before Release
-
-#### ~~Timeout for Outposts~~ ✅
-
-Implemented: `defaultTimeout`, `timeout`, `onTimeout`
-
----
-
-#### ~~Testing~~ ✅
-
-Implemented: vitest + happy-dom, 109 tests across 8 test files.
-
-```
-__tests__/
-├── helpers/setup.ts             # Mock router, logger, handlers
-├── navigationCitadel.test.ts    # 19 tests
-├── navigationRegistry.test.ts   # 12 tests
-├── navigationOutposts.test.ts   # 19 tests
-├── timeout.test.ts              # 5 tests
-├── integration.test.ts          # 13 tests
-├── lazy.test.ts                 # 12 tests
-├── devtools-settings.test.ts    # 19 tests
-└── debugHandler.test.ts         # 10 tests
-```
-
----
-
-#### ~~CI/CD~~ ✅
-
-Implemented: GitHub Actions workflows for CI and Release.
-
-**Files:**
-
-- `.github/workflows/ci.yml` — runs on push/PR to main/develop (format, types, tests, build)
-- `.github/workflows/release.yml` — runs on `v*` tags (full checks + npm publish with provenance)
-
----
-
-#### ~~Type-safe Outpost Names~~ ✅
-
-Implemented: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, scope-aware typing for all API
-methods.
-
-See [Type-Safe Outpost Names](./internals.md#-type-safe-outpost-names) for usage examples.
-
----
-
 ### Priority 2 — Post-Release
-
-#### ~~DevTools Integration~~ ✅
-
-Implemented: Custom inspector with `@vue/devtools-api`.
-
-**Features:**
-
-- `devtools` option (default: `__DEV__`)
-- Custom inspector with outpost tree (Global/Route groups)
-- Tags showing priority and hooks count
-- State panel with outpost details
-- Auto-refresh on deploy/abandon
-
-**Files:**
-
-- `src/devtools/index.ts` — setup functions, auto-init
-- `src/devtools/inspector.ts` — custom inspector logic
-- `src/devtools/types.ts` — DevTools-specific types
-
----
 
 #### Metrics
 
@@ -152,27 +94,6 @@ citadel.resetMetrics();
 - Track in `processOutpost`: start time, end time, success/fail
 - Store in registry alongside outpost
 - Add `getMetrics()` and `resetMetrics()` to API
-
----
-
-#### ~~Lazy Outposts~~ ✅
-
-Implemented: `lazy: true` option for on-demand handler loading.
-
-**Features:**
-
-- `lazy` option in outpost config
-- Handler module loaded on first navigation, then cached
-- Timeout applies only to handler execution, not module loading
-- Retry allowed after load failure
-- DevTools shows `lazy` tag
-
-**Files:**
-
-- `src/types.ts` — `LazyOutpostLoader` type, conditional typing
-- `src/navigationCitadel.ts` — `getHandler` wrapper with caching
-- `src/navigationOutposts.ts` — separated loading from execution
-- `__tests__/lazy.test.ts` — 12 tests
 
 ---
 
@@ -210,81 +131,102 @@ Interactive demo for trying the library.
 
 ---
 
-### Priority 3 — Documentation
+#### VitePress Documentation Site
 
-#### Restructure docs: README.md → API reference, internals.md → deep dive ✅
+Documentation website generated from existing docs, hosted on GitHub Pages.
 
-**README.md** — concise API reference:
+**Approach:** Add VitePress on top of existing `docs/` directory — `.vitepress/` config + new pages,
+existing files reused with minimal changes (frontmatter added).
 
-- [x] Logical section order (concepts before API)
-- [x] Section-specific links to internals.md
-- [x] Simplified API headers (Citadel, deployOutpost, abandonOutpost, etc.)
-- [x] "📦 Exports" section with link to detailed reference
-- [x] "📖 Internals" section at the end
+**Dependencies:** `vitepress`, `vitepress-plugin-mermaid`
 
-**docs/internals.md** — deep dive:
-
-- [x] Restructured to match README sections
-- [x] Added emojis to section headers
-- [x] Expanded content for each section (Navigation Hooks, Outpost Scopes, Handler Return Values)
-- [x] "🔄 Complete Navigation Example" moved before API Internals
-- [x] "📦 Exports Reference" section (constants + types + interfaces)
-- [x] Logging Reference + Debug Reference tables
-
----
-
-## Project Structure
+**Site Structure:**
 
 ```
-src/                             # Source code
-├── index.ts                     # Public API exports
-├── types.ts
-├── consts.ts
-├── helpers.ts
-├── navigationCitadel.ts
-├── navigationOutposts.ts
-├── navigationRegistry.ts
-└── devtools/                    # Vue DevTools integration
-    ├── index.ts
-    ├── inspector.ts
-    └── types.ts
-
-__tests__/                       # Tests
-├── helpers/setup.ts
-├── navigationCitadel.test.ts
-├── navigationRegistry.test.ts
-├── navigationOutposts.test.ts
-├── timeout.test.ts
-└── integration.test.ts
-
 docs/
-├── internals.md
-├── plan.md
-├── release.md
-└── testing.md
-
-examples/
-├── auth.ts
-├── global-different-hooks.ts
-├── nested-routes.ts
-└── route-multiple-hooks.ts
-
-.github/workflows/               # TODO
-├── ci.yml
-└── release.yml
+├── .vitepress/
+│   └── config.ts                  # VitePress config (nav, sidebar, theme)
+├── index.md                       # Homepage (hero + features cards)
+├── guide/
+│   ├── index.md                   # Introduction (philosophy, concepts)
+│   ├── getting-started.md         # Installation + Quick Start
+│   ├── scopes.md                  # Outpost Scopes (global/route)
+│   ├── hooks.md                   # Navigation Hooks
+│   ├── verdicts.md                # Handler Return Values
+│   ├── timeout.md                 # Timeout handling
+│   ├── lazy-outposts.md           # Lazy Outposts
+│   └── devtools.md                # Vue DevTools integration
+├── api/
+│   ├── index.md                   # API methods (createNavigationCitadel, etc.)
+│   ├── types.md                   # TypeScript types & interfaces
+│   └── exports.md                 # Constants, utilities
+├── advanced/
+│   ├── architecture.md            # Registry, processing internals
+│   ├── type-safety.md             # Type-safe outpost names
+│   ├── modular-apps.md            # Large-scale patterns (DI, modules)
+│   └── logging.md                 # Logging, custom logger, debug
+├── examples/
+│   ├── auth.md                    # Auth guard example
+│   ├── nested-routes.md           # Nested routes with priorities
+│   ├── multiple-hooks.md          # Multiple hooks per outpost
+│   └── different-hooks.md         # Different hook types
+├── contributing/
+│   ├── index.md                   # From CONTRIBUTING.md
+│   ├── testing.md                 # From docs/testing.md
+│   └── release.md                 # From docs/release.md
+└── changelog.md                   # From CHANGELOG.md
 ```
 
----
+**Content source mapping:**
 
-## Commands
+| VitePress page             | Source                                                |
+| -------------------------- | ----------------------------------------------------- |
+| `index.md`                 | New (hero from README badges/description)             |
+| `guide/*`                  | Split from `README.md` sections                       |
+| `api/*`                    | Split from `README.md` API + `internals.md` API Usage |
+| `advanced/architecture.md` | From `internals.md` (Registry, Processing, Diagrams)  |
+| `advanced/type-safety.md`  | From `internals.md` Type-Safe section                 |
+| `advanced/modular-apps.md` | From `type-safe-names-advanced.md`                    |
+| `advanced/logging.md`      | From `internals.md` Logging + Debug sections          |
+| `examples/*`               | From `examples/*.ts` wrapped in markdown              |
+| `contributing/*`           | From `CONTRIBUTING.md`, `testing.md`, `release.md`    |
+| `changelog.md`             | From `CHANGELOG.md`                                   |
+
+**NPM scripts:**
 
 ```bash
-npm install          # Install dependencies
-npm run build        # Build for production
-npm run build:dev    # Build for development
-npm run format       # Format code
-npm test             # Run tests
-npm run test:coverage # Run tests with coverage
-npm pack --dry-run   # Check package contents
-npm publish          # Publish to npm
+docs:dev        # vitepress dev docs
+docs:build      # vitepress build docs
+docs:preview    # vitepress preview docs
 ```
+
+**GitHub Actions:** `.github/workflows/deploy-docs.yml` — build + deploy to GitHub Pages on push to
+`main`.
+
+**Features:**
+
+- Mermaid diagrams (12+ existing diagrams rendered natively)
+- Local search (built-in VitePress)
+- Dark mode (default theme)
+- TypeScript syntax highlighting (Shiki)
+- Mobile responsive
+
+**Excluded from site:** `docs/plan.md` (internal roadmap)
+
+**Checklist:**
+
+- [ ] Install `vitepress` + `vitepress-plugin-mermaid`
+- [ ] Create `.vitepress/config.ts` (nav, sidebar, base path, mermaid plugin)
+- [ ] Create `docs/index.md` homepage
+- [ ] Split README.md → `guide/` pages
+- [ ] Split internals.md → `advanced/` + `api/` pages
+- [ ] Migrate examples → `examples/` markdown pages
+- [ ] Migrate contributing docs → `contributing/`
+- [ ] Add frontmatter to all pages
+- [ ] Create `.github/workflows/deploy-docs.yml`
+- [ ] Add npm scripts (`docs:dev`, `docs:build`, `docs:preview`)
+- [ ] Test local build and preview
+- [ ] Update README.md with docs site link
+- [ ] Update CLAUDE.md with docs commands and structure
+
+---

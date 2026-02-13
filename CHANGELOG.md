@@ -101,6 +101,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `__tests__/debugHandler.test.ts` — debugHandler invocation, custom handlers
 - `docs/testing.md` — testing guide and test case reference
 
+#### CI/CD
+
+- GitHub Actions CI workflow (`ci.yml`) — format, types, tests, build on push/PR to main/develop
+- GitHub Actions Release workflow (`release.yml`) — full checks + npm publish with provenance on
+  `v*` tags
+
 #### Documentation
 
 - `README.md` — API reference with section-specific links to internals
@@ -109,5 +115,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - Expanded sections matching README structure
   - Exports Reference (constants, types, interfaces)
   - Logging Reference and Debug Reference tables
+- `docs/type-safe-names-advanced.md` — advanced patterns (DI, modular architecture)
+- `docs/release.md` — release process for maintainers
 - `examples/` — usage patterns (auth, nested routes, hooks)
 - `CONTRIBUTING.md` — contributor guide
