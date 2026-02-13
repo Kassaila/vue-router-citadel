@@ -1,10 +1,11 @@
 ---
 name: release-check
 description: Pre-release verification checklist. Runs all checks needed before publishing to npm.
-disable-model-invocation: true
-context: fork
-agent: general-purpose
 allowed-tools: Bash(npm *)
+metadata:
+  claude-disable-model-invocation: 'true'
+  claude-context: fork
+  claude-agent: general-purpose
 ---
 
 Run pre-release checks for vue-router-citadel:
