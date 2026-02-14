@@ -1,13 +1,13 @@
-# Contributing
+# 🤝 Contributing
 
 Thanks for your interest in contributing to vue-router-citadel!
 
-## Requirements
+## 📋 Requirements
 
 - Node.js >= 22.0.0
 - npm >= 9.0.0
 
-## Setup
+## ⚙️ Setup
 
 ```bash
 # Clone the repository
@@ -18,7 +18,7 @@ cd vue-router-citadel
 npm install
 ```
 
-## Development Commands
+## 🛠️ Development Commands
 
 ```bash
 npm run build        # Production build (ESM + CJS + types)
@@ -30,7 +30,7 @@ npm run format       # Format code with Prettier
 npm run format:check # Check code formatting
 ```
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 src/                     # Source code
@@ -46,70 +46,11 @@ __tests__/               # Tests (vitest + happy-dom)
 ├── helpers/setup.ts     # Mock router, logger, handlers
 └── *.test.ts            # Test files
 
-devtools/                # Future Vue DevTools plugin
 docs/                    # Documentation
 examples/                # Usage examples
 ```
 
-## Testing
-
-We use [Vitest](https://vitest.dev/) with [happy-dom](https://github.com/nicholasostrom/happy-dom)
-for testing.
-
-```bash
-# Run tests in watch mode (recommended during development)
-npm run test
-
-# Run tests once
-npm run test:run
-
-# Run with coverage
-npm run test:coverage
-```
-
-See [docs/testing.md](./docs/testing.md) for detailed testing guide and all test cases.
-
-## Local Testing with npm link
-
-To test the package in a real Vue project during development:
-
-**In this repository:**
-
-```bash
-# 1. Build the package
-npm run build
-
-# 2. Create a global symlink
-npm link
-```
-
-**In your test project:**
-
-```bash
-# 3. Link the package
-npm link vue-router-citadel
-```
-
-Now `import { createNavigationCitadel } from 'vue-router-citadel'` will use your local version.
-
-**After making changes:**
-
-```bash
-# Rebuild — the symlink will automatically pick up changes
-npm run build
-```
-
-**To unlink:**
-
-```bash
-# In your test project
-npm unlink vue-router-citadel
-
-# In this repository (remove global symlink)
-npm unlink
-```
-
-## Workflow
+## 🔄 Workflow
 
 ### Branch Naming
 
@@ -139,26 +80,38 @@ refactor: improve code structure
 5. Ensure code is formatted (`npm run format`)
 6. Submit PR to `develop` branch
 
-## Code Style
+## ✨ Code Style
 
 - TypeScript strict mode
 - Prettier for formatting (runs automatically on commit via husky)
 - No external runtime dependencies (peer dependency: vue-router only)
 
-## Architecture Guidelines
+## 🏗️ Architecture Guidelines
 
 - **Registry**: Use Maps for O(1) lookup, sorted arrays for iteration
 - **Sorting**: Done at deploy/abandon time, not during navigation
 - **Logging**: Critical events always logged, non-critical controlled by `log` option
 - **Errors**: Always provide meaningful error messages with context
 
-## Documentation
+## 🔗 Local Testing with npm link
 
-- `README.md` — User-facing API reference
-- `docs/internals.md` — Deep dive into architecture
-- `docs/testing.md` — Testing guide for contributors
-- `CLAUDE.md` — AI assistant context (Claude Code)
+To test the package in a real Vue project:
 
-## Questions?
+**In this repository:**
+
+```bash
+npm run build
+npm link
+```
+
+**In your test project:**
+
+```bash
+npm link vue-router-citadel
+```
+
+After changes, rebuild — the symlink picks up changes automatically.
+
+## ❓ Questions?
 
 Open an issue for questions or suggestions.
