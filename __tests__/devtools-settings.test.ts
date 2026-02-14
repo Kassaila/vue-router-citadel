@@ -12,7 +12,9 @@ import { LOG_LEVELS } from '../src/devtools/types';
 import { SETTINGS_STORAGE_PREFIX, SETTINGS_KEY_LOG_LEVEL } from '../src/devtools/consts';
 
 describe('DevTools Settings', () => {
-  // Mock localStorage
+  /**
+   * Mock localStorage
+   */
   let mockStorage: Record<string, string> = {};
 
   beforeEach(() => {
@@ -64,7 +66,9 @@ describe('DevTools Settings', () => {
     });
 
     it('should convert log:false, debug:true to DEBUG (debug takes precedence)', () => {
-      // Edge case: if somehow debug is true but log is false, debug wins
+      /**
+       * Edge case: if somehow debug is true but log is false, debug wins
+       */
       expect(stateToLogLevel({ log: false, debug: true })).toBe(LOG_LEVELS.DEBUG);
     });
   });
@@ -89,14 +93,20 @@ describe('DevTools Settings', () => {
     it('should use defaults when localStorage and options are empty', () => {
       const state = initializeRuntimeState(undefined, undefined, true);
 
-      expect(state.log).toBe(true); // default value
+      /**
+       * default value
+       */
+      expect(state.log).toBe(true);
       expect(state.debug).toBe(false);
     });
 
     it('should prioritize debug option over log option', () => {
       const state = initializeRuntimeState(false, true, false);
 
-      expect(state.log).toBe(true); // debug forces log
+      /**
+       * debug forces log
+       */
+      expect(state.log).toBe(true);
       expect(state.debug).toBe(true);
     });
 

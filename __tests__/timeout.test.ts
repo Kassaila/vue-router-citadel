@@ -28,10 +28,14 @@ describe('timeout', () => {
       handler: createDelayedHandler(200),
     });
 
-    // Navigate to trigger the guard
+    /**
+     * Navigate to trigger the guard
+     */
     await router.push('/dashboard').catch(() => {});
 
-    // Navigation should be blocked due to timeout
+    /**
+     * Navigation should be blocked due to timeout
+     */
     expect(router.currentRoute.value.name).toBe('home');
     expect(
       mockLogger.calls.some(
@@ -76,20 +80,28 @@ describe('timeout', () => {
     const citadel = createNavigationCitadel(router, {
       log: false,
       logger: mockLogger,
-      defaultTimeout: 500, // Long default
+      /**
+       * Long default
+       */
+      defaultTimeout: 500,
       onTimeout,
     });
 
     citadel.deployOutpost({
       scope: NavigationOutpostScopes.GLOBAL,
       name: 'slow',
-      timeout: 50, // Short per-outpost timeout
+      /**
+       * Short per-outpost timeout
+       */
+      timeout: 50,
       handler: createDelayedHandler(200),
     });
 
     await router.push('/dashboard');
 
-    // Should timeout with per-outpost timeout (50ms), not default (500ms)
+    /**
+     * Should timeout with per-outpost timeout (50ms), not default (500ms)
+     */
     expect(onTimeout).toHaveBeenCalled();
 
     citadel.destroy();
@@ -99,19 +111,25 @@ describe('timeout', () => {
     const citadel = createNavigationCitadel(router, {
       log: false,
       logger: mockLogger,
-      // No defaultTimeout
+      /**
+       * No defaultTimeout
+       */
     });
 
     citadel.deployOutpost({
       scope: NavigationOutpostScopes.GLOBAL,
       name: 'slow',
-      // No per-outpost timeout
+      /**
+       * No per-outpost timeout
+       */
       handler: createDelayedHandler(50, 'allow'),
     });
 
     await router.push('/dashboard');
 
-    // Navigation should succeed
+    /**
+     * Navigation should succeed
+     */
     expect(router.currentRoute.value.name).toBe('dashboard');
     expect(mockLogger.calls.some((c) => (c.args[0] as string)?.includes?.('timed out'))).toBe(
       false,

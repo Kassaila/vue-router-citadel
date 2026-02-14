@@ -8,7 +8,6 @@ import {
   createMockRouter,
   createMockLogger,
   createAllowHandler,
-  createBlockHandler,
   createRedirectHandler,
   createRegisteredOutpost,
 } from './helpers/setup';
@@ -84,7 +83,9 @@ describe('navigationOutposts', () => {
       router = createMockRouter();
       mockLogger = createMockLogger();
 
-      // Initialize router
+      /**
+       * Initialize router
+       */
       await router.push('/');
       await router.isReady();
 
@@ -237,7 +238,9 @@ describe('navigationOutposts', () => {
     it('processes route outposts after global', async () => {
       const order: string[] = [];
 
-      // Create route with outposts meta
+      /**
+       * Create route with outposts meta
+       */
       const routerWithMeta = createMockRouter([
         {
           path: '/',
@@ -295,7 +298,9 @@ describe('navigationOutposts', () => {
     });
 
     it('warns on duplicate route outposts', async () => {
-      // Create route with duplicate outposts
+      /**
+       * Create route with duplicate outposts
+       */
       const routerWithDuplicates = createMockRouter([
         {
           path: '/parent',
@@ -362,7 +367,9 @@ describe('navigationOutposts', () => {
         hook: NavigationHooks.BEFORE_EACH,
       };
 
-      // Should not throw, just skip missing outposts
+      /**
+       * Should not throw, just skip missing outposts
+       */
       const result = await patrol(registry, ctxWithMeta, {}, mockLogger, {
         log: false,
         debug: false,

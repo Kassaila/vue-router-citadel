@@ -4,7 +4,7 @@ import { setupDevToolsPlugin } from '@vue/devtools-api';
 import type { NavigationRegistry, CitadelLogger, DebugHandler } from '../types';
 import { __DEV__ } from '../consts';
 import type { DevToolsApi, CitadelRuntimeState, LogLevel } from './types';
-import { DEVTOOLS_PLUGIN_ID, DEVTOOLS_PLUGIN_LABEL, DEVTOOLS_PLUGIN_ICON } from './consts';
+import { DEVTOOLS_PLUGIN_ID, DEVTOOLS_PLUGIN_LABEL } from './consts';
 import { setupInspector, refreshInspector } from './inspector';
 import { initializeRuntimeState, updateRuntimeState, createSettingsDefinition } from './settings';
 
@@ -34,7 +34,9 @@ export const setupDevtools = (
   optionDebug?: boolean,
   debugHandler?: DebugHandler,
 ): void => {
-  // Initialize runtime state from localStorage → citadel options → defaults
+  /**
+   * Initialize runtime state from localStorage → citadel options → defaults
+   */
   const initialState = initializeRuntimeState(optionLog, optionDebug, __DEV__);
   runtimeState.log = initialState.log;
   runtimeState.debug = initialState.debug;
@@ -52,7 +54,9 @@ export const setupDevtools = (
     (api) => {
       devtoolsApi = api;
 
-      // Listen for settings changes from DevTools UI
+      /**
+       * Listen for settings changes from DevTools UI
+       */
       api.on.setPluginSettings((payload) => {
         if (payload.key === 'logLevel') {
           updateRuntimeState(runtimeState, payload.newValue as LogLevel);

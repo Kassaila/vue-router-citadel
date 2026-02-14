@@ -2,7 +2,6 @@ import type { App } from 'vue';
 import type { Router, RouteLocationNormalized } from 'vue-router';
 
 import type {
-  CitadelLogger,
   NavigationOutpostContext,
   NavigationCitadelAPI,
   NavigationCitadelOptions,
@@ -23,6 +22,7 @@ import type { CitadelRuntimeState } from './devtools/types';
  * Dynamic devtools import for tree-shaking
  * When devtools: false, bundlers eliminate this code entirely
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 type DevtoolsModule = typeof import('./devtools');
 
 let devtoolsModule: DevtoolsModule | null = null;
@@ -100,8 +100,10 @@ export const createNavigationCitadel = (
     debug: optionDebug ?? false,
   };
 
-  // Initialize from localStorage if DevTools enabled (deferred to setupDevtools)
-  // For now, use citadel options as initial values
+  /**
+   * Initialize from localStorage if DevTools enabled (deferred to setupDevtools)
+   * For now, use citadel options as initial values
+   */
 
   /**
    * Store cleanup functions for navigation hooks
@@ -165,7 +167,9 @@ export const createNavigationCitadel = (
     try {
       await patrol(registry, ctx, resolvedOptions, logger, runtimeState);
     } catch (error) {
-      // Critical: always log
+      /**
+       * Critical: always log
+       */
       logger.error('Error in afterEach outpost:', error);
       debugPoint(DebugPoints.ERROR_CAUGHT, runtimeState.debug, logger, debugHandler);
     }
@@ -179,23 +183,31 @@ export const createNavigationCitadel = (
   const deployOne = (opts: NavigationOutpost<NavigationOutpostScope, boolean>): void => {
     const { scope = 'global', name, handler, priority, hooks, timeout, lazy = false } = opts;
 
-    // Create getHandler wrapper
+    /**
+     * Create getHandler wrapper
+     */
     let cachedHandler: NavigationOutpostHandler | null = null;
     let loadPromise: Promise<NavigationOutpostHandler> | null = null;
 
     const getHandler = async (): Promise<NavigationOutpostHandler> => {
-      // Return cached if available
+      /**
+       * Return cached if available
+       */
       if (cachedHandler) {
         return cachedHandler;
       }
 
-      // Eager — cache and return
+      /**
+       * Eager — cache and return
+       */
       if (!lazy) {
         cachedHandler = handler as NavigationOutpostHandler;
         return cachedHandler;
       }
 
-      // Lazy — load module (retry allowed when loadPromise is null)
+      /**
+       * Lazy — load module (retry allowed when loadPromise is null)
+       */
       if (!loadPromise) {
         loadPromise = (handler as LazyOutpostLoader)()
           .then((mod) => {
@@ -206,7 +218,10 @@ export const createNavigationCitadel = (
             return cachedHandler;
           })
           .catch((err) => {
-            loadPromise = null; // Allow retry on next call
+            /**
+             * Allow retry on next call
+             */
+            loadPromise = null;
             throw err instanceof Error ? err : new Error(String(err));
           });
       }
@@ -226,9 +241,11 @@ export const createNavigationCitadel = (
       logger,
     );
 
-    // Notify DevTools of change
+    /**
+     * Notify DevTools of change
+     */
     if (enableDevtools) {
-      loadDevtools().then((mod) => mod?.notifyDevtoolsRefresh());
+      void loadDevtools().then((mod) => mod?.notifyDevtoolsRefresh());
     }
   };
 
@@ -242,9 +259,11 @@ export const createNavigationCitadel = (
 
     const result = unregister(registry, scope, name, defaultPriority);
 
-    // Notify DevTools of change
+    /**
+     * Notify DevTools of change
+     */
     if (enableDevtools && result) {
-      loadDevtools().then((mod) => mod?.notifyDevtoolsRefresh());
+      void loadDevtools().then((mod) => mod?.notifyDevtoolsRefresh());
     }
 
     return result;
@@ -259,7 +278,7 @@ export const createNavigationCitadel = (
         return;
       }
 
-      loadDevtools().then((mod) => {
+      void loadDevtools().then((mod) => {
         if (!mod) {
           return;
         }
@@ -319,7 +338,9 @@ export const createNavigationCitadel = (
       const route = routes.find((r) => r.name === routeName);
 
       if (!route) {
-        // Critical: always log
+        /**
+         * Critical: always log
+         */
         logger.warn(`Route "${routeName}" not found`);
 
         return false;
@@ -359,9 +380,11 @@ export const createNavigationCitadel = (
       registry.globalSorted.length = 0;
       registry.routeSorted.length = 0;
 
-      // Clear DevTools API reference
+      /**
+       * Clear DevTools API reference
+       */
       if (enableDevtools) {
-        loadDevtools().then((mod) => mod?.clearDevtoolsApi());
+        void loadDevtools().then((mod) => mod?.clearDevtoolsApi());
       }
     },
   };

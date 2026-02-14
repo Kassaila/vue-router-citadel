@@ -1,3 +1,4 @@
+import type { App } from 'vue';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { createNavigationCitadel } from '../src/navigationCitadel';
@@ -93,7 +94,9 @@ describe('navigationCitadel', () => {
     it('deploys outpost with default scope (global)', () => {
       const citadel = createNavigationCitadel(router, { log: false });
 
-      // scope is optional, defaults to 'global'
+      /**
+       * scope is optional, defaults to 'global'
+       */
       citadel.deployOutpost({
         name: 'auth',
         handler: createAllowHandler(),
@@ -299,9 +302,11 @@ describe('navigationCitadel', () => {
     it('is callable as Vue plugin', () => {
       const citadel = createNavigationCitadel(router, { log: false, devtools: false });
 
-      // install() should be callable without throwing
+      /**
+       * install() should be callable without throwing
+       */
       expect(() => {
-        citadel.install({ config: {}, use: vi.fn() } as unknown as import('vue').App);
+        citadel.install({ config: {}, use: vi.fn() } as unknown as App);
       }).not.toThrow();
 
       citadel.destroy();
@@ -310,9 +315,11 @@ describe('navigationCitadel', () => {
     it('does nothing when devtools disabled', () => {
       const citadel = createNavigationCitadel(router, { log: false, devtools: false });
 
-      const mockApp = { config: {}, use: vi.fn() } as unknown as import('vue').App;
+      const mockApp = { config: {}, use: vi.fn() } as unknown as App;
 
-      // Should not throw and should do nothing
+      /**
+       * Should not throw and should do nothing
+       */
       citadel.install(mockApp);
 
       citadel.destroy();
