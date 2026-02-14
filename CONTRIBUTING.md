@@ -22,8 +22,10 @@ npm run build          # Production build (ESM + CJS + types)
 npm run test           # Run tests in watch mode
 npm run test:run       # Run tests once
 npm run test:coverage  # Coverage report
+npm run lint           # ESLint check
+npm run lint:fix       # ESLint auto-fix
 npm run format         # Format code with Prettier
-npm run check:all      # Full validation (format + types + tests)
+npm run check:all      # Full validation (format + lint + types + tests)
 ```
 
 ## Full Guide

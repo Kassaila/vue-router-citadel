@@ -99,7 +99,9 @@ export const createInspectorTree = (registry: NavigationRegistry): CustomInspect
   const globalOutposts: OutpostTreeNode[] = [];
   const routeOutposts: OutpostTreeNode[] = [];
 
-  // Build global outposts (sorted by priority)
+  /**
+   * Build global outposts (sorted by priority)
+   */
   for (const name of registry.globalSorted) {
     const outpost = registry.global.get(name);
     if (outpost) {
@@ -107,7 +109,9 @@ export const createInspectorTree = (registry: NavigationRegistry): CustomInspect
     }
   }
 
-  // Build route outposts (sorted by priority)
+  /**
+   * Build route outposts (sorted by priority)
+   */
   for (const name of registry.routeSorted) {
     const outpost = registry.route.get(name);
     if (outpost) {
@@ -156,7 +160,9 @@ export const getNodeState = (
   nodeId: string,
   registry: NavigationRegistry,
 ): CustomInspectorState | null => {
-  // Check if it's an outpost node
+  /**
+   * Check if it's an outpost node
+   */
   const outpostMatch = nodeId.match(
     `^outpost-(${NavigationOutpostScopes.GLOBAL}|${NavigationOutpostScopes.ROUTE})-(.+)$`,
   );

@@ -68,7 +68,9 @@ describe('integration', () => {
         scope: NavigationOutpostScopes.GLOBAL,
         name: 'redirector',
         handler: ({ to }) => {
-          // Only redirect if not already on login
+          /**
+           * Only redirect if not already on login
+           */
           if (to.name !== 'login') {
             return { name: 'login' };
           }
@@ -175,7 +177,9 @@ describe('integration', () => {
       const citadel = createNavigationCitadel(router, {
         log: false,
         onError: (_, ctx) => {
-          // Only redirect if not already on error page
+          /**
+           * Only redirect if not already on error page
+           */
           if (ctx.to.name !== 'error') {
             return { name: 'error' };
           }
@@ -187,7 +191,9 @@ describe('integration', () => {
         scope: NavigationOutpostScopes.GLOBAL,
         name: 'error-thrower',
         handler: ({ to }) => {
-          // Only throw error when navigating to dashboard
+          /**
+           * Only throw error when navigating to dashboard
+           */
           if (to.name === 'dashboard') {
             throw new Error('Test error');
           }
@@ -278,7 +284,9 @@ describe('integration', () => {
 
       await router.push('/dashboard');
 
-      // Wait for afterEach to complete (it's async)
+      /**
+       * Wait for afterEach to complete (it's async)
+       */
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(calls).toContain('afterEach');

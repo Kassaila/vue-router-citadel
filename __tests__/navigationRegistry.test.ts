@@ -113,7 +113,9 @@ describe('navigationRegistry', () => {
         mockLogger,
       );
 
-      // explicit (50) comes before default (100)
+      /**
+       * explicit (50) comes before default (100)
+       */
       expect(registry.globalSorted).toEqual(['explicit', 'default']);
     });
   });

@@ -9,18 +9,26 @@ export type {
   NavigationCitadelAPI,
   NavigationHook,
   NavigationOutpostScope,
-  // Type-safe outpost names (user-extensible via declaration merging)
+  /**
+   * Type-safe outpost names (user-extensible via declaration merging)
+   */
   GlobalOutpostRegistry,
   RouteOutpostRegistry,
   GlobalOutpostName,
   RouteOutpostName,
   OutpostName,
-  // Logger
+  /**
+   * Logger
+   */
   CitadelLogger,
-  // Debug
+  /**
+   * Debug
+   */
   DebugHandler,
   DebugPoint,
-  // Lazy loading
+  /**
+   * Lazy loading
+   */
   LazyOutpostLoader,
 } from './types';
 

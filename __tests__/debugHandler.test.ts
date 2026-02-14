@@ -51,7 +51,9 @@ describe('debugHandler', () => {
     });
 
     it('should work without debugHandler (optional)', () => {
-      // Should not throw
+      /**
+       * Should not throw
+       */
       expect(() => {
         debugPoint(DebugPoints.NAVIGATION_START, true, mockLogger);
       }).not.toThrow();
@@ -90,7 +92,9 @@ describe('debugHandler', () => {
     it('should be callable with debug point name', () => {
       const handler = createDefaultDebugHandler();
 
-      // Should not throw (debugger statement will be ignored in test environment)
+      /**
+       * Should not throw (debugger statement will be ignored in test environment)
+       */
       expect(() => {
         handler(DebugPoints.NAVIGATION_START);
       }).not.toThrow();
@@ -102,11 +106,15 @@ describe('debugHandler', () => {
       const customHandler = vi.fn();
       const defaultHandler = createDefaultDebugHandler();
 
-      // Custom handler should be called
+      /**
+       * Custom handler should be called
+       */
       debugPoint(DebugPoints.NAVIGATION_START, true, mockLogger, customHandler);
       expect(customHandler).toHaveBeenCalledWith(DebugPoints.NAVIGATION_START);
 
-      // Default handler is separate
+      /**
+       * Default handler is separate
+       */
       expect(typeof defaultHandler).toBe('function');
     });
 
@@ -153,7 +161,9 @@ describe('debugHandler', () => {
         expect.stringContaining('NavigationCitadel'),
         'test error',
       );
-      // warn and debug use console.log
+      /**
+       * warn and debug use console.log
+       */
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining('NavigationCitadel'),
         'test warn',

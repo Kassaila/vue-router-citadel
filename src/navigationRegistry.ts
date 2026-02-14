@@ -24,6 +24,7 @@ const updateSortedKeys = (
   defaultPriority: number,
 ): void => {
   const map = registry[scope];
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS can't narrow template literal with union type
   const sortedKey = `${scope}Sorted` as 'globalSorted' | 'routeSorted';
 
   registry[sortedKey] = Array.from(map.keys()).sort((a, b) => {

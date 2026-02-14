@@ -33,13 +33,19 @@ describe('Lazy Outposts', () => {
         ],
       });
 
-      // Loader not called yet
+      /**
+       * Loader not called yet
+       */
       expect(loader).not.toHaveBeenCalled();
 
-      // Navigate
+      /**
+       * Navigate
+       */
       await router.push('/dashboard');
 
-      // Loader called once
+      /**
+       * Loader called once
+       */
       expect(loader).toHaveBeenCalledTimes(1);
 
       citadel.destroy();
@@ -60,15 +66,21 @@ describe('Lazy Outposts', () => {
         ],
       });
 
-      // First navigation — loads module
+      /**
+       * First navigation — loads module
+       */
       await router.push('/dashboard');
       expect(loader).toHaveBeenCalledTimes(1);
 
-      // Second navigation — uses cached handler
+      /**
+       * Second navigation — uses cached handler
+       */
       await router.push('/admin');
       expect(loader).toHaveBeenCalledTimes(1);
 
-      // Third navigation — still cached
+      /**
+       * Third navigation — still cached
+       */
       await router.push('/');
       expect(loader).toHaveBeenCalledTimes(1);
 
@@ -88,10 +100,14 @@ describe('Lazy Outposts', () => {
         ],
       });
 
-      // Navigate
+      /**
+       * Navigate
+       */
       await router.push('/dashboard');
 
-      // Handler called directly (not wrapped in loader)
+      /**
+       * Handler called directly (not wrapped in loader)
+       */
       expect(handler).toHaveBeenCalled();
 
       citadel.destroy();
@@ -119,7 +135,9 @@ describe('Lazy Outposts', () => {
 
       await router.push('/dashboard');
 
-      // onError called with load error
+      /**
+       * onError called with load error
+       */
       expect(onError).toHaveBeenCalledWith(loadError, expect.any(Object));
 
       citadel.destroy();
@@ -178,11 +196,15 @@ describe('Lazy Outposts', () => {
         ],
       });
 
-      // First navigation — fails
+      /**
+       * First navigation — fails
+       */
       await router.push('/dashboard');
       expect(onError).toHaveBeenCalledTimes(1);
 
-      // Second navigation — retries and succeeds
+      /**
+       * Second navigation — retries and succeeds
+       */
       onError.mockClear();
       await router.push('/admin');
       expect(onError).not.toHaveBeenCalled();
@@ -197,7 +219,9 @@ describe('Lazy Outposts', () => {
       const handler: NavigationOutpostHandler = () =>
         new Promise((resolve) => setTimeout(() => resolve('allow'), 100));
 
-      // Loader takes 200ms, handler takes 100ms
+      /**
+       * Loader takes 200ms, handler takes 100ms
+       */
       const loader = vi
         .fn()
         .mockImplementation(
@@ -213,7 +237,10 @@ describe('Lazy Outposts', () => {
           {
             name: 'lazy-timeout',
             lazy: true,
-            timeout: 150, // More than handler (100ms) but less than load + handler (300ms)
+            /**
+             * More than handler (100ms) but less than load + handler (300ms)
+             */
+            timeout: 150,
             handler: loader,
           },
         ],
@@ -221,9 +248,11 @@ describe('Lazy Outposts', () => {
 
       await router.push('/dashboard');
 
-      // Should NOT timeout because:
-      // - Load time (200ms) is NOT counted
-      // - Handler time (100ms) < timeout (150ms)
+      /**
+       * Should NOT timeout because:
+       * - Load time (200ms) is NOT counted
+       * - Handler time (100ms) < timeout (150ms)
+       */
       expect(onTimeout).not.toHaveBeenCalled();
 
       citadel.destroy();
@@ -244,7 +273,10 @@ describe('Lazy Outposts', () => {
           {
             name: 'lazy-timeout-exceeded',
             lazy: true,
-            timeout: 50, // Less than handler (200ms)
+            /**
+             * Less than handler (200ms)
+             */
+            timeout: 50,
             handler: loader,
           },
         ],
@@ -252,7 +284,9 @@ describe('Lazy Outposts', () => {
 
       await router.push('/dashboard');
 
-      // Should timeout because handler (200ms) > timeout (50ms)
+      /**
+       * Should timeout because handler (200ms) > timeout (50ms)
+       */
       expect(onTimeout).toHaveBeenCalledWith('lazy-timeout-exceeded', expect.any(Object));
 
       citadel.destroy();

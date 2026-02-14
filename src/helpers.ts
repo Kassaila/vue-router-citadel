@@ -10,12 +10,14 @@ import type { CitadelLogger, DebugHandler, DebugPoint } from './types';
  * - 🔴 error: Outpost errors, timeouts
  * - 🟣 debug: Debug breakpoints
  */
+/* eslint-disable no-console */
 export const createDefaultLogger = (): CitadelLogger => ({
   info: (...args) => console.info(`🔵 ${LOG_PREFIX}`, ...args),
   warn: (...args) => console.log(`🟡 ${LOG_PREFIX}`, ...args),
   error: (...args) => console.error(`🔴 ${LOG_PREFIX}`, ...args),
   debug: (...args) => console.log(`🟣 ${LOG_PREFIX} [DEBUG]`, ...args),
 });
+/* eslint-enable no-console */
 
 /**
  * Default debug handler - triggers debugger statement.
@@ -23,7 +25,7 @@ export const createDefaultLogger = (): CitadelLogger => ({
  * For reliable breakpoints, provide your own debugHandler in options.
  */
 export const createDefaultDebugHandler = (): DebugHandler => () => {
-  debugger;
+  debugger; // eslint-disable-line no-debugger -- intentional debug feature
 };
 
 /**
