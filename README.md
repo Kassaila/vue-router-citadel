@@ -4,6 +4,7 @@
 
 [![npm version](https://img.shields.io/npm/v/vue-router-citadel.svg)](https://www.npmjs.com/package/vue-router-citadel)
 [![license](https://img.shields.io/npm/l/vue-router-citadel.svg)](https://github.com/Kassaila/vue-router-citadel/blob/main/LICENSE)
+[![docs](https://img.shields.io/badge/docs-VitePress-blue)](https://kassaila.github.io/vue-router-citadel/)
 
 **Structured navigation defense for Vue Router 4 & 5.**
 
@@ -36,7 +37,7 @@ Think of it as turning your router into a fortress.
   - [🔒 Type-Safe Outpost Names](#-type-safe-outpost-names)
   - [💡 Examples](#-examples)
   - [📦 Exports](#-exports)
-  - [📖 Internals](#-internals)
+  - [📖 Documentation](#-documentation)
   - [🤝 Contributing](#-contributing)
   - [📄 License](#-license)
 
@@ -48,7 +49,7 @@ Think of it as turning your router into a fortress.
 
 Multiple layers of control --- just like a real fortress.
 
-    🏰 Citadel → 🗼 Outposts (🛡 Guards) → 🎯 Final point
+    🏰 Citadel → ✋ Outposts (🛡 Guards) → 🎯 Final point
 
 ## ✨ Designed for scalable apps
 
@@ -368,9 +369,10 @@ import {
 > See [Exports Reference](./docs/internals.md#-exports-reference) for all exports including
 > `DebugPoints`, `createDefaultLogger`, `CitadelLogger`, and type-safe name types.
 
-## 📖 Internals
+## 📖 Documentation
 
-Deep dive into how vue-router-citadel works:
+**[View Documentation](https://kassaila.github.io/vue-router-citadel/)** — full guide, API
+reference, and examples.
 
 **[View Internals](./docs/internals.md)** — diagrams, logging details, and debug breakpoints.
 

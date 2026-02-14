@@ -18,10 +18,11 @@ pipelines
 | File                | Purpose                                    |
 | ------------------- | ------------------------------------------ |
 | `README.md`         | API reference, quick start, usage examples |
-| `docs/internals.md` | Deep dive with Mermaid diagrams            |
-| `docs/testing.md`   | Testing guide and all test cases           |
+| `docs/`             | VitePress documentation site               |
+| `docs/internals.md` | Deep dive with Mermaid diagrams (source)   |
+| `docs/testing.md`   | Testing guide and all test cases (source)  |
 | `docs/plan.md`      | Development roadmap and TODO priorities    |
-| `docs/release.md`   | Release guide for maintainers              |
+| `docs/release.md`   | Release guide for maintainers (source)     |
 | `CONTRIBUTING.md`   | Guide for contributors                     |
 | `CHANGELOG.md`      | Release notes                              |
 | `.claude/skills/`   | Slash commands for Claude Code             |
@@ -64,7 +65,20 @@ __tests__/                       # Tests (vitest)
     └── docs-updater.md
 
 examples/                        # Usage examples (auth, hooks, nested routes)
-docs/                            # Documentation
+docs/                            # VitePress documentation site
+├── .vitepress/config.ts         # VitePress config (nav, sidebar, mermaid)
+├── index.md                     # Homepage
+├── guide/                       # Guide pages (getting started, scopes, hooks, etc.)
+├── api/                         # API reference (methods, types, exports)
+├── advanced/                    # Advanced (architecture, type-safety, logging)
+├── examples/                    # Example pages (auth, nested routes, hooks)
+├── contributing/                # Contributing, testing, release
+├── changelog.md                 # Changelog page
+├── internals.md                 # Source: deep dive (excluded from VitePress)
+├── testing.md                   # Source: testing guide (excluded from VitePress)
+├── type-safe-names-advanced.md  # Source: advanced patterns (excluded from VitePress)
+├── release.md                   # Source: release guide (excluded from VitePress)
+└── plan.md                      # Internal roadmap (excluded from VitePress)
 temp/                            # Feature workspaces (gitignored)
 ├── <feature-name>/              # One directory per feature
 │   ├── feature.md               # Plan and checklist
@@ -134,6 +148,9 @@ npm run format:check   # Check formatting
 npm run check:types    # TypeScript type checking
 npm run check:all      # Full validation (format + types + tests)
 npm run release:check  # Pre-release (check:all + build + pack)
+npm run docs:dev       # VitePress dev server
+npm run docs:build     # VitePress production build
+npm run docs:preview   # VitePress preview built site
 ```
 
 ## Architecture Notes
@@ -208,6 +225,7 @@ Key types: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, `GlobalOutpostName`,
 
 - [x] DevTools Integration (Vue DevTools custom inspector)
 - [x] Lazy Outposts (dynamic import for code splitting)
+- [x] VitePress Documentation Site (docs site on GitHub Pages)
 - [ ] Metrics (performance tracking per outpost)
 - [ ] JSON Schema for config validation
 - [ ] Interactive Playground
@@ -239,6 +257,11 @@ npm run check:all          # format + types + tests
 npm run release:check      # check:all + build + pack --dry-run
 npm run release:publish    # release:check + npm publish
 npm run release:publish:beta # release:check + npm publish --tag beta
+
+# Docs (VitePress)
+npm run docs:dev           # VitePress dev server
+npm run docs:build         # VitePress production build
+npm run docs:preview       # VitePress preview built site
 ```
 
 ### Slash Commands (Skills)
