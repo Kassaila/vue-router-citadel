@@ -29,11 +29,14 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check:lint": "eslint",
     "check:types": "tsc --noEmit",
     "check:format": "npm run format:check",
-    "check:all": "npm run check:format && npm run check:types && npm run test:run",
+    "check:all": "npm run check:format && npm run check:lint && npm run check:types && npm run test:run",
     "release:check": "npm run check:all && npm run build && npm pack --dry-run",
     "release:publish": "npm run release:check && npm publish",
     "release:publish:beta": "npm run release:check && npm publish --tag beta",
@@ -44,6 +47,7 @@
     "docs:preview": "vitepress preview docs"
   },
   "lint-staged": {
+    "*.{ts,js}": "eslint --fix",
     "*.{ts,js,json,md}": "prettier --write"
   },
   "keywords": [
@@ -78,14 +82,18 @@
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
     "@commitlint/config-conventional": "^20.4.1",
+    "@eslint/js": "^9.39.2",
     "@vitest/coverage-v8": "^4.0.18",
     "@vue/test-utils": "^2.4.6",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
     "happy-dom": "^20.4.0",
     "husky": "^9.0.0",
     "lint-staged": "^16.0.0",
     "prettier": "^3.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
+    "typescript-eslint": "^8.55.0",
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17",
     "vitest": "^4.0.18",

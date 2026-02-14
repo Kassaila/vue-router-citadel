@@ -50,6 +50,14 @@ __tests__/                       # Tests (vitest)
 ├── timeout.test.ts
 └── integration.test.ts
 
+eslint-plugins/                  # Custom ESLint rules (local plugin)
+├── local/
+│   ├── index.ts                 # Plugin entry (registers rules)
+│   └── rules/
+│       ├── switch-case-braces.ts
+│       ├── jsdoc-comment-style.ts
+│       └── prefer-arrow-without-this.ts
+
 .claude/                         # Claude Code configuration
 ├── skills/                      # Slash commands (/test, /build, etc.)
 │   ├── test/SKILL.md
@@ -137,10 +145,13 @@ npm run build:dev      # Development build with sourcemaps
 npm run test           # Run tests in watch mode
 npm run test:run       # Run tests once
 npm run test:coverage  # Run tests with coverage
+npm run lint           # ESLint check
+npm run lint:fix       # ESLint auto-fix
 npm run format         # Format with Prettier
 npm run format:check   # Check formatting
+npm run check:lint     # ESLint check (alias)
 npm run check:types    # TypeScript type checking
-npm run check:all      # Full validation (format + types + tests)
+npm run check:all      # Full validation (format + lint + types + tests)
 npm run release:check  # Pre-release (check:all + build + pack)
 npm run docs:dev       # VitePress dev server
 npm run docs:build     # VitePress production build
@@ -166,6 +177,8 @@ npm run docs:preview   # VitePress preview built site
 | Utilities/Logger    | `src/helpers.ts`            |
 | DevTools            | `src/devtools/`             |
 | Tests               | `__tests__/*.test.ts`       |
+| ESLint config       | `eslint.config.ts`          |
+| Custom ESLint rules | `eslint-plugins/local/`     |
 | Claude Skills       | `.claude/skills/`           |
 | Claude Agents       | `.claude/agents/`           |
 
@@ -238,14 +251,19 @@ npm run test               # Run tests (watch mode)
 npm run test:run           # Run tests once
 npm run test:coverage      # Run tests with coverage
 
+# Lint
+npm run lint               # ESLint check
+npm run lint:fix           # ESLint auto-fix
+
 # Format
 npm run format             # Format code
 npm run format:check       # Check formatting
 
 # Check (read-only validations)
+npm run check:lint         # ESLint check
 npm run check:types        # TypeScript type checking
 npm run check:format       # Alias for format:check
-npm run check:all          # format + types + tests
+npm run check:all          # format + lint + types + tests
 
 # Release
 npm run release:check      # check:all + build + pack --dry-run

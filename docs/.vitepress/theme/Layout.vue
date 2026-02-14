@@ -142,21 +142,25 @@ function initMermaidZoom() {
           if (e.target === dialog) dialog.close();
         });
 
-        dialog.addEventListener('wheel', (e) => {
-          e.preventDefault();
-          const delta = e.deltaY > 0 ? -0.15 : 0.15;
-          const newScale = Math.min(5, Math.max(0.25, scale + delta));
+        dialog.addEventListener(
+          'wheel',
+          (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.15 : 0.15;
+            const newScale = Math.min(5, Math.max(0.25, scale + delta));
 
-          const rect = content.getBoundingClientRect();
-          const cx = e.clientX - rect.left - rect.width / 2;
-          const cy = e.clientY - rect.top - rect.height / 2;
-          const factor = newScale / scale;
+            const rect = content.getBoundingClientRect();
+            const cx = e.clientX - rect.left - rect.width / 2;
+            const cy = e.clientY - rect.top - rect.height / 2;
+            const factor = newScale / scale;
 
-          panX -= cx * (factor - 1);
-          panY -= cy * (factor - 1);
-          scale = newScale;
-          applyTransform();
-        }, { passive: false });
+            panX -= cx * (factor - 1);
+            panY -= cy * (factor - 1);
+            scale = newScale;
+            applyTransform();
+          },
+          { passive: false },
+        );
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);

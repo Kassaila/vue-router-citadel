@@ -18,7 +18,9 @@ const getStoredLogLevel = (): LogLevel | null => {
       return null;
     }
 
-    // Validate stored value
+    /**
+     * Validate stored value
+     */
     if (value === LOG_LEVELS.OFF || value === LOG_LEVELS.LOG || value === LOG_LEVELS.DEBUG) {
       return value;
     }
@@ -40,7 +42,9 @@ const setStoredLogLevel = (value: LogLevel): void => {
   try {
     localStorage.setItem(SETTINGS_STORAGE_PREFIX + SETTINGS_KEY_LOG_LEVEL, value);
   } catch {
-    // Silently fail if localStorage is not available
+    /**
+     * Silently fail if localStorage is not available
+     */
   }
 };
 
@@ -66,12 +70,15 @@ const optionsToLogLevel = (
  */
 export const logLevelToState = (level: LogLevel): CitadelRuntimeState => {
   switch (level) {
-    case LOG_LEVELS.OFF:
+    case LOG_LEVELS.OFF: {
       return { log: false, debug: false };
-    case LOG_LEVELS.LOG:
+    }
+    case LOG_LEVELS.LOG: {
       return { log: true, debug: false };
-    case LOG_LEVELS.DEBUG:
+    }
+    case LOG_LEVELS.DEBUG: {
       return { log: true, debug: true };
+    }
   }
 };
 
@@ -99,7 +106,9 @@ export const initializeRuntimeState = (
   optionDebug: boolean | undefined,
   defaultValue: boolean,
 ): CitadelRuntimeState => {
-  // Priority: localStorage → citadel options → defaults
+  /**
+   * Priority: localStorage → citadel options → defaults
+   */
   const storedLevel = getStoredLogLevel();
 
   if (storedLevel !== null) {

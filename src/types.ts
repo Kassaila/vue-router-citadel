@@ -35,7 +35,9 @@ export type NavigationOutpostScope =
   (typeof NavigationOutpostScopes)[keyof typeof NavigationOutpostScopes];
 
 // ============================================================================
-// Outpost Registries (user-extensible via declaration merging)
+/**
+ * Outpost Registries (user-extensible via declaration merging)
+ */
 // ============================================================================
 
 /**
@@ -51,6 +53,7 @@ export type NavigationOutpostScope =
  * }
  * ```
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- declaration merging
 export interface GlobalOutpostRegistry {}
 
 /**
@@ -66,6 +69,7 @@ export interface GlobalOutpostRegistry {}
  * }
  * ```
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- declaration merging
 export interface RouteOutpostRegistry {}
 
 /**
@@ -85,6 +89,7 @@ export type RouteOutpostName = keyof RouteOutpostRegistry extends never
 /**
  * Combined outpost name type (global | route)
  */
+// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents -- both may resolve to string when registries are empty
 export type OutpostName = GlobalOutpostName | RouteOutpostName;
 
 /**
@@ -184,6 +189,7 @@ export interface NavigationOutpostContext {
  * - RouteLocationRaw: redirect to specified route
  * - Error: throw error (will be caught by onError handler)
  */
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- semantically distinct: verdict vs redirect vs error
 export type NavigationOutpostOutcome = NavigationOutpostVerdict | RouteLocationRaw | Error;
 
 /**

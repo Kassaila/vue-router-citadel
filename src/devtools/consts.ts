@@ -20,11 +20,26 @@ export const INSPECTOR_NODE_ID_ROUTE = 'citadel-' + NavigationOutpostScopes.ROUT
  * Tag colors for DevTools inspector (hex format for devtools-kit)
  */
 export const TAG_COLOR_TEXT = 0xffffff;
-export const TAG_COLOR_PRIORITY_BG = 0x42b983; // Vue green
-export const TAG_COLOR_HOOKS_BG = 0x3b82f6; // Blue
-export const TAG_COLOR_SCOPE_GLOBAL_BG = 0x8b5cf6; // Purple
-export const TAG_COLOR_SCOPE_ROUTE_BG = 0xf59e0b; // Amber
-export const TAG_COLOR_LAZY_BG = 0xec4899; // Pink
+/**
+ * Vue green
+ */
+export const TAG_COLOR_PRIORITY_BG = 0x42b983;
+/**
+ * Blue
+ */
+export const TAG_COLOR_HOOKS_BG = 0x3b82f6;
+/**
+ * Purple
+ */
+export const TAG_COLOR_SCOPE_GLOBAL_BG = 0x8b5cf6;
+/**
+ * Amber
+ */
+export const TAG_COLOR_SCOPE_ROUTE_BG = 0xf59e0b;
+/**
+ * Pink
+ */
+export const TAG_COLOR_LAZY_BG = 0xec4899;
 
 /**
  * LocalStorage keys for DevTools settings

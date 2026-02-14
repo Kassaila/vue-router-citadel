@@ -152,7 +152,9 @@ const processOutpost = async (
      * Handle timeout
      */
     if (isTimeoutError(error)) {
-      // Critical: always log
+      /**
+       * Critical: always log
+       */
       logger.warn(`Outpost "${outpost.name}" timed out after ${timeout}ms`);
       debugPoint(DebugPoints.TIMEOUT, runtimeState.debug, logger, options.debugHandler);
 
@@ -206,13 +208,13 @@ export const patrol = async (
   /**
    * 1. Collect route outpost names from matched routes + check duplicates
    */
-  const routeOutpostRefs: string[] = to.matched.flatMap(
-    (matched) => (matched.meta?.outposts as string[] | undefined) ?? [],
-  );
+  const routeOutpostRefs: string[] = to.matched.flatMap((matched) => matched.meta?.outposts ?? []);
   const routeOutpostNames = new Set(routeOutpostRefs);
 
   if (routeOutpostRefs.length !== routeOutpostNames.size) {
-    // Critical: always log
+    /**
+     * Critical: always log
+     */
     logger.warn(`Duplicate outposts detected on route "${String(to.name ?? to.path)}"`);
   }
 
@@ -275,7 +277,9 @@ export const patrol = async (
     const outpost = registry.route.get(name);
 
     if (!outpost) {
-      // Critical: always log
+      /**
+       * Critical: always log
+       */
       logger.warn(`Route outpost "${name}" not found in registry`);
       continue;
     }

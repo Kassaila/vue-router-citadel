@@ -52,9 +52,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 #### NPM Scripts
 
+- `lint` / `lint:fix` — ESLint check / auto-fix
+- `check:lint` — ESLint check (alias)
 - `check:types` — TypeScript type checking (`tsc --noEmit`)
 - `check:format` — format check alias
-- `check:all` — full validation chain (format + types + tests)
+- `check:all` — full validation chain (format + lint + types + tests)
 - `release:check` — pre-release verification (check:all + build + pack --dry-run)
 - `release:publish` — publish to npm with full checks
 - `release:publish:beta` — publish beta version
@@ -126,3 +128,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - [commitlint](https://commitlint.js.org/) — commit message validation via husky `commit-msg` hook
 - [Conventional Commits](https://www.conventionalcommits.org/) specification enforced
 - Prettier `proseWrap: "preserve"` override for `docs/**/*.md` to preserve VitePress containers
+- [ESLint](https://eslint.org/) 9 with flat config (`eslint.config.ts`) and `defineConfig`
+  - `typescript-eslint` with type-aware linting (`projectService: true`)
+  - `eslint-config-prettier` for conflict-free coexistence with Prettier
+  - 3 custom local rules: `switch-case-braces`, `jsdoc-comment-style`, `prefer-arrow-without-this`
+  - npm scripts: `lint`, `lint:fix`, `check:lint`; integrated into `check:all` and `lint-staged`
