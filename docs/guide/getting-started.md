@@ -72,7 +72,7 @@ and the user isn't authenticated, they're redirected to the login page.
 
 ## 🚀 Next Steps
 
-- [Outpost Scopes](/guide/scopes) — global vs route-scoped outposts
+- [Outpost Verdicts](/guide/verdicts) — handler return values
 - [Navigation Hooks](/guide/hooks) — beforeEach, beforeResolve, afterEach
-- [Verdicts](/guide/verdicts) — handler return values
+- [Outpost Scopes](/guide/scopes) — global vs route-scoped outposts
 - [Examples](/examples/auth) — more usage patterns

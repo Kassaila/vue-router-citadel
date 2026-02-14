@@ -63,5 +63,7 @@ Lower number = earlier execution. This gives you fine-grained control over proce
 ## 🚀 Next Steps
 
 - [Getting Started](/guide/getting-started) — install and set up your first outpost
-- [Outpost Scopes](/guide/scopes) — learn about global vs route scopes
+- [Outpost Verdicts](/guide/verdicts) — handler return values
+- [Navigation Hooks](/guide/hooks) — beforeEach, beforeResolve, afterEach
+- [Outpost Scopes](/guide/scopes) — global vs route-scoped outposts
 - [API Reference](/api/) — full method documentation

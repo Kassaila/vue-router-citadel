@@ -1,4 +1,4 @@
-# 🔀 Different Hooks
+# 🔀 Outposts Across Hooks
 
 Global outposts using beforeEach, beforeResolve, and afterEach hooks.
 

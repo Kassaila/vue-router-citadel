@@ -1,8 +1,8 @@
-# 🎯 Outpost Scopes
+# ⭕ Outpost Scopes
 
 Outposts are organized into two scopes that determine when they are processed during navigation.
 
-## 🌐 Global vs Route Scopes
+## 🌐 Scope Types
 
 | Scope    | Processing                  | Priority Sorting | Use Case                     |
 | -------- | --------------------------- | ---------------- | ---------------------------- |
@@ -13,6 +13,19 @@ Outposts are organized into two scopes that determine when they are processed du
 
 1. Global outposts (sorted by priority, lower = first)
 2. Route outposts (sorted by priority, filtered by `meta.outposts`)
+
+## 📊 Scope Types Diagram
+
+```mermaid
+flowchart LR
+    A[Navigation Start] --> B[Global Outposts<br/>sorted by priority]
+    B --> C{All ALLOW?}
+    C -->|Yes| D[Route Outposts<br/>from meta.outposts]
+    C -->|No| E[🔴 BLOCK / Redirect]
+    D --> F{All ALLOW?}
+    F -->|Yes| G[🟢 Navigation Completes]
+    F -->|No| E
+```
 
 ## 🗺️ Route Outposts
 
@@ -71,18 +84,5 @@ flowchart TD
 
 **Best practice:** Avoid duplicating outpost names in nested routes. Place shared outposts only on
 the parent route.
-
-## 📊 Global vs Route Scopes Diagram
-
-```mermaid
-flowchart LR
-    A[Navigation Start] --> B[Global Outposts<br/>sorted by priority]
-    B --> C{All ALLOW?}
-    C -->|Yes| D[Route Outposts<br/>from meta.outposts]
-    C -->|No| E[🔴 BLOCK / Redirect]
-    D --> F{All ALLOW?}
-    F -->|Yes| G[🟢 Navigation Completes]
-    F -->|No| E
-```
 
 <!--@include: ../_snippets/legend.md-->

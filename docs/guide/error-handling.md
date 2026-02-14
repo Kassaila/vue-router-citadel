@@ -61,7 +61,7 @@ const citadel = createNavigationCitadel(router, {
 The `onError` handler receives:
 
 - `error` — the thrown `Error` instance
-- `ctx` — the same [handler context](/guide/verdicts#handler-context) (`verdicts`, `to`, `from`, `router`, `hook`)
+- `ctx` — the same [handler context](/guide/hooks#handler-context) (`verdicts`, `to`, `from`, `router`, `hook`)
 
 `onError` can return any [verdict](/guide/verdicts#return-values): `ALLOW`, `BLOCK`, or redirect.
 
