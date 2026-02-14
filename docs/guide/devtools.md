@@ -33,7 +33,7 @@ The custom inspector provides:
 
 ## ⚙️ Settings Panel
 
-The DevTools settings panel allows runtime control of logging and debug modes.
+The DevTools settings panel allows runtime control of logging and debug modes. See [Logging & Debug](/advanced/logging) for all log events, custom logger, and debug breakpoints reference.
 
 ### Log Level Selector
 
@@ -89,3 +89,5 @@ flowchart TD
     L --> M[Update runtimeState]
     M --> N[Save to localStorage]
 ```
+
+<!--@include: ../_snippets/legend.md-->

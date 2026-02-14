@@ -99,7 +99,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `__tests__/lazy.test.ts` — lazy loading, caching, retry, timeout behavior
 - `__tests__/devtools-settings.test.ts` — DevTools settings, localStorage persistence
 - `__tests__/debugHandler.test.ts` — debugHandler invocation, custom handlers
-- `docs/testing.md` — testing guide and test case reference
+- VitePress testing guide (`docs/contributing/testing`) and test case reference
+  (`docs/contributing/test-cases`)
 
 #### CI/CD
 
@@ -109,13 +110,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 #### Documentation
 
-- `README.md` — API reference with section-specific links to internals
-- `docs/internals.md` — deep dive documentation:
-  - Mermaid diagrams (navigation flow, patrol, outpost processing, error handling)
-  - Expanded sections matching README structure
-  - Exports Reference (constants, types, interfaces)
-  - Logging Reference and Debug Reference tables
-- `docs/type-safe-names-advanced.md` — advanced patterns (DI, modular architecture)
-- `docs/release.md` — release process for maintainers
-- `examples/` — usage patterns (auth, nested routes, hooks)
-- `CONTRIBUTING.md` — contributor guide
+- `README.md` — concise project overview with quick start example, links to full docs
+- `CONTRIBUTING.md` — concise contributor guide with link to full VitePress docs
+- VitePress documentation site (`docs/`) — guides, API reference, examples, advanced patterns
+- Error Handling — dedicated guide page with error flow diagram, `onError`, `onTimeout`
+- Mermaid diagram legend with emoji markers (🟢🟡🔴🔵🟣) across all diagram pages
+- API types documentation aligned with source code (lazy generics, async return types)
+- Contributing guide — code style, naming conventions, architecture guidelines with examples
+- Source docs consolidated into VitePress (`internals.md`, `testing.md` deleted, content
+  distributed)
+- `examples/` directory removed — examples live in `docs/examples/` only
+
+#### Infrastructure
+
+- [commitlint](https://commitlint.js.org/) — commit message validation via husky `commit-msg` hook
+- [Conventional Commits](https://www.conventionalcommits.org/) specification enforced
+- Prettier `proseWrap: "preserve"` override for `docs/**/*.md` to preserve VitePress containers

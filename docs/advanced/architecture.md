@@ -18,10 +18,10 @@ flowchart LR
 
     subgraph Operations
         E[deployOutpost] --> F[register]
-        F --> LOG1["log.info: Deploying outpost"]
+        F --> LOG1["🔵 log.info: Deploying outpost"]
         LOG1 --> G[updateSortedKeys]
         H[abandonOutpost] --> I[unregister]
-        I --> LOG2["log.info: Abandoning outpost"]
+        I --> LOG2["🔵 log.info: Abandoning outpost"]
         LOG2 --> G
     end
 
@@ -38,7 +38,7 @@ How a single outpost is processed during patrol:
 
 ```mermaid
 flowchart TD
-    A[processOutpost called] --> DBG1[debugger: before-outpost]
+    A[processOutpost called] --> DBG1[🟣 debugger: before-outpost]
     DBG1 --> T{Timeout configured?}
 
     T -->|Yes| RACE["Promise.race([handler, timeout])"]
@@ -51,32 +51,32 @@ flowchart TD
     B --> C[normalizeOutcome]
 
     TOH -->|Yes| TOC["onTimeout(name, ctx)"]
-    TOH -->|No| TOLOG[log.warn: timed out]
-    TOLOG --> TODBG[debugger: timeout]
-    TODBG --> TOK[Return BLOCK]
+    TOH -->|No| TOLOG[🟡 log.warn: timed out]
+    TOLOG --> TODBG[🟣 debugger: timeout]
+    TODBG --> TOK[🔴 Return BLOCK]
 
     TOC --> TON[normalizeOutcome]
     TON --> F
 
     C --> D{Valid outcome?}
 
-    D -->|ALLOW| E[Return ALLOW]
-    D -->|BLOCK/Redirect| LOG1[log.warn: patrol stopped]
-    LOG1 --> DBG2[debugger: patrol-stopped]
+    D -->|ALLOW| E[🟢 Return ALLOW]
+    D -->|BLOCK/Redirect| LOG1[🟡 log.warn: patrol stopped]
+    LOG1 --> DBG2[🟣 debugger: patrol-stopped]
     DBG2 --> F[Return outcome]
 
     D -->|Error thrown| G{Custom onError?}
 
     G -->|Yes| H["onError(error, ctx)"]
-    G -->|No| LOG2[log.error]
+    G -->|No| LOG2[🔴 log.error]
 
     H --> I[normalizeOutcome]
     I --> J{Valid?}
     J -->|Yes| F
     J -->|Error| LOG2
 
-    LOG2 --> DBG3[debugger: error-caught]
-    DBG3 --> K[Return BLOCK]
+    LOG2 --> DBG3[🟣 debugger: error-caught]
+    DBG3 --> K[🔴 Return BLOCK]
 ```
 
 ## 🔄 Complete Navigation Example
@@ -99,31 +99,31 @@ sequenceDiagram
     C->>C: Deduplicate
     C->>C: Count outposts for hook
 
-    Note over C: log.info: beforeEach /home -> /admin/users (N outposts)
-    Note over C: debugger: navigation-start
+    Note over C: 🔵 log.info: beforeEach /home -> /admin/users (N outposts)
+    Note over C: 🟣 debugger: navigation-start
 
     loop Global Outposts
-        Note over C: log.info: Processing outpost "name"
-        Note over C: debugger: before-outpost
+        Note over C: 🔵 log.info: Processing outpost "name"
+        Note over C: 🟣 debugger: before-outpost
         C->>Reg: Get deployed outpost
         Reg-->>C: outpost
         C->>C: processOutpost → ALLOW
     end
 
     loop Route Outposts
-        Note over C: log.info: Processing outpost "name"
-        Note over C: debugger: before-outpost
+        Note over C: 🔵 log.info: Processing outpost "name"
+        Note over C: 🟣 debugger: before-outpost
         C->>Reg: Get assigned outpost
         Reg-->>C: outpost
         C->>C: processOutpost → ALLOW
     end
 
-    C-->>R: ALLOW → true
+    C-->>R: 🟢 ALLOW → true
 
     Note over R,C: beforeResolve hook (no outposts)
     R->>C: patrol(registry, ctx, options)
     Note over C: No outposts for hook → skip silently
-    C-->>R: ALLOW → true
+    C-->>R: 🟢 ALLOW → true
 
     R->>R: Load component
 
@@ -133,3 +133,5 @@ sequenceDiagram
 
     R-->>U: Page rendered
 ```
+
+<!--@include: ../_snippets/legend.md-->

@@ -130,6 +130,13 @@ handler: ({ to }) => {
 expect(logger.calls.some((c) => c.level === 'warn' && c.args[0].includes('timed out'))).toBe(true);
 ```
 
+## 📝 Test Cases
+
+See the complete [Test Cases Reference](/contributing/test-cases) for a full list of all 134 tests
+across 9 test files.
+
+---
+
 ## 📊 Coverage
 
 Run coverage report:

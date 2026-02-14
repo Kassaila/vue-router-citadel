@@ -1,17 +1,17 @@
-# ↩️ Outpost Verdicts
+# 📜 Outpost Verdicts
 
 Outpost handlers must return a verdict that determines how navigation proceeds.
 
 ## 📋 Return Values
 
-| Return              | Result            | Navigation         |
-| ------------------- | ----------------- | ------------------ |
-| `verdicts.ALLOW`    | Continue          | Proceeds           |
-| `verdicts.BLOCK`    | Cancel            | Stops immediately  |
-| `{ name: 'route' }` | Redirect (named)  | Redirects          |
-| `{ path: '/path' }` | Redirect (path)   | Redirects          |
-| `'/path'`           | Redirect (string) | Redirects          |
-| `throw Error`       | Error             | Handled by onError |
+| Return              | Result            | Navigation                                  |
+| ------------------- | ----------------- | ------------------------------------------- |
+| `verdicts.ALLOW`    | Continue          | Proceeds                                    |
+| `verdicts.BLOCK`    | Cancel            | Stops immediately                           |
+| `{ name: 'route' }` | Redirect (named)  | Redirects                                   |
+| `{ path: '/path' }` | Redirect (path)   | Redirects                                   |
+| `'/path'`           | Redirect (string) | Redirects                                   |
+| `throw Error`       | Error             | Handled by [onError](/guide/error-handling) |
 
 ## 📊 Outpost Verdict Decision Flow
 
@@ -19,19 +19,20 @@ Outpost handlers must return a verdict that determines how navigation proceeds.
 flowchart TD
     A["handler(ctx) called"] --> B{Check Condition}
 
-    B -->|Pass| C[return verdicts.ALLOW]
+    B -->|Pass| C[🟢 return verdicts.ALLOW]
     B -->|Fail| D{Need Redirect?}
 
-    D -->|Yes| E["return { name: 'route-name' }"]
-    D -->|No| F[return verdicts.BLOCK]
+    D -->|Yes| E["🟡 return { name: 'route-name' }"]
+    D -->|No| F[🔴 return verdicts.BLOCK]
 
     C --> G[Next Outpost]
     E --> H[Stop + Redirect]
     F --> I[Cancel Navigation]
 ```
 
-::: warning Redirect routes are validated against the router. If the route is not found, an error is
-thrown. :::
+::: warning
+Redirect routes are validated against the router. If the route is not found, an error is thrown.
+:::
 
 ## 🔧 Handler Context
 
@@ -69,34 +70,8 @@ handler: ({ verdicts, to, from, router, hook }) => {
 };
 ```
 
-## 🚨 Error Handling
+::: tip
+When a handler throws an error, the citadel catches it and handles gracefully. See [Error Handling](/guide/error-handling) for the full error flow, `onError`, `onTimeout`, and afterEach behavior.
+:::
 
-When an outpost handler throws an error:
-
-```mermaid
-flowchart TD
-    A[Handler throws Error] --> B{Custom onError?}
-
-    B -->|Yes| E["onError(error, ctx)"]
-    B -->|No| LOG1[log.error: outpost threw error]
-
-    E --> F[normalizeOutcome]
-    F --> G{Valid?}
-    G -->|Yes| H[Return outcome]
-    G -->|Error| LOG1
-
-    LOG1 --> I[Return BLOCK]
-```
-
-**Default behavior:** errors are logged and navigation is blocked.
-
-**Custom error handler:**
-
-```typescript
-const citadel = createNavigationCitadel(router, {
-  onError: (error, ctx) => {
-    console.error('Navigation error:', error);
-    return { name: 'error', query: { message: error.message } };
-  },
-});
-```
+<!--@include: ../_snippets/legend.md-->

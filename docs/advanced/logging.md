@@ -107,17 +107,17 @@ const plainLogger: CitadelLogger = {
 
 ## 🐛 Debug Reference
 
-Named debug points with console output `[DEBUG] <name>`:
+Named debug points with console output `[DEBUG] <name>` (all require `debug: true`):
 
-| Name                 | Location                                                  | Condition     |
-| -------------------- | --------------------------------------------------------- | ------------- |
-| `navigation-start`   | Start of patrol (only when outposts present for the hook) | `debug: true` |
-| `before-outpost`     | Before each outpost handler processing                    | `debug: true` |
-| `patrol-stopped`     | When outpost returns BLOCK or redirect                    | `debug: true` |
-| `timeout`            | When outpost handler times out                            | `debug: true` |
-| `error-caught`       | When outpost throws an error                              | `debug: true` |
-| `devtools-init`      | DevTools initialized (via install hook or existing app)   | `debug: true` |
-| `devtools-inspector` | DevTools inspector registered                             | `debug: true` |
+| Name                 | Location                                                  |
+| -------------------- | --------------------------------------------------------- |
+| `navigation-start`   | Start of patrol (only when outposts present for the hook) |
+| `before-outpost`     | Before each outpost handler processing                    |
+| `patrol-stopped`     | When outpost returns BLOCK or redirect                    |
+| `timeout`            | When outpost handler times out                            |
+| `error-caught`       | When outpost throws an error                              |
+| `devtools-init`      | DevTools initialized (via install hook or existing app)   |
+| `devtools-inspector` | DevTools inspector registered                             |
 
 > `navigation-start` breakpoint only triggers when there are outposts to process for the current
 > hook.
