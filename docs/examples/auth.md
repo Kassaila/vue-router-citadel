@@ -1,6 +1,17 @@
-/**
- * Auth example - global navigation outposts with BLOCK and redirect verdicts
- */
+# 🔑 Auth Guard
+
+Global outposts with BLOCK and redirect verdicts.
+
+## 📋 Overview
+
+This example shows two global outposts:
+
+- **maintenance** (priority 1) — blocks all navigation when site is under maintenance
+- **auth** (priority 10) — redirects unauthenticated users to login
+
+## 💻 Code
+
+```typescript
 import { createRouter, createWebHistory } from 'vue-router';
 import { createNavigationCitadel } from 'vue-router-citadel';
 
@@ -60,3 +71,11 @@ const citadel = createNavigationCitadel(router, {
 });
 
 export { router, citadel };
+```
+
+## 🔑 Key Points
+
+- **Priority** controls execution order: maintenance (1) runs before auth (10)
+- **BLOCK** cancels navigation entirely
+- **Redirect** sends user to another route with query params
+- **Scope** defaults to `'global'` — runs on every navigation

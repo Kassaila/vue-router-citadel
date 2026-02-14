@@ -1,20 +1,10 @@
-# 🔐 Advanced Type-Safe Outpost Names
+# 🔐 Modular Apps
 
-Advanced patterns for organizing type-safe outpost names in large applications.
+For basics, see [Type-Safe Outpost Names](/guide/type-safety).
 
-For basics, see [Type-Safe Outpost Names](./internals.md#-type-safe-outpost-names) in internals.
-
----
-
-<!-- TOC -->
-
-- [🔐 Advanced Type-Safe Outpost Names](#-advanced-type-safe-outpost-names)
-  - [📦 Modular Architecture](#-modular-architecture)
-  - [💉 Dependency Injection](#-dependency-injection)
-
-<!-- /TOC -->
-
----
+::: info
+The patterns below are **not prescriptive solutions** — they demonstrate that `vue-router-citadel` is flexible enough to integrate with modular architectures and DI containers. Adapt them to your project's conventions.
+:::
 
 ## 📦 Modular Architecture
 
@@ -170,8 +160,6 @@ registerAuthModule();
 registerAdminModule();
 registerBillingModule();
 ```
-
----
 
 ## 💉 Dependency Injection
 

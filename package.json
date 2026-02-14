@@ -38,7 +38,10 @@
     "release:publish": "npm run release:check && npm publish",
     "release:publish:beta": "npm run release:check && npm publish --tag beta",
     "prepare": "husky",
-    "prepublishOnly": "npm run check:types && npm run test:run"
+    "prepublishOnly": "npm run check:types && npm run test:run",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "lint-staged": {
     "*.{ts,js,json,md}": "prettier --write"
@@ -73,6 +76,8 @@
     "@vue/devtools-api": "^8.0.5"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.4.1",
+    "@commitlint/config-conventional": "^20.4.1",
     "@vitest/coverage-v8": "^4.0.18",
     "@vue/test-utils": "^2.4.6",
     "happy-dom": "^20.4.0",
@@ -81,6 +86,8 @@
     "prettier": "^3.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
+    "vitepress": "^1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.17",
     "vitest": "^4.0.18",
     "vue": "^3.5.27",
     "vue-router": "^5.0.2"

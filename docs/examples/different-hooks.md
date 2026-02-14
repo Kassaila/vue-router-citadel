@@ -1,6 +1,19 @@
-/**
- * Global different hooks example - global outposts using beforeEach, beforeResolve, afterEach hooks
- */
+# 🔀 Outposts Across Hooks
+
+Global outposts using beforeEach, beforeResolve, and afterEach hooks.
+
+## 📋 Overview
+
+This example shows four global outposts, each using a different hook:
+
+- **auth** (`beforeEach`) — checks authentication
+- **data-loader** (`beforeResolve`) — loads async data
+- **analytics** (`afterEach`) — tracks page views
+- **page-title** (`afterEach`) — updates document title
+
+## 💻 Code
+
+```typescript
 import { createRouter, createWebHistory } from 'vue-router';
 import { createNavigationCitadel, NavigationHooks } from 'vue-router-citadel';
 
@@ -42,7 +55,7 @@ const analyticsNavigationOutpost = {
   },
 };
 
-// Page title outpost (afterEach) - updates document title after navigation completes
+// Page title outpost (afterEach) - updates document title after navigation
 const pageTitleNavigationOutpost = {
   name: 'page-title',
   hooks: [NavigationHooks.AFTER_EACH],
@@ -75,16 +88,28 @@ const routes = [
   },
 ];
 
-// 1. Create router
 const router = createRouter({
   history: createWebHistory(),
   routes,
 });
 
-// 2. Create navigation citadel with outposts
 const citadel = createNavigationCitadel(router, {
   outposts,
   debug: true,
 });
 
 export { router, citadel };
+```
+
+## 🔄 Navigation Flow
+
+For a navigation to `/about`:
+
+| Phase      | Outpost       | Hook            | Action             |
+| ---------- | ------------- | --------------- | ------------------ |
+| 1. Before  | `auth`        | `beforeEach`    | Check auth         |
+| 2. Resolve | `data-loader` | `beforeResolve` | Load page data     |
+| 3. After   | `analytics`   | `afterEach`     | Track page view    |
+| 4. After   | `page-title`  | `afterEach`     | Set document title |
+
+Each hook phase processes only the outposts registered for that hook.
