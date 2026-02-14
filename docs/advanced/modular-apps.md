@@ -1,8 +1,10 @@
 # 🔐 Modular Apps
 
-Advanced patterns for organizing type-safe outpost names in large applications.
+For basics, see [Type-Safe Outpost Names](/guide/type-safety).
 
-For basics, see [Type-Safe Outpost Names](/advanced/type-safety).
+::: info
+The patterns below are **not prescriptive solutions** — they demonstrate that `vue-router-citadel` is flexible enough to integrate with modular architectures and DI containers. Adapt them to your project's conventions.
+:::
 
 ## 📦 Modular Architecture
 

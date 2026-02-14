@@ -46,8 +46,7 @@ __tests__/               # Tests (vitest + happy-dom)
 ├── helpers/setup.ts     # Mock router, logger, handlers
 └── *.test.ts            # Test files
 
-docs/                    # Documentation
-examples/                # Usage examples
+docs/                    # VitePress documentation site
 ```
 
 ## 🔄 Workflow
@@ -61,7 +60,7 @@ examples/                # Usage examples
 
 ### Commit Messages
 
-Follow conventional commits:
+Follow [Conventional Commits](https://www.conventionalcommits.org/) specification. Commit messages are validated automatically via [commitlint](https://commitlint.js.org/) on the `commit-msg` hook.
 
 ```
 feat: add new feature
@@ -69,7 +68,12 @@ fix: resolve bug
 docs: update documentation
 test: add tests
 refactor: improve code structure
+chore: maintenance tasks
 ```
+
+::: tip
+Commits that don't follow the convention will be rejected by the git hook.
+:::
 
 ### Pull Request Process
 
@@ -82,16 +86,101 @@ refactor: improve code structure
 
 ## ✨ Code Style
 
-- TypeScript strict mode
-- Prettier for formatting (runs automatically on commit via husky)
-- No external runtime dependencies (peer dependency: vue-router only)
+### Formatting & Checks
+
+- **Prettier** — single source of formatting (no ESLint), runs automatically on commit via `lint-staged`
+- **TypeScript strict mode** — `strict: true`, `forceConsistentCasingInFileNames: true`
+- **No runtime dependencies** — only `@vue/devtools-api`; peer deps: `vue`, `vue-router`
+
+### Naming Conventions
+
+| Entity                           | Convention                                   | Example                                             |
+| -------------------------------- | -------------------------------------------- | --------------------------------------------------- |
+| Files                            | camelCase                                    | `navigationCitadel.ts`                              |
+| Variables, functions             | camelCase                                    | `createContext()`, `runtimeState`                   |
+| Types, interfaces                | PascalCase + descriptive suffix              | `NavigationCitadelAPI`, `NavigationOutpostContext`  |
+| Constants                        | UPPER_SNAKE_CASE, centralized in `consts.ts` | `LOG_PREFIX`, `DEFAULT_NAVIGATION_OUTPOST_PRIORITY` |
+| Const objects (enum replacement) | PascalCase                                   | `NavigationHooks`, `DebugPoints`                    |
+
+### Type Patterns
+
+**`as const` objects instead of TypeScript `enum`** — better tree-shaking and type inference:
+
+```typescript
+// ✅ Do
+export const NavigationHooks = {
+  BEFORE_EACH: 'beforeEach',
+  BEFORE_RESOLVE: 'beforeResolve',
+  AFTER_EACH: 'afterEach',
+} as const;
+
+export type NavigationHook = (typeof NavigationHooks)[keyof typeof NavigationHooks];
+
+// ❌ Don't
+enum NavigationHooks { ... }
+```
+
+**Selective exports** — only types, constants, and helpers are public. Implementation modules (`navigationRegistry`, `navigationOutposts`) are internal:
+
+```typescript
+// src/index.ts — public API surface
+export type { NavigationOutpost, NavigationCitadelAPI, ... } from './types';
+export { NavigationHooks, NavigationOutpostVerdicts } from './types';
+export { createDefaultLogger } from './helpers';
+export { createNavigationCitadel } from './navigationCitadel';
+// NOT exported: registry, outposts internals
+```
+
+### Function Patterns
+
+**Factory + closure** instead of classes — all state is encapsulated via closures:
+
+```typescript
+// ✅ Do
+export const createNavigationCitadel = (router, options) => {
+  const registry = createRegistry(); // private state
+  const deployOne = (opts) => { ... }; // private helper
+
+  return { deployOutpost, destroy }; // public API
+};
+
+// ❌ Don't
+class NavigationCitadel { ... }
+```
 
 ## 🏗️ Architecture Guidelines
 
-- **Registry**: Use Maps for O(1) lookup, sorted arrays for iteration
-- **Sorting**: Done at deploy/abandon time, not during navigation
-- **Logging**: Critical events always logged, non-critical controlled by `log` option
-- **Errors**: Always provide meaningful error messages with context
+### Registry Structure
+
+- **Maps** for O(1) name lookup: `Map<string, RegisteredNavigationOutpost>`
+- **Sorted arrays** for priority-ordered iteration: `string[]` of names
+- **Sorting at deploy/abandon time**, never during navigation — O(n log n) once vs O(1) per navigation
+
+### Navigation Processing
+
+- **Hierarchical order**: global outposts first (sorted by priority), then route outposts (sorted, deduplicated via `Set`)
+- **Early exit**: on `BLOCK` or redirect — remaining outposts are skipped
+- **Hook filtering**: `shouldRunOnHook()` skips outposts not registered for the current hook
+- **All handlers are async** — even sync handlers are awaited. `Promise.race()` for timeout
+
+### Logging
+
+Three levels with critical/non-critical distinction:
+
+| Level             | Method         | When logged                                   |
+| ----------------- | -------------- | --------------------------------------------- |
+| Non-critical      | `logger.info`  | Only when `log: true` or `debug: true`        |
+| Critical warnings | `logger.warn`  | Always (duplicates, timeouts, missing routes) |
+| Critical errors   | `logger.error` | Always (handler errors, afterEach failures)   |
+
+Mark critical log paths with `// Critical: always log` comment.
+
+### Error Handling
+
+- **Symbol-based identification** for timeout errors — `TIMEOUT_SYMBOL` attached to error object, checked via `in` operator
+- **Outcome normalization** — `normalizeOutcome()` validates all handler returns, checks routes via `router.resolve()`
+- **Error boundaries** at handler execution level — never re-throw unhandled errors
+- **Retry support** for lazy loaders — on load failure, `loadPromise` is reset to `null`
 
 ## 🔗 Local Testing with npm link
 
@@ -114,4 +203,4 @@ After changes, rebuild — the symlink picks up changes automatically.
 
 ## ❓ Questions?
 
-Open an issue for questions or suggestions.
+[Open an issue](https://github.com/Kassaila/vue-router-citadel/issues/new) for questions or suggestions.

@@ -16,6 +16,14 @@ interface NavigationOutpostContext {
 }
 ```
 
+## NavigationOutpostOutcome
+
+Return type from outpost handlers:
+
+```typescript
+type NavigationOutpostOutcome = NavigationOutpostVerdict | RouteLocationRaw | Error;
+```
+
 ## NavigationOutpostHandler
 
 Handler function signature:
@@ -26,18 +34,30 @@ type NavigationOutpostHandler = (
 ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
 ```
 
-## NavigationOutpost
+## LazyOutpostLoader
 
-Configuration for deploying an outpost (generic parameter constrains name by scope):
+Loader function for lazy outposts — must return a module with `default` export:
 
 ```typescript
-interface NavigationOutpost<S extends NavigationOutpostScope = 'global'> {
+type LazyOutpostLoader = () => Promise<{ default: NavigationOutpostHandler }>;
+```
+
+## NavigationOutpost
+
+Configuration for deploying an outpost. Generic `S` constrains name by scope, generic `L` switches handler type for lazy loading:
+
+```typescript
+interface NavigationOutpost<
+  S extends NavigationOutpostScope = 'global',
+  L extends boolean = false,
+> {
   scope?: S; // Default: 'global'
   name: OutpostNameByScope<S>; // Type-safe when registries extended
-  handler: NavigationOutpostHandler;
+  handler: L extends true ? LazyOutpostLoader : NavigationOutpostHandler;
   priority?: number; // Default: 100
   hooks?: NavigationHook[]; // Default: ['beforeEach']
   timeout?: number; // Overrides defaultTimeout
+  lazy?: L; // Default: false
 }
 ```
 
@@ -55,8 +75,14 @@ interface NavigationCitadelOptions {
   devtools?: boolean; // Default: __DEV__
   defaultPriority?: number; // Default: 100
   defaultTimeout?: number; // Default: undefined (no timeout)
-  onError?: (error: Error, ctx: NavigationOutpostContext) => NavigationOutpostOutcome;
-  onTimeout?: (outpostName: string, ctx: NavigationOutpostContext) => NavigationOutpostOutcome;
+  onError?: (
+    error: Error,
+    ctx: NavigationOutpostContext,
+  ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
+  onTimeout?: (
+    outpostName: string,
+    ctx: NavigationOutpostContext,
+  ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
 }
 ```
 
@@ -66,8 +92,10 @@ Public API returned by `createNavigationCitadel`:
 
 ```typescript
 interface NavigationCitadelAPI {
-  deployOutpost<S extends NavigationOutpostScope = 'global'>(
-    options: NavigationOutpost<S> | NavigationOutpost<S>[],
+  install(app: App): void; // Vue Plugin API (required for DevTools)
+
+  deployOutpost<S extends NavigationOutpostScope = 'global', L extends boolean = false>(
+    options: NavigationOutpost<S, L> | NavigationOutpost<S, L>[],
   ): void;
 
   // Scope-aware overloads

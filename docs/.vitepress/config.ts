@@ -8,13 +8,7 @@ export default withMermaid(
     description: 'Structured navigation defense for Vue Router',
     base: '/vue-router-citadel/',
 
-    srcExclude: [
-      'plan.md',
-      'internals.md',
-      'testing.md',
-      'type-safe-names-advanced.md',
-      'release.md',
-    ],
+    srcExclude: ['plan.md', 'release.md', '_snippets/**'],
 
     head: [
       ['link', { rel: 'icon', type: 'image/svg+xml', href: '/vue-router-citadel/logo.svg' }],
@@ -82,6 +76,7 @@ export default withMermaid(
               { text: 'Outpost Scopes', link: '/guide/scopes' },
               { text: 'Navigation Hooks', link: '/guide/hooks' },
               { text: 'Outpost Verdicts', link: '/guide/verdicts' },
+              { text: 'Error Handling', link: '/guide/error-handling' },
             ],
           },
           {
@@ -89,6 +84,7 @@ export default withMermaid(
             items: [
               { text: 'Outpost Timeout', link: '/guide/timeout' },
               { text: 'Lazy Outposts', link: '/guide/lazy-outposts' },
+              { text: 'Type-Safe Outpost Names', link: '/guide/type-safety' },
               { text: 'Vue DevTools', link: '/guide/devtools' },
             ],
           },
@@ -108,7 +104,6 @@ export default withMermaid(
             text: 'Advanced',
             items: [
               { text: 'Architecture', link: '/advanced/architecture' },
-              { text: 'Type-Safe Outpost Names', link: '/advanced/type-safety' },
               { text: 'Modular Apps', link: '/advanced/modular-apps' },
               { text: 'Logging & Debug', link: '/advanced/logging' },
             ],
@@ -131,6 +126,7 @@ export default withMermaid(
             items: [
               { text: 'Guide', link: '/contributing/' },
               { text: 'Testing', link: '/contributing/testing' },
+              { text: 'Test Cases', link: '/contributing/test-cases' },
             ],
           },
         ],

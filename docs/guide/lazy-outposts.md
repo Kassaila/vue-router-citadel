@@ -90,3 +90,5 @@ citadel.deployOutpost({
 | Navigation completes | 900ms | Success                 |
 
 If handler took 600ms (> 500ms timeout), it would timeout — but loading time is never counted.
+
+<!--@include: ../_snippets/legend.md-->

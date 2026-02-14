@@ -15,18 +15,16 @@ pipelines
 
 ## Key Documentation
 
-| File                | Purpose                                    |
-| ------------------- | ------------------------------------------ |
-| `README.md`         | API reference, quick start, usage examples |
-| `docs/`             | VitePress documentation site               |
-| `docs/internals.md` | Deep dive with Mermaid diagrams (source)   |
-| `docs/testing.md`   | Testing guide and all test cases (source)  |
-| `docs/plan.md`      | Development roadmap and TODO priorities    |
-| `docs/release.md`   | Release guide for maintainers (source)     |
-| `CONTRIBUTING.md`   | Guide for contributors                     |
-| `CHANGELOG.md`      | Release notes                              |
-| `.claude/skills/`   | Slash commands for Claude Code             |
-| `.claude/agents/`   | Custom subagents for Claude Code           |
+| File              | Purpose                                 |
+| ----------------- | --------------------------------------- |
+| `README.md`       | Project overview, quick start           |
+| `docs/`           | VitePress documentation site            |
+| `docs/plan.md`    | Development roadmap and TODO priorities |
+| `docs/release.md` | Release guide for maintainers           |
+| `CONTRIBUTING.md` | Guide for contributors                  |
+| `CHANGELOG.md`    | Release notes                           |
+| `.claude/skills/` | Slash commands for Claude Code          |
+| `.claude/agents/` | Custom subagents for Claude Code        |
 
 ## Repository Structure
 
@@ -64,7 +62,6 @@ __tests__/                       # Tests (vitest)
     ├── code-reviewer.md
     └── docs-updater.md
 
-examples/                        # Usage examples (auth, hooks, nested routes)
 docs/                            # VitePress documentation site
 ├── .vitepress/config.ts         # VitePress config (nav, sidebar, mermaid)
 ├── index.md                     # Homepage
@@ -74,9 +71,6 @@ docs/                            # VitePress documentation site
 ├── examples/                    # Example pages (auth, nested routes, hooks)
 ├── contributing/                # Contributing, testing, release
 ├── changelog.md                 # Changelog page
-├── internals.md                 # Source: deep dive (excluded from VitePress)
-├── testing.md                   # Source: testing guide (excluded from VitePress)
-├── type-safe-names-advanced.md  # Source: advanced patterns (excluded from VitePress)
 ├── release.md                   # Source: release guide (excluded from VitePress)
 └── plan.md                      # Internal roadmap (excluded from VitePress)
 temp/                            # Feature workspaces (gitignored)

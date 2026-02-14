@@ -42,6 +42,25 @@ flowchart TD
 
 ## 💡 Examples
 
+### No Timeout (Default)
+
+```typescript
+const citadel = createNavigationCitadel(router);
+// defaultTimeout = undefined — no timeouts
+
+citadel.deployOutpost({
+  name: 'slow-api',
+  handler: async () => {
+    await fetch('/api/slow'); // can hang forever
+    return verdicts.ALLOW;
+  },
+});
+```
+
+::: warning
+If API doesn't respond — navigation hangs indefinitely.
+:::
+
 ### Global Timeout
 
 ```typescript
@@ -111,3 +130,5 @@ citadel.deployOutpost({
   },
 });
 ```
+
+<!--@include: ../_snippets/legend.md-->

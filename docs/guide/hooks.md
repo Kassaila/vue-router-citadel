@@ -37,31 +37,33 @@ What happens when a navigation hook is triggered:
 flowchart TD
     A[Hook Triggered] --> B[Collect route outpost names<br/>from matched stack]
     B --> C{Duplicates?}
-    C -->|Yes| D[log.warn + deduplicate]
+    C -->|Yes| D[🟡 log.warn + deduplicate]
     C -->|No| E[Continue]
     D --> E
 
     E --> F[Count outposts for current hook]
     F --> G{Total = 0?}
-    G -->|Yes| H[Return ALLOW]
-    G -->|No| LOG1[log.info: hook path → path N outposts]
+    G -->|Yes| H[🟢 Return ALLOW]
+    G -->|No| LOG1[🔵 log.info: hook path → path N outposts]
 
-    LOG1 --> DBG1[debugger: navigation-start]
+    LOG1 --> DBG1[🟣 debugger: navigation-start]
     DBG1 --> I[Process global outposts]
 
     I --> J{Result}
     J -->|ALLOW| K[Process assigned route outposts]
-    J -->|BLOCK| L[Return BLOCK]
-    J -->|Redirect| M[Return Redirect]
+    J -->|BLOCK| L[🔴 Return BLOCK]
+    J -->|Redirect| M[🟡 Return Redirect]
 
     K --> N{Result}
-    N -->|ALLOW| O[Return ALLOW]
+    N -->|ALLOW| O[🟢 Return ALLOW]
     N -->|BLOCK| L
     N -->|Redirect| M
 ```
 
-::: info Logging and debug breakpoints only trigger when there are outposts to process for the
-current hook. If no outposts are registered for a hook, it returns `ALLOW` silently. :::
+::: info
+Logging and debug breakpoints only trigger when there are outposts to process for the
+current hook. If no outposts are registered for a hook, it returns `ALLOW` silently.
+:::
 
 ## ⚙️ Specifying Hooks
 
@@ -97,3 +99,5 @@ citadel.deployOutpost({
   },
 });
 ```
+
+<!--@include: ../_snippets/legend.md-->

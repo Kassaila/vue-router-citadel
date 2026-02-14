@@ -50,14 +50,14 @@ flowchart TD
     subgraph Collection["Navigation to /admin/users"]
         C["Collect outpost names from matched stack"]
         D["['auth', 'auth', 'audit']"]
-        E["Deduplicate"]
-        F["log.warn: duplicates detected"]
+        E["🟡 Deduplicate"]
+        F["🟡 log.warn: duplicates detected"]
     end
 
     subgraph Execution["Processing"]
         G["Get deployed outposts"]
         H["Filter assigned outposts"]
-        I["Process by priority"]
+        I["🟢 Process by priority"]
     end
 
     B -.-> C
@@ -79,8 +79,10 @@ flowchart LR
     A[Navigation Start] --> B[Global Outposts<br/>sorted by priority]
     B --> C{All ALLOW?}
     C -->|Yes| D[Route Outposts<br/>from meta.outposts]
-    C -->|No| E[BLOCK / Redirect]
+    C -->|No| E[🔴 BLOCK / Redirect]
     D --> F{All ALLOW?}
-    F -->|Yes| G[Navigation Completes]
+    F -->|Yes| G[🟢 Navigation Completes]
     F -->|No| E
 ```
+
+<!--@include: ../_snippets/legend.md-->

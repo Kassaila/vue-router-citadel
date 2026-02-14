@@ -1,137 +1,22 @@
-# 🧪 Testing Guide
+# 📝 Test Cases
 
-This document describes the testing setup for vue-router-citadel and lists all test cases.
+Complete list of all test cases across 9 test files (134 tests).
 
----
-
-<!-- TOC -->
-
-- [🧪 Testing Guide](#-testing-guide)
-  - [📊 Overview](#-overview)
-  - [🚀 Quick Start](#-quick-start)
-  - [📁 Test Structure](#-test-structure)
-  - [🔧 Test Helpers](#-test-helpers)
-    - [Example Usage](#example-usage)
-  - [📝 Test Cases](#-test-cases)
-    - [navigationRegistry.test.ts 12 tests](#navigationregistrytestts-12-tests)
-      - [createRegistry](#createregistry)
-      - [register](#register)
-      - [unregister](#unregister)
-      - [getRegisteredNames](#getregisterednames)
-    - [navigationOutposts.test.ts 19 tests](#navigationoutpoststestts-19-tests)
-      - [normalizeOutcome](#normalizeoutcome)
-      - [toNavigationGuardReturn](#tonavigationguardreturn)
-      - [patrol](#patrol)
-    - [navigationCitadel.test.ts 23 tests](#navigationcitadeltestts-23-tests)
-      - [createNavigationCitadel](#createnavigationcitadel)
-      - [deployOutpost](#deployoutpost)
-      - [abandonOutpost](#abandonoutpost)
-      - [getOutpostNames](#getoutpostnames)
-      - [assignOutpostToRoute](#assignoutposttoroute)
-      - [destroy](#destroy)
-    - [timeout.test.ts 5 tests](#timeouttestts-5-tests)
-    - [lazy.test.ts 12 tests](#lazytestts-12-tests)
-    - [integration.test.ts 13 tests](#integrationtestts-13-tests)
-    - [devtools-settings.test.ts 19 tests](#devtools-settingstestts-19-tests)
-    - [devtools-inspector.test.ts 19 tests](#devtools-inspectortestts-19-tests)
-    - [debugHandler.test.ts 12 tests](#debughandlertestts-12-tests)
-      - [navigation flow](#navigation-flow)
-      - [error handling](#error-handling)
-      - [hooks](#hooks)
-      - [route outposts](#route-outposts)
-      - [context](#context)
-  - [✍️ Writing New Tests](#-writing-new-tests)
-    - [Choose the Right File](#choose-the-right-file)
-    - [Use Existing Helpers](#use-existing-helpers)
-    - [Test Patterns](#test-patterns)
-  - [📈 Coverage](#-coverage)
-
-<!-- /TOC -->
+For testing setup, helpers, and how to write new tests, see the [Testing Guide](/contributing/testing).
 
 ---
 
-## 📊 Overview
-
-| Metric         | Value     |
-| -------------- | --------- |
-| Test Framework | Vitest    |
-| Environment    | happy-dom |
-| Total Tests    | 134       |
-| Test Files     | 9         |
-| Coverage       | 91%       |
-
-## 🚀 Quick Start
-
-```bash
-# Run tests in watch mode
-npm run test
-
-# Run tests once
-npm run test:run
-
-# Run with coverage
-npm run test:coverage
-```
-
-## 📁 Test Structure
-
-```
-__tests__/
-├── helpers/
-│   └── setup.ts                    # Mock factories and utilities
-├── navigationRegistry.test.ts      # Registry CRUD (12 tests)
-├── navigationOutposts.test.ts      # Patrol logic (19 tests)
-├── navigationCitadel.test.ts       # Public API (23 tests)
-├── timeout.test.ts                 # Timeout handling (5 tests)
-├── lazy.test.ts                    # Lazy loading (12 tests)
-├── integration.test.ts             # Full navigation flows (13 tests)
-├── devtools-settings.test.ts       # DevTools settings (19 tests)
-├── devtools-inspector.test.ts      # DevTools inspector (19 tests)
-└── debugHandler.test.ts            # Debug handler (12 tests)
-```
-
-## 🔧 Test Helpers
-
-Located in `__tests__/helpers/setup.ts`:
-
-| Helper                              | Description                                   |
-| ----------------------------------- | --------------------------------------------- |
-| `createMockRouter(routes?)`         | Creates vue-router with memory history        |
-| `createMockLogger()`                | Logger that captures calls for assertions     |
-| `createAllowHandler()`              | Returns `'allow'` verdict                     |
-| `createBlockHandler()`              | Returns `'block'` verdict                     |
-| `createRedirectHandler(to)`         | Returns redirect location                     |
-| `createDelayedHandler(ms, outcome)` | Async handler with delay (for timeout tests)  |
-| `createErrorHandler(message)`       | Throws error with message                     |
-| `createRegisteredOutpost(options)`  | Creates RegisteredNavigationOutpost for tests |
-
-### Example Usage
-
-```typescript
-import { createMockRouter, createMockLogger, createAllowHandler } from './helpers/setup';
-
-const router = createMockRouter();
-const logger = createMockLogger();
-
-// After test, check logger calls
-expect(logger.calls.some((c) => c.level === 'warn')).toBe(true);
-```
-
----
-
-## 📝 Test Cases
-
-### navigationRegistry.test.ts (12 tests)
+## navigationRegistry.test.ts (12 tests)
 
 Registry management functions.
 
-#### createRegistry
+### createRegistry
 
 | Test                             | Description                    |
 | -------------------------------- | ------------------------------ |
 | returns empty registry structure | Creates Maps and sorted arrays |
 
-#### register
+### register
 
 | Test                                               | Description                    |
 | -------------------------------------------------- | ------------------------------ |
@@ -141,7 +26,7 @@ Registry management functions.
 | updates sorted array by priority                   | Maintains priority order       |
 | uses defaultPriority for outposts without priority | Falls back to default          |
 
-#### unregister
+### unregister
 
 | Test                               | Description           |
 | ---------------------------------- | --------------------- |
@@ -149,7 +34,7 @@ Registry management functions.
 | returns false if outpost not found | Non-existent outpost  |
 | updates sorted array after removal | Re-sorts after delete |
 
-#### getRegisteredNames
+### getRegisteredNames
 
 | Test                                 | Description         |
 | ------------------------------------ | ------------------- |
@@ -159,11 +44,11 @@ Registry management functions.
 
 ---
 
-### navigationOutposts.test.ts (19 tests)
+## navigationOutposts.test.ts (19 tests)
 
 Outcome normalization and patrol logic.
 
-#### normalizeOutcome
+### normalizeOutcome
 
 | Test                                        | Description                 |
 | ------------------------------------------- | --------------------------- |
@@ -176,7 +61,7 @@ Outcome normalization and patrol logic.
 | throws Error outcome                        | Re-throws Error instances   |
 | throws on invalid outcome type              | Rejects invalid types       |
 
-#### toNavigationGuardReturn
+### toNavigationGuardReturn
 
 | Test                           | Description          |
 | ------------------------------ | -------------------- |
@@ -184,7 +69,7 @@ Outcome normalization and patrol logic.
 | converts BLOCK to false        | Vue Router format    |
 | returns RouteLocationRaw as-is | Redirect passthrough |
 
-#### patrol
+### patrol
 
 | Test                                                | Description                 |
 | --------------------------------------------------- | --------------------------- |
@@ -199,11 +84,11 @@ Outcome normalization and patrol logic.
 
 ---
 
-### navigationCitadel.test.ts (23 tests)
+## navigationCitadel.test.ts (23 tests)
 
 Public API testing.
 
-#### createNavigationCitadel
+### createNavigationCitadel
 
 | Test                                  | Description                          |
 | ------------------------------------- | ------------------------------------ |
@@ -212,7 +97,7 @@ Public API testing.
 | deploys initial outposts from options | Constructor outposts                 |
 | uses custom logger                    | Logger injection                     |
 
-#### deployOutpost
+### deployOutpost
 
 | Test                                        | Description              |
 | ------------------------------------------- | ------------------------ |
@@ -220,7 +105,7 @@ Public API testing.
 | deploys outpost with default scope (global) | Scope defaults to global |
 | deploys multiple outposts (array)           | Array of outposts        |
 
-#### abandonOutpost
+### abandonOutpost
 
 | Test                                                      | Description          |
 | --------------------------------------------------------- | -------------------- |
@@ -229,7 +114,7 @@ Public API testing.
 | removes multiple outposts and returns true if all deleted | Array removal        |
 | returns false if any outpost not found                    | Partial failure      |
 
-#### getOutpostNames
+### getOutpostNames
 
 | Test                                 | Description  |
 | ------------------------------------ | ------------ |
@@ -237,7 +122,7 @@ Public API testing.
 | returns route outpost names          | Route scope  |
 | returns empty array when no outposts | Empty case   |
 
-#### assignOutpostToRoute
+### assignOutpostToRoute
 
 | Test                               | Description         |
 | ---------------------------------- | ------------------- |
@@ -246,20 +131,20 @@ Public API testing.
 | does not duplicate outposts        | Idempotent          |
 | returns false if route not found   | Non-existent route  |
 
-#### destroy
+### destroy
 
 | Test                              | Description |
 | --------------------------------- | ----------- |
 | removes hooks and clears registry | Cleanup     |
 
-#### install
+### install
 
 | Test                                | Description              |
 | ----------------------------------- | ------------------------ |
 | is callable as Vue plugin           | Plugin API compatibility |
 | does nothing when devtools disabled | No-op when disabled      |
 
-#### logging
+### logging
 
 | Test                                       | Description         |
 | ------------------------------------------ | ------------------- |
@@ -268,7 +153,7 @@ Public API testing.
 
 ---
 
-### timeout.test.ts (5 tests)
+## timeout.test.ts (5 tests)
 
 Timeout functionality.
 
@@ -282,11 +167,11 @@ Timeout functionality.
 
 ---
 
-### lazy.test.ts (12 tests)
+## lazy.test.ts (12 tests)
 
 Lazy outpost loading functionality.
 
-#### loading behavior
+### loading behavior
 
 | Test                                         | Description                   |
 | -------------------------------------------- | ----------------------------- |
@@ -294,7 +179,7 @@ Lazy outpost loading functionality.
 | should cache handler after first load        | Subsequent calls use cache    |
 | should not load eager outpost lazily         | Eager handlers work as before |
 
-#### error handling
+### error handling
 
 | Test                                               | Description                 |
 | -------------------------------------------------- | --------------------------- |
@@ -302,27 +187,27 @@ Lazy outpost loading functionality.
 | should throw error if module has no default export | Invalid module format       |
 | should allow retry after load error                | Retry on next navigation    |
 
-#### timeout behavior
+### timeout behavior
 
 | Test                                                        | Description              |
 | ----------------------------------------------------------- | ------------------------ |
 | should apply timeout only to handler execution, not loading | Loading time not counted |
 | should timeout if handler execution exceeds timeout         | Execution timeout works  |
 
-#### logging
+### logging
 
 | Test                                        | Description             |
 | ------------------------------------------- | ----------------------- |
 | should log lazy flag when deploying         | "(lazy)" in log message |
 | should not log lazy flag for eager outposts | No "(lazy)" for eager   |
 
-#### mixed eager and lazy outposts
+### mixed eager and lazy outposts
 
 | Test                                                     | Description             |
 | -------------------------------------------------------- | ----------------------- |
 | should process eager and lazy outposts in priority order | Priority ordering works |
 
-#### getOutpostNames
+### getOutpostNames
 
 | Test                                                | Description       |
 | --------------------------------------------------- | ----------------- |
@@ -330,11 +215,11 @@ Lazy outpost loading functionality.
 
 ---
 
-### integration.test.ts (13 tests)
+## integration.test.ts (13 tests)
 
 Full navigation flows with real router.
 
-#### navigation flow
+### navigation flow
 
 | Test                                             | Description         |
 | ------------------------------------------------ | ------------------- |
@@ -343,7 +228,7 @@ Full navigation flows with real router.
 | redirects when outpost returns RouteLocationRaw  | Redirect scenario   |
 | processes outposts in priority order             | End-to-end priority |
 
-#### error handling
+### error handling
 
 | Test                                  | Description            |
 | ------------------------------------- | ---------------------- |
@@ -351,7 +236,7 @@ Full navigation flows with real router.
 | blocks navigation by default on error | Default error behavior |
 | onError can redirect on error         | Error -> redirect      |
 
-#### hooks
+### hooks
 
 | Test                                 | Description        |
 | ------------------------------------ | ------------------ |
@@ -359,14 +244,14 @@ Full navigation flows with real router.
 | runs outpost on multiple hooks       | Multi-hook outpost |
 | afterEach runs for side effects only | Post-navigation    |
 
-#### route outposts
+### route outposts
 
 | Test                                         | Description            |
 | -------------------------------------------- | ---------------------- |
 | processes route outposts from meta           | Route meta integration |
 | skips route outposts for routes without meta | No meta case           |
 
-#### context
+### context
 
 | Test                                | Description   |
 | ----------------------------------- | ------------- |
@@ -374,11 +259,11 @@ Full navigation flows with real router.
 
 ---
 
-### devtools-settings.test.ts (19 tests)
+## devtools-settings.test.ts (19 tests)
 
 DevTools settings and localStorage persistence.
 
-#### getStoredLogLevel
+### getStoredLogLevel
 
 | Test                                  | Description                   |
 | ------------------------------------- | ----------------------------- |
@@ -387,14 +272,14 @@ DevTools settings and localStorage persistence.
 | returns null for invalid stored value | Invalid values ignored        |
 | handles localStorage errors           | Catches exceptions gracefully |
 
-#### setStoredLogLevel
+### setStoredLogLevel
 
 | Test                        | Description           |
 | --------------------------- | --------------------- |
 | stores value                | Saves to localStorage |
 | handles localStorage errors | Catches exceptions    |
 
-#### optionsToLogLevel
+### optionsToLogLevel
 
 | Test                                    | Description           |
 | --------------------------------------- | --------------------- |
@@ -403,7 +288,7 @@ DevTools settings and localStorage persistence.
 | returns LOG when defaultValue is true   | Falls back to default |
 | returns OFF when all false              | No logging            |
 
-#### logLevelToState
+### logLevelToState
 
 | Test                              | Description   |
 | --------------------------------- | ------------- |
@@ -411,7 +296,7 @@ DevTools settings and localStorage persistence.
 | LOG returns log:true debug:false  | State mapping |
 | DEBUG returns log:true debug:true | State mapping |
 
-#### stateToLogLevel
+### stateToLogLevel
 
 | Test                                   | Description     |
 | -------------------------------------- | --------------- |
@@ -419,7 +304,7 @@ DevTools settings and localStorage persistence.
 | returns LOG when log:true debug:false  | Reverse mapping |
 | returns DEBUG when log:true debug:true | Reverse mapping |
 
-#### initializeRuntimeState
+### initializeRuntimeState
 
 | Test                                       | Description           |
 | ------------------------------------------ | --------------------- |
@@ -427,13 +312,13 @@ DevTools settings and localStorage persistence.
 | falls back to options when no localStorage | Options priority      |
 | falls back to defaults when no options     | Default priority      |
 
-#### updateRuntimeState
+### updateRuntimeState
 
 | Test                                    | Description              |
 | --------------------------------------- | ------------------------ |
 | updates state and saves to localStorage | State mutation + persist |
 
-#### createSettingsDefinition
+### createSettingsDefinition
 
 | Test                                | Description             |
 | ----------------------------------- | ----------------------- |
@@ -441,11 +326,11 @@ DevTools settings and localStorage persistence.
 
 ---
 
-### devtools-inspector.test.ts (19 tests)
+## devtools-inspector.test.ts (19 tests)
 
 DevTools custom inspector functionality.
 
-#### createInspectorTree
+### createInspectorTree
 
 | Test                                      | Description          |
 | ----------------------------------------- | -------------------- |
@@ -456,7 +341,7 @@ DevTools custom inspector functionality.
 | should add hooks tag to outpost nodes     | Hooks count display  |
 | should add lazy tag for lazy outposts     | Lazy indicator       |
 
-#### getNodeState
+### getNodeState
 
 | Test                                                    | Description          |
 | ------------------------------------------------------- | -------------------- |
@@ -467,7 +352,7 @@ DevTools custom inspector functionality.
 | should return null for non-existent outpost             | Missing outpost      |
 | should show "none (uses default)" for undefined timeout | Timeout display      |
 
-#### setupInspector
+### setupInspector
 
 | Test                                                   | Description            |
 | ------------------------------------------------------ | ---------------------- |
@@ -478,7 +363,7 @@ DevTools custom inspector functionality.
 | should ignore getInspectorTree for other inspectors    | Inspector ID check     |
 | should populate state on getInspectorState callback    | State population       |
 
-#### refreshInspector
+### refreshInspector
 
 | Test                                                 | Description   |
 | ---------------------------------------------------- | ------------- |
@@ -486,11 +371,11 @@ DevTools custom inspector functionality.
 
 ---
 
-### debugHandler.test.ts (12 tests)
+## debugHandler.test.ts (12 tests)
 
 Debug handler invocation, custom handlers, and default logger.
 
-#### debugPoint function
+### debugPoint function
 
 | Test                                        | Description              |
 | ------------------------------------------- | ------------------------ |
@@ -501,100 +386,23 @@ Debug handler invocation, custom handlers, and default logger.
 | works without debugHandler (optional)       | Optional handler         |
 | passes debug point name to handler          | Correct name passed      |
 
-#### createDefaultDebugHandler
+### createDefaultDebugHandler
 
 | Test                                | Description             |
 | ----------------------------------- | ----------------------- |
 | returns a function                  | Factory returns handler |
 | handler can be called without error | Handler is callable     |
 
-#### custom debugHandler integration
+### custom debugHandler integration
 
 | Test                                     | Description         |
 | ---------------------------------------- | ------------------- |
 | should use custom debugHandler           | Custom handler used |
 | should allow debugHandler custom actions | Custom tracing      |
 
-#### createDefaultLogger
+### createDefaultLogger
 
 | Test                                    | Description         |
 | --------------------------------------- | ------------------- |
 | should return logger with all methods   | Logger shape        |
 | should call console methods with prefix | Prefix verification |
-
----
-
-## ✍️ Writing New Tests
-
-### 1. Choose the Right File
-
-| If testing...         | Add to...                    |
-| --------------------- | ---------------------------- |
-| Registry functions    | `navigationRegistry.test.ts` |
-| Outcome/patrol logic  | `navigationOutposts.test.ts` |
-| Public API            | `navigationCitadel.test.ts`  |
-| Timeout behavior      | `timeout.test.ts`            |
-| Lazy loading          | `lazy.test.ts`               |
-| Full navigation flows | `integration.test.ts`        |
-| DevTools settings     | `devtools-settings.test.ts`  |
-| DevTools inspector    | `devtools-inspector.test.ts` |
-| Debug handler/logger  | `debugHandler.test.ts`       |
-
-### 2. Use Existing Helpers
-
-```typescript
-import { describe, it, expect, beforeEach } from 'vitest';
-import { createMockRouter, createMockLogger } from './helpers/setup';
-
-describe('myFeature', () => {
-  let router: ReturnType<typeof createMockRouter>;
-  let logger: ReturnType<typeof createMockLogger>;
-
-  beforeEach(async () => {
-    router = createMockRouter();
-    logger = createMockLogger();
-    await router.push('/');
-    await router.isReady();
-  });
-
-  it('does something', () => {
-    // test code
-  });
-});
-```
-
-### 3. Test Patterns
-
-**Testing navigation blocks:**
-
-```typescript
-await router.push('/dashboard').catch(() => {});
-expect(router.currentRoute.value.name).toBe('home'); // stayed on home
-```
-
-**Testing redirects (avoid infinite loops):**
-
-```typescript
-handler: ({ to }) => {
-  if (to.name !== 'login') return { name: 'login' };
-  return 'allow';
-};
-```
-
-**Testing logger calls:**
-
-```typescript
-expect(logger.calls.some((c) => c.level === 'warn' && c.args[0].includes('timed out'))).toBe(true);
-```
-
----
-
-## 📈 Coverage
-
-Run coverage report:
-
-```bash
-npm run test:coverage
-```
-
-Coverage includes all files in `src/` except `index.ts` (re-exports only).

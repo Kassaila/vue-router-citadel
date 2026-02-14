@@ -45,6 +45,8 @@ import type {
   NavigationHook,
   NavigationOutpostScope,
   CitadelLogger,
+  // Lazy loading
+  LazyOutpostLoader,
   // Debug types
   DebugHandler,
   DebugPoint,
