@@ -33,11 +33,9 @@ The custom inspector provides:
 
 ## ⚙️ Settings Panel
 
-The DevTools settings panel allows runtime control of logging and debug modes. See [Logging & Debug](/advanced/logging) for all log events, custom logger, and debug breakpoints reference.
+The DevTools settings panel provides runtime control of logging and debug modes.
 
 ### Log Level Selector
-
-A button-group selector with three options:
 
 | Option          | `log`   | `debug` | Description                  |
 | --------------- | ------- | ------- | ---------------------------- |
@@ -45,49 +43,8 @@ A button-group selector with three options:
 | **Log**         | `true`  | `false` | Non-critical logging enabled |
 | **Log + Debug** | `true`  | `true`  | Logging + debug breakpoints  |
 
-### Settings Priority
+Settings persist in `localStorage` and take priority over citadel options on next page load. See [DevTools Internals](/advanced/devtools) for the full resolution flow and localStorage details.
 
-Settings are resolved in this order (first available wins):
-
-```
-localStorage → citadel options → defaults (__DEV__)
-```
-
-1. **localStorage** — if user changed settings via DevTools, persisted value is used
-2. **citadel options** — `log` and `debug` options passed to `createNavigationCitadel`
-3. **defaults** — `log: __DEV__`, `debug: false`
-
-### localStorage Persistence
-
-Settings are stored in localStorage with the key:
-
-```
-vue-router-citadel:settings:logLevel
-```
-
-Values: `off`, `log`, `debug`
-
-```mermaid
-flowchart TD
-    A[Citadel created] --> B{localStorage has logLevel?}
-    B -->|Yes| C[Use stored value]
-    B -->|No| D{options.debug?}
-    D -->|true| E["Log + Debug"]
-    D -->|false| F{options.log?}
-    F -->|true| G[Log]
-    F -->|false| H{__DEV__?}
-    H -->|true| G
-    H -->|false| I[Off]
-
-    C --> J[Set runtimeState]
-    E --> J
-    G --> J
-    I --> J
-
-    J --> K[Register DevTools]
-    K --> L[User changes setting]
-    L --> M[Update runtimeState]
-    M --> N[Save to localStorage]
-```
+See [Logging & Debug](/advanced/logging) for all log events, custom logger, and debug breakpoints reference.
 
 <!--@include: ../_snippets/legend.md-->

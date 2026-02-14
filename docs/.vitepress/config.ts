@@ -1,4 +1,3 @@
-import { content } from 'happy-dom/lib/PropertySymbol';
 import { defineConfig } from 'vitepress';
 import { withMermaid } from 'vitepress-plugin-mermaid';
 
@@ -73,9 +72,9 @@ export default withMermaid(
           {
             text: 'Core Concepts',
             items: [
-              { text: 'Outpost Scopes', link: '/guide/scopes' },
-              { text: 'Navigation Hooks', link: '/guide/hooks' },
               { text: 'Outpost Verdicts', link: '/guide/verdicts' },
+              { text: 'Navigation Hooks', link: '/guide/hooks' },
+              { text: 'Outpost Scopes', link: '/guide/scopes' },
               { text: 'Error Handling', link: '/guide/error-handling' },
             ],
           },
@@ -106,6 +105,7 @@ export default withMermaid(
               { text: 'Architecture', link: '/advanced/architecture' },
               { text: 'Modular Apps', link: '/advanced/modular-apps' },
               { text: 'Logging & Debug', link: '/advanced/logging' },
+              { text: 'DevTools Internals', link: '/advanced/devtools' },
             ],
           },
         ],
@@ -115,8 +115,8 @@ export default withMermaid(
             items: [
               { text: 'Auth Guard', link: '/examples/auth' },
               { text: 'Nested Routes', link: '/examples/nested-routes' },
-              { text: 'Multiple Hooks', link: '/examples/multiple-hooks' },
-              { text: 'Different Hooks', link: '/examples/different-hooks' },
+              { text: 'Multi-Hook Outpost', link: '/examples/multiple-hooks' },
+              { text: 'Outposts Across Hooks', link: '/examples/different-hooks' },
             ],
           },
         ],

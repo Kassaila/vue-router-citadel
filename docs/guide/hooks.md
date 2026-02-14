@@ -16,7 +16,7 @@ the patrol system that processes all registered outposts.
 [The Full Navigation Resolution Flow](https://router.vuejs.org/guide/advanced/navigation-guards.html#The-Full-Navigation-Resolution-Flow).
 :::
 
-## 🔄 Navigation Flow Overview
+## 🔄 Where Hooks Fit
 
 ```mermaid
 flowchart LR
@@ -29,7 +29,7 @@ flowchart LR
 
 Each hook triggers `patrol` which processes all applicable outposts in priority order.
 
-## 📊 Navigation Hook Flow
+## 📊 What Happens Inside a Hook
 
 What happens when a navigation hook is triggered:
 
@@ -99,5 +99,45 @@ citadel.deployOutpost({
   },
 });
 ```
+
+## 🔧 Handler Context
+
+Every outpost handler receives a context object with navigation details:
+
+```typescript
+interface NavigationOutpostContext {
+  verdicts: {
+    ALLOW: 'allow';
+    BLOCK: 'block';
+  };
+  to: RouteLocationNormalized; // target route
+  from: RouteLocationNormalized; // current route
+  router: Router; // router instance
+  hook: 'beforeEach' | 'beforeResolve' | 'afterEach';
+}
+```
+
+**Usage example:**
+
+```typescript
+handler: ({ verdicts, to, from, router, hook }) => {
+  // Access route params
+  const userId = to.params.id;
+
+  // Access route meta
+  const requiresAuth = to.meta.requiresAuth;
+
+  // Check current hook
+  if (hook === 'afterEach') {
+    // Analytics, logging (return value ignored)
+  }
+
+  return verdicts.ALLOW;
+};
+```
+
+::: tip
+When a handler throws an error, the citadel catches it and handles gracefully. See [Error Handling](/guide/error-handling) for the full error flow, `onError`, `onTimeout`, and afterEach behavior.
+:::
 
 <!--@include: ../_snippets/legend.md-->

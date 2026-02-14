@@ -1,4 +1,4 @@
-# 🪝 Multiple Hooks
+# 🪝 Multi-Hook Outpost
 
 Single route outpost handling multiple hooks with role-based access.
 
