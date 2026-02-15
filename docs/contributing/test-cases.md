@@ -1,6 +1,6 @@
 # 📝 Test Cases
 
-Complete list of all test cases across 9 test files (134 tests).
+Complete list of all test cases across 9 test files (140 tests).
 
 For testing setup, helpers, and how to write new tests, see the [Testing Guide](/contributing/testing).
 
@@ -84,7 +84,7 @@ Outcome normalization and patrol logic.
 
 ---
 
-## navigationCitadel.test.ts (23 tests)
+## navigationCitadel.test.ts (29 tests)
 
 Public API testing.
 
@@ -131,6 +131,16 @@ Public API testing.
 | does not duplicate outposts        | Idempotent          |
 | returns false if route not found   | Non-existent route  |
 
+### revokeOutpostFromRoute
+
+| Test                                     | Description                |
+| ---------------------------------------- | -------------------------- |
+| removes single outpost from route        | Single outpost removal     |
+| removes multiple outposts from route     | Array removal              |
+| returns false if route not found         | Non-existent route         |
+| warns if outpost not in route outposts   | Missing outpost warning    |
+| handles missing meta.outposts gracefully | No meta.outposts edge case |
+
 ### destroy
 
 | Test                              | Description |
@@ -146,10 +156,11 @@ Public API testing.
 
 ### logging
 
-| Test                                       | Description         |
-| ------------------------------------------ | ------------------- |
-| logs assignOutpostToRoute when log enabled | Assignment logging  |
-| logs destroy when log enabled              | Destruction logging |
+| Test                                         | Description         |
+| -------------------------------------------- | ------------------- |
+| logs assignOutpostToRoute when log enabled   | Assignment logging  |
+| logs revokeOutpostFromRoute when log enabled | Revocation logging  |
+| logs destroy when log enabled                | Destruction logging |
 
 ---
 

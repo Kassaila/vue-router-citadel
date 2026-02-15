@@ -1,6 +1,20 @@
 import { defineConfig } from 'vitepress';
 import { withMermaid } from 'vitepress-plugin-mermaid';
 
+/** Strip emojis from heading text before generating anchor slugs */
+function slugify(str: string): string {
+  return str
+    .replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '')
+    .normalize('NFKD')
+    .trim()
+    .toLowerCase()
+    .replace(/[`()]/g, '')
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 export default withMermaid(
   defineConfig({
     title: 'Vue Router Citadel',
@@ -8,6 +22,10 @@ export default withMermaid(
     base: '/vue-router-citadel/',
 
     srcExclude: ['plan.md', 'release.md', '_snippets/**'],
+
+    markdown: {
+      anchor: { slugify },
+    },
 
     head: [
       ['link', { rel: 'icon', type: 'image/svg+xml', href: '/vue-router-citadel/logo.svg' }],

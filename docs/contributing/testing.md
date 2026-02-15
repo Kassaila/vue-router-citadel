@@ -6,7 +6,7 @@
 | -------------- | --------- |
 | Test Framework | Vitest    |
 | Environment    | happy-dom |
-| Total Tests    | 134       |
+| Total Tests    | 140       |
 | Test Files     | 9         |
 | Coverage       | 91%       |
 
@@ -31,7 +31,7 @@ __tests__/
 │   └── setup.ts                    # Mock factories and utilities
 ├── navigationRegistry.test.ts      # Registry CRUD (12 tests)
 ├── navigationOutposts.test.ts      # Patrol logic (19 tests)
-├── navigationCitadel.test.ts       # Public API (23 tests)
+├── navigationCitadel.test.ts       # Public API (29 tests)
 ├── timeout.test.ts                 # Timeout handling (5 tests)
 ├── lazy.test.ts                    # Lazy loading (12 tests)
 ├── integration.test.ts             # Full navigation flows (13 tests)
@@ -132,7 +132,7 @@ expect(logger.calls.some((c) => c.level === 'warn' && c.args[0].includes('timed 
 
 ## 📝 Test Cases
 
-See the complete [Test Cases Reference](/contributing/test-cases) for a full list of all 134 tests
+See the complete [Test Cases Reference](/contributing/test-cases) for a full list of all 140 tests
 across 9 test files.
 
 ---

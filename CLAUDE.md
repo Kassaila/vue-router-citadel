@@ -224,7 +224,7 @@ Key types: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, `GlobalOutpostName`,
 
 ### Priority 1 — Before Release ✅
 
-- [x] **Testing**: vitest + happy-dom (109 tests, 8 files)
+- [x] **Testing**: vitest + happy-dom (140 tests, 9 files)
 - [x] **CI/CD**: GitHub Actions (ci.yml, release.yml)
 - [x] **Type-safe Outpost Names**: Declaration merging with
       GlobalOutpostRegistry/RouteOutpostRegistry

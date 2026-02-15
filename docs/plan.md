@@ -55,7 +55,7 @@
 
 ### Testing
 
-- [x] Vitest + happy-dom — 134 tests across 9 test files
+- [x] Vitest + happy-dom — 140 tests across 9 test files
 
 ### Documentation
 

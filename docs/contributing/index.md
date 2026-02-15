@@ -40,7 +40,11 @@ src/                     # Source code
 ├── helpers.ts           # Utilities (debugPoint, logger)
 ├── navigationCitadel.ts # Main factory function
 ├── navigationOutposts.ts # Patrol logic, timeout handling
-└── navigationRegistry.ts # Registry CRUD operations
+├── navigationRegistry.ts # Registry CRUD operations
+└── devtools/            # Vue DevTools integration
+    ├── index.ts         # Setup functions, auto-init
+    ├── inspector.ts     # Custom inspector logic
+    └── types.ts         # DevTools-specific types
 
 __tests__/               # Tests (vitest + happy-dom)
 ├── helpers/setup.ts     # Mock router, logger, handlers
@@ -88,7 +92,7 @@ Commits that don't follow the convention will be rejected by the git hook.
 
 ### Formatting & Checks
 
-- **Prettier** — single source of formatting (no ESLint), runs automatically on commit via `lint-staged`
+- **Prettier** — formatting, **ESLint** — linting + style rules; both run automatically on commit via `lint-staged`
 - **TypeScript strict mode** — `strict: true`, `forceConsistentCasingInFileNames: true`
 - **No runtime dependencies** — only `@vue/devtools-api`; peer deps: `vue`, `vue-router`
 
