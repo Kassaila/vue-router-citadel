@@ -34,11 +34,9 @@ export const NavigationOutpostScopes = {
 export type NavigationOutpostScope =
   (typeof NavigationOutpostScopes)[keyof typeof NavigationOutpostScopes];
 
-// ============================================================================
 /**
  * Outpost Registries (user-extensible via declaration merging)
  */
-// ============================================================================
 
 /**
  * Global outpost registry — extend this interface to enable type-safe global outpost names.
