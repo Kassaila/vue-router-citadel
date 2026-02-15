@@ -40,6 +40,7 @@
 - [x] Timeout support (`defaultTimeout`, `timeout`, `onTimeout`)
 - [x] Lazy outposts (`lazy: true`) — on-demand handler loading for code splitting
 - [x] `assignOutpostToRoute()` method
+- [x] `revokeOutpostFromRoute()` method
 - [x] Optimized processing (sorting at deploy, direct registry calls)
 - [x] Type-safe outpost names (`GlobalOutpostRegistry` / `RouteOutpostRegistry`)
 - [x] Vue DevTools integration (`devtools` option, custom inspector, settings panel)
@@ -77,33 +78,6 @@
 ---
 
 ## TODO
-
-### Priority 1 — Before Release ✅
-
-#### `revokeOutpostFromRoute` method ✅
-
-Opposite of `assignOutpostToRoute` — removes one or more outposts from a route's `meta.outposts`.
-
-```typescript
-// Remove single outpost
-citadel.revokeOutpostFromRoute('admin', 'admin-only');
-
-// Revoke multiple outposts
-citadel.revokeOutpostFromRoute('settings', ['auth', 'verified']);
-```
-
-Returns `true` if route was found and outposts removed, `false` if route not found.
-
-**Implementation:**
-
-- Add to `NavigationCitadelAPI` interface
-- Add type-safe overload: `routeName: string, outpostNames: RouteOutpostName | RouteOutpostName[]`
-- Filter `route.meta.outposts` array, removing specified names
-- Log via `logger.info` (non-critical)
-- Warn if outpost name not found in route's outposts
-- Tests: remove single, remove multiple, route not found, outpost not in route, empty result
-
----
 
 ### Priority 2 — Post-Release
 
@@ -160,28 +134,5 @@ Interactive demo for trying the library.
 - Basic auth example
 - Nested routes example
 - All features demonstrated
-
----
-
-#### VitePress Documentation Site ✅
-
-Documentation website on GitHub Pages. All tasks completed.
-
-**Site structure:**
-
-```
-docs/
-├── .vitepress/config.ts           # Nav, sidebar, mermaid plugin, srcExclude
-├── _snippets/legend.md            # Shared diagram legend (included via @include)
-├── index.md                       # Homepage
-├── guide/                         # Getting started, scopes, hooks, verdicts,
-│                                  # error-handling, timeout, lazy-outposts,
-│                                  # type-safety, devtools
-├── api/                           # Methods, types, exports
-├── advanced/                      # Architecture, modular-apps, logging
-├── examples/                      # Auth, nested-routes, multiple-hooks, different-hooks
-├── contributing/                  # Guide, testing, test-cases
-└── plan.md, release.md            # Internal (excluded from site)
-```
 
 ---
