@@ -6,7 +6,9 @@ import { NavigationOutpostScopes } from '../types';
 
 export const DEVTOOLS_PLUGIN_ID = 'navigation.citadel';
 export const DEVTOOLS_PLUGIN_LABEL = 'Navigation Citadel';
-export const DEVTOOLS_PLUGIN_ICON = 'baseline-castle';
+export const DEVTOOLS_PLUGIN_ICON = 'castle';
+export const DEVTOOLS_PLUGIN_LOGO =
+  'https://kassaila.github.io/vue-router-citadel/logo_devtools.svg';
 export const DEVTOOLS_INSPECTOR_ID = DEVTOOLS_PLUGIN_ID + '.inspector';
 
 /**
