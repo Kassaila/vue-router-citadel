@@ -119,6 +119,33 @@ Validate citadel and outpost configuration.
 
 ---
 
+#### GoatCounter Analytics (Docs)
+
+Visitor analytics for VitePress documentation site. Privacy-friendly, no cookies, free for OSS.
+
+**Setup:**
+
+- Register at [goatcounter.com](https://www.goatcounter.com), create site code
+- Add script tag to `docs/.vitepress/config.ts` via `head` option
+
+```ts
+// docs/.vitepress/config.ts
+head: [
+  [
+    'script',
+    {
+      'data-goatcounter': 'https://<code>.goatcounter.com/count',
+      'src': '//gc.zgo.at/count.js',
+      'async': '',
+    },
+  ],
+];
+```
+
+**Dashboard:** `https://<code>.goatcounter.com` — page views, referrers, browsers, countries.
+
+---
+
 #### Playground
 
 Interactive demo for trying the library.
