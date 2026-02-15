@@ -112,6 +112,22 @@ citadel.assignOutpostToRoute('settings', ['auth', 'verified']);
 Returns `true` if route was found and outposts assigned, `false` otherwise. Duplicates are
 automatically filtered — calling multiple times with the same outpost name is safe.
 
+## revokeOutpostFromRoute
+
+Removes outpost(s) from an existing route dynamically. Opposite of
+[assignOutpostToRoute](#assignoutposttoroute).
+
+```typescript
+// Remove single outpost
+citadel.revokeOutpostFromRoute('admin', 'admin-only');
+
+// Remove multiple outposts
+citadel.revokeOutpostFromRoute('settings', ['auth', 'verified']);
+```
+
+Returns `true` if route was found, `false` otherwise. Warns if an outpost name is not present in the
+route's outposts.
+
 ## destroy
 
 Removes all navigation hooks and clears registry. Use when unmounting the application or replacing

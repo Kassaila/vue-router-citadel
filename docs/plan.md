@@ -78,9 +78,9 @@
 
 ## TODO
 
-### Priority 1 — Before Release
+### Priority 1 — Before Release ✅
 
-#### `revokeOutpostFromRoute` method
+#### `revokeOutpostFromRoute` method ✅
 
 Opposite of `assignOutpostToRoute` — removes one or more outposts from a route's `meta.outposts`.
 

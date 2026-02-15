@@ -45,6 +45,9 @@ const routes = [
 ```typescript
 // Dynamic assignment via API
 citadel.assignOutpostToRoute('admin', ['admin-only', 'audit']);
+
+// Dynamic removal via API
+citadel.revokeOutpostFromRoute('admin', 'audit');
 ```
 
 ## 🔄 Nested Routes & Deduplication

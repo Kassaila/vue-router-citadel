@@ -24,6 +24,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `citadel.abandonOutpost(scope, name)` — abandon outposts by scope and name
 - `citadel.getOutpostNames(scope)` — get deployed outpost names
 - `citadel.assignOutpostToRoute(routeName, outpostNames)` — dynamically assign outposts to routes
+- `citadel.revokeOutpostFromRoute(routeName, outpostNames)` — dynamically remove outposts from
+  routes
 - `citadel.destroy()` — remove all hooks and clear registry
 
 #### Features

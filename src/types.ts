@@ -395,6 +395,14 @@ export interface NavigationCitadelAPI {
   ) => boolean;
 
   /**
+   * Revoke route outpost(s) from an existing route by route name
+   */
+  revokeOutpostFromRoute: (
+    routeName: string,
+    outpostNames: RouteOutpostName | RouteOutpostName[],
+  ) => boolean;
+
+  /**
    * Destroy the citadel and remove navigation hooks
    */
   destroy: () => void;

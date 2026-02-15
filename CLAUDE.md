@@ -132,6 +132,7 @@ interface NavigationCitadelAPI {
   abandonOutpost(scope, name);
   getOutpostNames(scope);
   assignOutpostToRoute(routeName, outpostNames);
+  revokeOutpostFromRoute(routeName, outpostNames);
   install(app); // Vue Plugin API
   destroy();
 }

@@ -9,6 +9,8 @@ describe('navigationCitadel', () => {
   let router: ReturnType<typeof createMockRouter>;
   let mockLogger: ReturnType<typeof createMockLogger>;
 
+  const findRouteByName = (name: string) => router.getRoutes().find((r) => r.name === name);
+
   beforeEach(async () => {
     router = createMockRouter();
     mockLogger = createMockLogger();
@@ -232,7 +234,7 @@ describe('navigationCitadel', () => {
 
       expect(result).toBe(true);
 
-      const route = router.getRoutes().find((r) => r.name === 'dashboard');
+      const route = findRouteByName('dashboard');
       expect(route?.meta.outposts).toContain('premium');
 
       citadel.destroy();
@@ -243,7 +245,7 @@ describe('navigationCitadel', () => {
 
       citadel.assignOutpostToRoute('dashboard', ['premium', 'verified']);
 
-      const route = router.getRoutes().find((r) => r.name === 'dashboard');
+      const route = findRouteByName('dashboard');
       expect(route?.meta.outposts).toContain('premium');
       expect(route?.meta.outposts).toContain('verified');
 
@@ -256,7 +258,7 @@ describe('navigationCitadel', () => {
       citadel.assignOutpostToRoute('dashboard', 'premium');
       citadel.assignOutpostToRoute('dashboard', 'premium');
 
-      const route = router.getRoutes().find((r) => r.name === 'dashboard');
+      const route = findRouteByName('dashboard');
       expect(route?.meta.outposts?.filter((o) => o === 'premium')).toHaveLength(1);
 
       citadel.destroy();
@@ -276,6 +278,90 @@ describe('navigationCitadel', () => {
           (c) => c.level === 'warn' && (c.args[0] as string).includes('not found'),
         ),
       ).toBe(true);
+
+      citadel.destroy();
+    });
+  });
+
+  describe('revokeOutpostFromRoute', () => {
+    it('removes single outpost from route', () => {
+      const citadel = createNavigationCitadel(router, { log: false });
+
+      citadel.assignOutpostToRoute('dashboard', ['premium', 'verified']);
+      const result = citadel.revokeOutpostFromRoute('dashboard', 'premium');
+
+      expect(result).toBe(true);
+
+      const route = findRouteByName('dashboard');
+      expect(route?.meta.outposts).not.toContain('premium');
+      expect(route?.meta.outposts).toContain('verified');
+
+      citadel.destroy();
+    });
+
+    it('removes multiple outposts from route', () => {
+      const citadel = createNavigationCitadel(router, { log: false });
+
+      citadel.assignOutpostToRoute('dashboard', ['premium', 'verified', 'analytics']);
+      citadel.revokeOutpostFromRoute('dashboard', ['premium', 'verified']);
+
+      const route = findRouteByName('dashboard');
+      expect(route?.meta.outposts).not.toContain('premium');
+      expect(route?.meta.outposts).not.toContain('verified');
+      expect(route?.meta.outposts).toContain('analytics');
+
+      citadel.destroy();
+    });
+
+    it('returns false if route not found', () => {
+      const citadel = createNavigationCitadel(router, {
+        log: true,
+        logger: mockLogger,
+      });
+
+      const result = citadel.revokeOutpostFromRoute('nonexistent', 'premium');
+
+      expect(result).toBe(false);
+      expect(
+        mockLogger.calls.some(
+          (c) => c.level === 'warn' && (c.args[0] as string).includes('not found'),
+        ),
+      ).toBe(true);
+
+      citadel.destroy();
+    });
+
+    it('warns if outpost not in route outposts', () => {
+      const citadel = createNavigationCitadel(router, {
+        log: true,
+        logger: mockLogger,
+      });
+
+      citadel.assignOutpostToRoute('dashboard', 'premium');
+      citadel.revokeOutpostFromRoute('dashboard', 'nonexistent');
+
+      expect(
+        mockLogger.calls.some(
+          (c) =>
+            c.level === 'warn' &&
+            (c.args[0] as string).includes('nonexistent') &&
+            (c.args[0] as string).includes('not found in route'),
+        ),
+      ).toBe(true);
+
+      citadel.destroy();
+    });
+
+    it('handles missing meta.outposts gracefully', () => {
+      const citadel = createNavigationCitadel(router, { log: false });
+
+      const route = findRouteByName('dashboard');
+
+      delete route?.meta.outposts;
+
+      const result = citadel.revokeOutpostFromRoute('dashboard', 'premium');
+
+      expect(result).toBe(true);
 
       citadel.destroy();
     });
@@ -338,6 +424,24 @@ describe('navigationCitadel', () => {
       expect(
         mockLogger.calls.some(
           (c) => c.level === 'info' && (c.args[0] as string).includes('Assigned outposts'),
+        ),
+      ).toBe(true);
+
+      citadel.destroy();
+    });
+
+    it('logs revokeOutpostFromRoute when log enabled', () => {
+      const citadel = createNavigationCitadel(router, {
+        log: true,
+        logger: mockLogger,
+      });
+
+      citadel.assignOutpostToRoute('dashboard', 'premium');
+      citadel.revokeOutpostFromRoute('dashboard', 'premium');
+
+      expect(
+        mockLogger.calls.some(
+          (c) => c.level === 'info' && (c.args[0] as string).includes('Revoked outposts'),
         ),
       ).toBe(true);
 

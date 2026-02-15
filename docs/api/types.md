@@ -110,6 +110,11 @@ interface NavigationCitadelAPI {
     outpostNames: RouteOutpostName | RouteOutpostName[],
   ): boolean;
 
+  revokeOutpostFromRoute(
+    routeName: string,
+    outpostNames: RouteOutpostName | RouteOutpostName[],
+  ): boolean;
+
   destroy(): void;
 }
 ```

@@ -269,6 +269,9 @@ export const createNavigationCitadel = (
     return result;
   };
 
+  const findRouteByName = (routeName: string) =>
+    router.getRoutes().find((r) => r.name === routeName);
+
   /**
    * Public API
    */
@@ -324,9 +327,9 @@ export const createNavigationCitadel = (
         }
 
         return allDeleted;
+      } else {
+        return abandonOne(scope, name);
       }
-
-      return abandonOne(scope, name);
     },
 
     getOutpostNames(scope: NavigationOutpostScope): string[] {
@@ -334,8 +337,7 @@ export const createNavigationCitadel = (
     },
 
     assignOutpostToRoute(routeName: string, outpostNames: string | string[]): boolean {
-      const routes = router.getRoutes();
-      const route = routes.find((r) => r.name === routeName);
+      const route = findRouteByName(routeName);
 
       if (!route) {
         /**
@@ -360,6 +362,43 @@ export const createNavigationCitadel = (
 
       if (isLogEnabled()) {
         logger.info(`Assigned outposts [${names.join(', ')}] to route "${routeName}"`);
+      }
+
+      return true;
+    },
+
+    revokeOutpostFromRoute(routeName: string, outpostNames: string | string[]): boolean {
+      const route = findRouteByName(routeName);
+
+      if (!route) {
+        /**
+         * Critical: always log
+         */
+        logger.warn(`Route "${routeName}" not found`);
+
+        return false;
+      }
+
+      const names = Array.isArray(outpostNames) ? outpostNames : [outpostNames];
+
+      if (!route.meta.outposts) {
+        for (const name of names) {
+          logger.warn(`Outpost "${name}" not found in route "${routeName}"`);
+        }
+
+        return true;
+      }
+
+      for (const name of names) {
+        if (!route.meta.outposts.includes(name)) {
+          logger.warn(`Outpost "${name}" not found in route "${routeName}"`);
+        }
+      }
+
+      route.meta.outposts = route.meta.outposts.filter((o) => !names.includes(o));
+
+      if (isLogEnabled()) {
+        logger.info(`Revoked outposts [${names.join(', ')}] from route "${routeName}"`);
       }
 
       return true;
