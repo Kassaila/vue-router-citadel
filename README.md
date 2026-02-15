@@ -29,7 +29,7 @@ Think of it as turning your router into a fortress.
 - 🔄 **Dynamic management** — deploy, abandon, and reassign outposts at runtime
 - ⏱️ **Timeout control & error handling** — global and per-outpost timeout configuration. Custom
   timeout and error handlers with redirect or block verdicts.
-- 🔒 **Type-safe** — Full TypeScript support with declaration merging for outpost names. IDE
+- 🔒 **Type-safe** — full TypeScript support with declaration merging for outpost names. IDE
   autocomplete and compile-time validation.
 - 🦥 **Lazy outposts** — dynamic imports with automatic caching for code splitting
 - 🛠️ **Vue DevTools** — custom inspector for real-time outpost monitoring and debug modes
