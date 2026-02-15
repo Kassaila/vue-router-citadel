@@ -21,14 +21,19 @@ Think of it as turning your router into a fortress.
 
 ## ✨ Features
 
-- 🎯 **Outpost scopes** — global guards for every navigation, route-scoped guards for specific pages
-- 🪝 **Navigation hooks** — beforeEach, beforeResolve, afterEach with priority-based execution order
-- ↩️ **Return-based verdicts** — allow, block, or redirect with type-safe return values
-- ⏱️ **Timeout protection** — prevent outposts from hanging navigation indefinitely
-- 🦥 **Lazy outposts** — dynamic imports for code splitting
-- 🔒 **Type-safe outpost names** — declaration merging for autocomplete and compile-time validation
-- 🛠️ **Vue DevTools** — custom inspector for viewing deployed outposts
-- 🔍 **Logging & debug** — configurable logging with debugger breakpoints
+- 📜 **Verdict system** — return-based API — ALLOW, BLOCK, or redirect. No next() callback chains.
+  Clean, predictable control flow.
+- ⭕ **Outpost scopes** — global for every navigation, route-scoped for specific pages
+- 📋 **Priority-based execution** — deterministic outpost ordering with numeric priorities
+- 🪝 **All navigation hooks** — beforeEach, beforeResolve, afterEach support per outpost
+- 🔄 **Dynamic management** — deploy, abandon, and reassign outposts at runtime
+- ⏱️ **Timeout control & error handling** — global and per-outpost timeout configuration. Custom
+  timeout and error handlers with redirect or block verdicts.
+- 🔒 **Type-safe** — Full TypeScript support with declaration merging for outpost names. IDE
+  autocomplete and compile-time validation.
+- 🦥 **Lazy outposts** — dynamic imports with automatic caching for code splitting
+- 🛠️ **Vue DevTools** — custom inspector for real-time outpost monitoring and debug modes
+- 🔍 **Logging & debug** — configurable logger, custom implementations, and debug breakpoints
 
 ## 📦 Installation
 

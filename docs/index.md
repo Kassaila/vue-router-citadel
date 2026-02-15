@@ -46,7 +46,7 @@ features:
   - icon: "\u23F1\uFE0F"
     title: Timeout Control
     details:
-      Global and per-outpost timeout configuration. Custom timeout handlers with redirect or block
+      Global and per-outpost timeout configuration. Custom timeout and error handlers with redirect or block
       verdicts.
   - icon: "\U0001F6E0\uFE0F"
     title: Vue DevTools Integration
