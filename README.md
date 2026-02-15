@@ -19,6 +19,17 @@ Think of it as turning your router into a fortress.
 
     🏰 Citadel → ✋ Outposts (🛡 Guards) → 📍 Final point
 
+## ✨ Features
+
+- 🎯 **Outpost scopes** — global guards for every navigation, route-scoped guards for specific pages
+- 🪝 **Navigation hooks** — beforeEach, beforeResolve, afterEach with priority-based execution order
+- ↩️ **Return-based verdicts** — allow, block, or redirect with type-safe return values
+- ⏱️ **Timeout protection** — prevent outposts from hanging navigation indefinitely
+- 🦥 **Lazy outposts** — dynamic imports for code splitting
+- 🔒 **Type-safe outpost names** — declaration merging for autocomplete and compile-time validation
+- 🛠️ **Vue DevTools** — custom inspector for viewing deployed outposts
+- 🔍 **Logging & debug** — configurable logging with debugger breakpoints
+
 ## 📦 Installation
 
 ```bash
@@ -72,17 +83,6 @@ app.use(router);
 app.use(citadel);
 app.mount('#app');
 ```
-
-## ✨ Features
-
-- 🎯 **Outpost scopes** — global guards for every navigation, route-scoped guards for specific pages
-- 🪝 **Navigation hooks** — beforeEach, beforeResolve, afterEach with priority-based execution order
-- ↩️ **Return-based verdicts** — allow, block, or redirect with type-safe return values
-- ⏱️ **Timeout protection** — prevent outposts from hanging navigation indefinitely
-- 🦥 **Lazy outposts** — dynamic imports for code splitting
-- 🔒 **Type-safe outpost names** — declaration merging for autocomplete and compile-time validation
-- 🛠️ **Vue DevTools** — custom inspector for viewing deployed outposts
-- 🔍 **Logging & debug** — configurable logging with debugger breakpoints
 
 ## 📖 Documentation
 
