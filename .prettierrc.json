@@ -1,0 +1,19 @@
+{
+  "htmlWhitespaceSensitivity": "ignore",
+  "bracketSpacing": true,
+  "semi": true,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "quoteProps": "consistent",
+  "singleQuote": true,
+  "tabWidth": 2,
+  "proseWrap": "always",
+  "overrides": [
+    {
+      "files": "docs/**/*.md",
+      "options": {
+        "proseWrap": "preserve"
+      }
+    }
+  ]
+}

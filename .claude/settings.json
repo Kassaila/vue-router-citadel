@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run test*)",
+      "Bash(npm run build*)",
+      "Bash(npm run format*)",
+      "Bash(npm pack *)",
+      "Bash(npm install)",
+      "Bash(npx vitest *)",
+      "Bash(git status*)",
+      "Bash(git branch*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(ls *)"
+    ]
+  }
+}
