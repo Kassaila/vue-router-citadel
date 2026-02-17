@@ -36,8 +36,8 @@ features:
   - icon: "\u26A1"
     title: Performance First
     details:
-      Outposts sorted at deploy time, not during navigation. Lazy loading support for code splitting
-      heavy handlers.
+      '≤4 KB (minified + brotli). Outposts sorted at deploy time, not during navigation. Lazy loading
+      support for code splitting heavy handlers.'
   - icon: "\U0001F50F"
     title: Type-Safe
     details:

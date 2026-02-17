@@ -25,7 +25,7 @@ npm run test:coverage  # Coverage report
 npm run lint           # ESLint check
 npm run lint:fix       # ESLint auto-fix
 npm run format         # Format code with Prettier
-npm run check:all      # Full validation (format + lint + types + tests)
+npm run check:all      # Full validation (format + lint + types + tests + build + size)
 ```
 
 ## Full Guide

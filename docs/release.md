@@ -40,7 +40,7 @@ git pull origin release
 npm run release:check
 ```
 
-This runs: format check → type check → tests → build → pack dry-run
+This runs: format check → lint → type check → tests → build → size check → pack dry-run
 
 ### 3. Update Version
 

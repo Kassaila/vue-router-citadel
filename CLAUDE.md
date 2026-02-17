@@ -152,8 +152,9 @@ npm run format         # Format with Prettier
 npm run format:check   # Check formatting
 npm run check:lint     # ESLint check (alias)
 npm run check:types    # TypeScript type checking
-npm run check:all      # Full validation (format + lint + types + tests)
-npm run release:check  # Pre-release (check:all + build + pack)
+npm run check:size     # Bundle size check (size-limit)
+npm run check:all      # Full validation (format + lint + types + tests + build + size)
+npm run release:check  # Pre-release (check:all + pack)
 npm run docs:dev       # VitePress dev server
 npm run docs:build     # VitePress production build
 npm run docs:preview   # VitePress preview built site
@@ -180,6 +181,7 @@ npm run docs:preview   # VitePress preview built site
 | Tests               | `__tests__/*.test.ts`       |
 | ESLint config       | `eslint.config.ts`          |
 | Custom ESLint rules | `eslint-plugins/local/`     |
+| Size-limit config   | `.size-limit.cjs`           |
 | Claude Skills       | `.claude/skills/`           |
 | Claude Agents       | `.claude/agents/`           |
 
@@ -264,10 +266,11 @@ npm run format:check       # Check formatting
 npm run check:lint         # ESLint check
 npm run check:types        # TypeScript type checking
 npm run check:format       # Alias for format:check
-npm run check:all          # format + lint + types + tests
+npm run check:size         # Bundle size check (size-limit)
+npm run check:all          # format + lint + types + tests + build + size
 
 # Release
-npm run release:check      # check:all + build + pack --dry-run
+npm run release:check      # check:all + pack --dry-run
 npm run release:publish    # release:check + npm publish
 npm run release:publish:beta # release:check + npm publish --tag beta
 

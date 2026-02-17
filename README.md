@@ -3,6 +3,7 @@
 > _Place guards at the gates. Outposts along the way._
 
 [![npm version](https://img.shields.io/npm/v/vue-router-citadel.svg)](https://www.npmjs.com/package/vue-router-citadel)
+[![size](https://img.shields.io/badge/size-%E2%89%A44%20KB-brightgreen)](https://github.com/ai/size-limit)
 [![license](https://img.shields.io/npm/l/vue-router-citadel.svg)](https://github.com/Kassaila/vue-router-citadel/blob/main/LICENSE)
 [![docs](https://img.shields.io/badge/docs-VitePress-blue)](https://kassaila.github.io/vue-router-citadel/)
 

@@ -274,66 +274,49 @@ Full navigation flows with real router.
 
 DevTools settings and localStorage persistence.
 
-### getStoredLogLevel
-
-| Test                                  | Description                   |
-| ------------------------------------- | ----------------------------- |
-| returns null when localStorage empty  | No stored value               |
-| returns stored value when valid       | Valid 'off', 'log', 'debug'   |
-| returns null for invalid stored value | Invalid values ignored        |
-| handles localStorage errors           | Catches exceptions gracefully |
-
-### setStoredLogLevel
-
-| Test                        | Description           |
-| --------------------------- | --------------------- |
-| stores value                | Saves to localStorage |
-| handles localStorage errors | Catches exceptions    |
-
-### optionsToLogLevel
-
-| Test                                    | Description           |
-| --------------------------------------- | --------------------- |
-| returns DEBUG when debug option is true | debug: true → 'debug' |
-| returns LOG when log option is true     | log: true → 'log'     |
-| returns LOG when defaultValue is true   | Falls back to default |
-| returns OFF when all false              | No logging            |
-
 ### logLevelToState
 
-| Test                              | Description   |
-| --------------------------------- | ------------- |
-| OFF returns log:false debug:false | State mapping |
-| LOG returns log:true debug:false  | State mapping |
-| DEBUG returns log:true debug:true | State mapping |
+| Test                                         | Description   |
+| -------------------------------------------- | ------------- |
+| should convert OFF to log:false, debug:false | State mapping |
+| should convert LOG to log:true, debug:false  | State mapping |
+| should convert DEBUG to log:true, debug:true | State mapping |
 
 ### stateToLogLevel
 
-| Test                                   | Description     |
-| -------------------------------------- | --------------- |
-| returns OFF when log:false debug:false | Reverse mapping |
-| returns LOG when log:true debug:false  | Reverse mapping |
-| returns DEBUG when log:true debug:true | Reverse mapping |
+| Test                                                       | Description           |
+| ---------------------------------------------------------- | --------------------- |
+| should convert log:false, debug:false to OFF               | Reverse mapping       |
+| should convert log:true, debug:false to LOG                | Reverse mapping       |
+| should convert log:true, debug:true to DEBUG               | Reverse mapping       |
+| should convert log:false, debug:true to DEBUG (precedence) | Edge case, debug wins |
 
 ### initializeRuntimeState
 
-| Test                                       | Description           |
-| ------------------------------------------ | --------------------- |
-| uses localStorage value if present         | localStorage priority |
-| falls back to options when no localStorage | Options priority      |
-| falls back to defaults when no options     | Default priority      |
+| Test                                               | Description            |
+| -------------------------------------------------- | ---------------------- |
+| should use localStorage value when available       | localStorage priority  |
+| should use citadel options when localStorage empty | Options priority       |
+| should use defaults when no localStorage/options   | Default priority       |
+| should prioritize debug option over log option     | debug forces log       |
+| should respect log=false when debug=false          | Explicit off           |
+| should ignore invalid localStorage value           | Invalid values ignored |
 
 ### updateRuntimeState
 
-| Test                                    | Description              |
-| --------------------------------------- | ------------------------ |
-| updates state and saves to localStorage | State mutation + persist |
+| Test                         | Description              |
+| ---------------------------- | ------------------------ |
+| should update state to OFF   | State mutation + persist |
+| should update state to LOG   | State mutation + persist |
+| should update state to DEBUG | State mutation + persist |
 
 ### createSettingsDefinition
 
-| Test                                | Description             |
-| ----------------------------------- | ----------------------- |
-| creates settings with current value | DevTools settings shape |
+| Test                                                   | Description             |
+| ------------------------------------------------------ | ----------------------- |
+| should create settings with current state as default   | DevTools settings shape |
+| should set default to OFF when log and debug are false | OFF state mapping       |
+| should set default to DEBUG when debug is true         | DEBUG state mapping     |
 
 ---
 
