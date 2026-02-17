@@ -61,6 +61,14 @@ export default withMermaid(
             'Vue Router Citadel is a middleware-driven navigation control system for Vue Router that lets you build layered, predictable, and scalable route protection.',
         },
       ],
+      [
+        'script',
+        {
+          'data-goatcounter': 'https://kassaila.goatcounter.com/count',
+          'src': '//gc.zgo.at/count.js',
+          'async': '',
+        },
+      ],
     ],
 
     themeConfig: {

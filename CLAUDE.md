@@ -236,6 +236,7 @@ Key types: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, `GlobalOutpostName`,
 - [x] DevTools Integration (Vue DevTools custom inspector)
 - [x] Lazy Outposts (dynamic import for code splitting)
 - [x] VitePress Documentation Site (docs site on GitHub Pages)
+- [x] GoatCounter Analytics (privacy-friendly docs analytics)
 - [ ] Metrics (performance tracking per outpost)
 - [ ] JSON Schema for config validation
 - [ ] Interactive Playground
