@@ -1,0 +1,96 @@
+.vp-doc .mermaid {
+  cursor: zoom-in;
+  background: var(--vp-c-bg-soft);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--vp-c-divider);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.vp-doc .mermaid:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-color: var(--vp-c-brand-1);
+}
+
+dialog.mermaid-zoom-overlay {
+  max-width: none;
+  max-height: none;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  margin: 0;
+  background: var(--vp-c-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+dialog.mermaid-zoom-overlay::backdrop {
+  background: transparent;
+}
+
+.mermaid-zoom-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+}
+
+.mermaid-zoom-content.is-dragging {
+  cursor: grabbing;
+}
+
+.mermaid-zoom-content svg {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+}
+
+.mermaid-zoom-controls {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  z-index: 1000;
+}
+
+.mermaid-zoom-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mermaid-zoom-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-1);
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.mermaid-zoom-group .mermaid-zoom-btn:last-child {
+  width: auto;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+}
+
+.mermaid-zoom-btn:hover {
+  background: var(--vp-c-bg-mute);
+}

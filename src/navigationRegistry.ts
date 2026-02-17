@@ -1,14 +1,14 @@
 import type {
-  NavigationOutpostRegistry,
+  CitadelLogger,
+  NavigationRegistry,
   NavigationOutpostScope,
-  PlacedNavigationOutpost,
+  RegisteredNavigationOutpost,
 } from './types';
-import { LOG_PREFIX, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
 
 /**
- * Creates a new navigation outpost registry
+ * Creates a new navigation registry
  */
-export const createNavigationOutpostRegistry = (): NavigationOutpostRegistry => ({
+export const createRegistry = (): NavigationRegistry => ({
   global: new Map(),
   route: new Map(),
   globalSorted: [],
@@ -18,12 +18,13 @@ export const createNavigationOutpostRegistry = (): NavigationOutpostRegistry => 
 /**
  * Updates sorted keys array for a scope by priority
  */
-export const updateSortedKeys = (
-  registry: NavigationOutpostRegistry,
+const updateSortedKeys = (
+  registry: NavigationRegistry,
   scope: NavigationOutpostScope,
-  defaultPriority: number = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
+  defaultPriority: number,
 ): void => {
   const map = registry[scope];
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS can't narrow template literal with union type
   const sortedKey = `${scope}Sorted` as 'globalSorted' | 'routeSorted';
 
   registry[sortedKey] = Array.from(map.keys()).sort((a, b) => {
@@ -35,18 +36,17 @@ export const updateSortedKeys = (
 };
 
 /**
- * Adds a navigation outpost to the registry
+ * Registers a navigation outpost in the registry
  */
-export const addNavigationOutpost = (
-  registry: NavigationOutpostRegistry,
+export const register = (
+  registry: NavigationRegistry,
   scope: NavigationOutpostScope,
-  outpost: PlacedNavigationOutpost,
-  defaultPriority: number = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
+  outpost: RegisteredNavigationOutpost,
+  defaultPriority: number,
+  logger: CitadelLogger,
 ): void => {
   if (registry[scope].has(outpost.name)) {
-    console.warn(
-      `🟡 ${LOG_PREFIX} ${scope} outpost "${outpost.name}" already exists, replacing...`,
-    );
+    logger.warn(`${scope} outpost "${outpost.name}" already exists, replacing...`);
   }
 
   registry[scope].set(outpost.name, outpost);
@@ -58,11 +58,11 @@ export const addNavigationOutpost = (
  *
  * @returns true if outpost was found and removed
  */
-export const removeNavigationOutpost = (
-  registry: NavigationOutpostRegistry,
+export const unregister = (
+  registry: NavigationRegistry,
   scope: NavigationOutpostScope,
   name: string,
-  defaultPriority: number = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
+  defaultPriority: number,
 ): boolean => {
   const deleted = registry[scope].delete(name);
 
@@ -74,9 +74,9 @@ export const removeNavigationOutpost = (
 };
 
 /**
- * Gets all navigation outpost names by scope
+ * Gets all registered outpost names by scope
  */
-export const getNavigationOutpostNames = (
-  registry: NavigationOutpostRegistry,
+export const getRegisteredNames = (
+  registry: NavigationRegistry,
   scope: NavigationOutpostScope,
 ): string[] => Array.from(registry[scope].keys());

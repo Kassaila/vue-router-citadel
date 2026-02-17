@@ -1,23 +1,49 @@
+import type { App } from 'vue';
 import type { Router, RouteLocationNormalized } from 'vue-router';
 
 import type {
   NavigationOutpostContext,
   NavigationCitadelAPI,
   NavigationCitadelOptions,
-  NavigationOutpostOptions,
+  NavigationOutpost,
   NavigationOutpostScope,
   NavigationHook,
+  NavigationOutpostHandler,
+  LazyOutpostLoader,
 } from './types';
 import { NavigationHooks, NavigationOutpostVerdicts, DebugPoints } from './types';
-import { __DEV__, LOG_PREFIX } from './consts';
-import { debugPoint } from './helpers';
-import {
-  createNavigationOutpostRegistry,
-  addNavigationOutpost,
-  removeNavigationOutpost,
-  getNavigationOutpostNames,
-} from './navigationRegistry';
-import { patrolNavigationCitadel, toNavigationGuardReturn } from './navigationOutposts';
+import { __DEV__, DEFAULT_NAVIGATION_OUTPOST_PRIORITY } from './consts';
+import { debugPoint, createDefaultLogger, createDefaultDebugHandler } from './helpers';
+import { createRegistry, register, unregister, getRegisteredNames } from './navigationRegistry';
+import { patrol, toNavigationGuardReturn } from './navigationOutposts';
+import type { CitadelRuntimeState } from './devtools/types';
+
+/**
+ * Dynamic devtools import for tree-shaking
+ * When devtools: false, bundlers eliminate this code entirely
+ */
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+type DevtoolsModule = typeof import('./devtools');
+
+let devtoolsModule: DevtoolsModule | null = null;
+let devtoolsLoadFailed = false;
+
+const loadDevtools = async (): Promise<DevtoolsModule | null> => {
+  if (devtoolsLoadFailed) {
+    return null;
+  }
+
+  if (!devtoolsModule) {
+    try {
+      devtoolsModule = await import('./devtools');
+    } catch {
+      devtoolsLoadFailed = true;
+      return null;
+    }
+  }
+
+  return devtoolsModule;
+};
 
 /**
  * Creates a navigation citadel for Vue Router
@@ -25,20 +51,19 @@ import { patrolNavigationCitadel, toNavigationGuardReturn } from './navigationOu
  * @example
  * ```typescript
  * const citadel = createNavigationCitadel(router, {
- *   debug: true,
+ *   outposts: [
+ *     {
+ *       name: 'auth', // scope defaults to 'global'
+ *       priority: 10,
+ *       handler: async ({ verdicts, to }) => {
+ *         if (!isAuthenticated && to.meta.requiresAuth) {
+ *           return { name: 'login' };
+ *         }
+ *         return verdicts.ALLOW;
+ *       },
+ *     },
+ *   ],
  *   onError: (error, ctx) => ({ name: 'error' }),
- * });
- *
- * citadel.deployOutpost({
- *   scope: NavigationOutpostScopes.GLOBAL,
- *   name: 'auth',
- *   priority: 10,
- *   handler: async ({ verdicts, to }) => {
- *     if (!isAuthenticated && to.meta.requiresAuth) {
- *       return { name: 'login' };
- *     }
- *     return verdicts.ALLOW;
- *   },
  * });
  * ```
  */
@@ -46,9 +71,39 @@ export const createNavigationCitadel = (
   router: Router,
   options: NavigationCitadelOptions = {},
 ): NavigationCitadelAPI => {
-  const { log = __DEV__, debug = false, defaultPriority } = options;
-  const enableLog = log || debug;
-  const registry = createNavigationOutpostRegistry();
+  const {
+    log: optionLog,
+    debug: optionDebug,
+    devtools = __DEV__,
+    defaultPriority = DEFAULT_NAVIGATION_OUTPOST_PRIORITY,
+  } = options;
+  const logger = options.logger ?? createDefaultLogger();
+  const debugHandler = options.debugHandler ?? createDefaultDebugHandler();
+  const enableDevtools = devtools && typeof window !== 'undefined';
+  const registry = createRegistry();
+
+  /**
+   * Resolved options with defaults applied
+   */
+  const resolvedOptions: NavigationCitadelOptions = {
+    ...options,
+    debugHandler,
+  };
+
+  /**
+   * Mutable runtime state for log/debug settings
+   * Can be modified via DevTools at runtime
+   * Initialized with: localStorage → citadel options → defaults
+   */
+  const runtimeState: CitadelRuntimeState = {
+    log: optionLog ?? __DEV__,
+    debug: optionDebug ?? false,
+  };
+
+  /**
+   * Initialize from localStorage if DevTools enabled (deferred to setupDevtools)
+   * For now, use citadel options as initial values
+   */
 
   /**
    * Store cleanup functions for navigation hooks
@@ -71,19 +126,18 @@ export const createNavigationCitadel = (
   });
 
   /**
+   * Helper to check if logging is enabled (log OR debug)
+   */
+  const isLogEnabled = (): boolean => runtimeState.log || runtimeState.debug;
+
+  /**
    * Factory to create guard handler for beforeEach/beforeResolve
    */
   const createNavigationGuardHandler =
     (hook: NavigationHook) =>
     async (to: RouteLocationNormalized, from: RouteLocationNormalized) => {
-      if (enableLog) {
-        console.info(`🔵 ${LOG_PREFIX} ${hook}: ${from.path} -> ${to.path}`);
-      }
-
-      debugPoint(DebugPoints.NAVIGATION_START, debug);
-
       const ctx = createContext(to, from, hook);
-      const outcome = await patrolNavigationCitadel(registry, ctx, options);
+      const outcome = await patrol(registry, ctx, resolvedOptions, logger, runtimeState);
 
       return toNavigationGuardReturn(outcome);
     };
@@ -104,23 +158,20 @@ export const createNavigationCitadel = (
    * Register afterEach hook
    */
   const removeAfterEach = router.afterEach(async (to, from) => {
-    if (enableLog) {
-      console.info(`🔵 ${LOG_PREFIX} ${NavigationHooks.AFTER_EACH}: ${from.path} -> ${to.path}`);
-    }
-
-    debugPoint(DebugPoints.NAVIGATION_START, debug);
-
     const ctx = createContext(to, from, NavigationHooks.AFTER_EACH);
 
     /**
      * afterEach doesn't return a value, but we still patrol
-     * Errors are handled by onError or logged here
+     * Errors are handled by onError or logged here (critical - always)
      */
     try {
-      await patrolNavigationCitadel(registry, ctx, options);
+      await patrol(registry, ctx, resolvedOptions, logger, runtimeState);
     } catch (error) {
-      console.error(`🔴 ${LOG_PREFIX} Error in afterEach outpost:`, error);
-      debugPoint(DebugPoints.ERROR_CAUGHT, debug);
+      /**
+       * Critical: always log
+       */
+      logger.error('Error in afterEach outpost:', error);
+      debugPoint(DebugPoints.ERROR_CAUGHT, runtimeState.debug, logger, debugHandler);
     }
   });
 
@@ -129,32 +180,133 @@ export const createNavigationCitadel = (
   /**
    * Deploy a single outpost
    */
-  const deployOne = (opts: NavigationOutpostOptions): void => {
-    const { scope, name, handler, priority, hooks } = opts;
+  const deployOne = (opts: NavigationOutpost<NavigationOutpostScope, boolean>): void => {
+    const { scope = 'global', name, handler, priority, hooks, timeout, lazy = false } = opts;
 
-    if (enableLog) {
-      console.info(`🔵 ${LOG_PREFIX} Deploying ${scope} outpost: ${name}`);
+    /**
+     * Create getHandler wrapper
+     */
+    let cachedHandler: NavigationOutpostHandler | null = null;
+    let loadPromise: Promise<NavigationOutpostHandler> | null = null;
+
+    const getHandler = async (): Promise<NavigationOutpostHandler> => {
+      /**
+       * Return cached if available
+       */
+      if (cachedHandler) {
+        return cachedHandler;
+      }
+
+      /**
+       * Eager — cache and return
+       */
+      if (!lazy) {
+        cachedHandler = handler as NavigationOutpostHandler;
+        return cachedHandler;
+      }
+
+      /**
+       * Lazy — load module (retry allowed when loadPromise is null)
+       */
+      if (!loadPromise) {
+        loadPromise = (handler as LazyOutpostLoader)()
+          .then((mod) => {
+            if (!mod.default || typeof mod.default !== 'function') {
+              throw new Error(`Lazy outpost "${name}" must export default handler`);
+            }
+            cachedHandler = mod.default;
+            return cachedHandler;
+          })
+          .catch((err) => {
+            /**
+             * Allow retry on next call
+             */
+            loadPromise = null;
+            throw err instanceof Error ? err : new Error(String(err));
+          });
+      }
+
+      return loadPromise;
+    };
+
+    if (isLogEnabled()) {
+      logger.info(`Deploying ${scope} outpost: ${name}${lazy ? ' (lazy)' : ''}`);
     }
 
-    addNavigationOutpost(registry, scope, { name, handler, priority, hooks }, defaultPriority);
+    register(
+      registry,
+      scope,
+      { name, getHandler, lazy, priority, hooks, timeout },
+      defaultPriority,
+      logger,
+    );
+
+    /**
+     * Notify DevTools of change
+     */
+    if (enableDevtools) {
+      void loadDevtools().then((mod) => mod?.notifyDevtoolsRefresh());
+    }
   };
 
   /**
    * Abandon a single outpost
    */
   const abandonOne = (scope: NavigationOutpostScope, name: string): boolean => {
-    if (enableLog) {
-      console.info(`🔵 ${LOG_PREFIX} Abandoning ${scope} outpost: ${name}`);
+    if (isLogEnabled()) {
+      logger.info(`Abandoning ${scope} outpost: ${name}`);
     }
 
-    return removeNavigationOutpost(registry, scope, name, defaultPriority);
+    const result = unregister(registry, scope, name, defaultPriority);
+
+    /**
+     * Notify DevTools of change
+     */
+    if (enableDevtools && result) {
+      void loadDevtools().then((mod) => mod?.notifyDevtoolsRefresh());
+    }
+
+    return result;
   };
+
+  const findRouteByName = (routeName: string) =>
+    router.getRoutes().find((r) => r.name === routeName);
 
   /**
    * Public API
    */
   const api: NavigationCitadelAPI = {
-    deployOutpost(opts: NavigationOutpostOptions | NavigationOutpostOptions[]): void {
+    install(app: App): void {
+      if (!enableDevtools) {
+        return;
+      }
+
+      void loadDevtools().then((mod) => {
+        if (!mod) {
+          return;
+        }
+
+        mod.setupDevtools(
+          app,
+          registry,
+          logger,
+          runtimeState,
+          optionLog,
+          optionDebug,
+          debugHandler,
+        );
+        debugPoint(DebugPoints.DEVTOOLS_INIT, runtimeState.debug, logger, debugHandler);
+
+        if (isLogEnabled()) {
+          logger.info('DevTools initialized via app.use(citadel)');
+        }
+      });
+    },
+    deployOutpost(
+      opts:
+        | NavigationOutpost<NavigationOutpostScope, boolean>
+        | NavigationOutpost<NavigationOutpostScope, boolean>[],
+    ): void {
       if (Array.isArray(opts)) {
         for (const opt of opts) {
           deployOne(opt);
@@ -175,21 +327,23 @@ export const createNavigationCitadel = (
         }
 
         return allDeleted;
+      } else {
+        return abandonOne(scope, name);
       }
-
-      return abandonOne(scope, name);
     },
 
     getOutpostNames(scope: NavigationOutpostScope): string[] {
-      return getNavigationOutpostNames(registry, scope);
+      return getRegisteredNames(registry, scope);
     },
 
     assignOutpostToRoute(routeName: string, outpostNames: string | string[]): boolean {
-      const routes = router.getRoutes();
-      const route = routes.find((r) => r.name === routeName);
+      const route = findRouteByName(routeName);
 
       if (!route) {
-        console.warn(`🟡 ${LOG_PREFIX} Route "${routeName}" not found`);
+        /**
+         * Critical: always log
+         */
+        logger.warn(`Route "${routeName}" not found`);
 
         return false;
       }
@@ -206,18 +360,53 @@ export const createNavigationCitadel = (
         }
       }
 
-      if (enableLog) {
-        console.info(
-          `🔵 ${LOG_PREFIX} Assigned outposts [${names.join(', ')}] to route "${routeName}"`,
-        );
+      if (isLogEnabled()) {
+        logger.info(`Assigned outposts [${names.join(', ')}] to route "${routeName}"`);
+      }
+
+      return true;
+    },
+
+    revokeOutpostFromRoute(routeName: string, outpostNames: string | string[]): boolean {
+      const route = findRouteByName(routeName);
+
+      if (!route) {
+        /**
+         * Critical: always log
+         */
+        logger.warn(`Route "${routeName}" not found`);
+
+        return false;
+      }
+
+      const names = Array.isArray(outpostNames) ? outpostNames : [outpostNames];
+
+      if (!route.meta.outposts) {
+        for (const name of names) {
+          logger.warn(`Outpost "${name}" not found in route "${routeName}"`);
+        }
+
+        return true;
+      }
+
+      for (const name of names) {
+        if (!route.meta.outposts.includes(name)) {
+          logger.warn(`Outpost "${name}" not found in route "${routeName}"`);
+        }
+      }
+
+      route.meta.outposts = route.meta.outposts.filter((o) => !names.includes(o));
+
+      if (isLogEnabled()) {
+        logger.info(`Revoked outposts [${names.join(', ')}] from route "${routeName}"`);
       }
 
       return true;
     },
 
     destroy(): void {
-      if (enableLog) {
-        console.info(`🔵 ${LOG_PREFIX} Destroying citadel`);
+      if (isLogEnabled()) {
+        logger.info('Destroying citadel');
       }
 
       for (const cleanup of cleanupFns) {
@@ -229,8 +418,19 @@ export const createNavigationCitadel = (
       registry.route.clear();
       registry.globalSorted.length = 0;
       registry.routeSorted.length = 0;
+
+      /**
+       * Clear DevTools API reference
+       */
+      if (enableDevtools) {
+        void loadDevtools().then((mod) => mod?.clearDevtoolsApi());
+      }
     },
   };
+
+  if (options.outposts) {
+    api.deployOutpost(options.outposts);
+  }
 
   return api;
 };

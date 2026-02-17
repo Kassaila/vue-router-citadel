@@ -2,3 +2,14 @@ node_modules/
 dist/
 *.log
 .DS_Store
+coverage/
+
+# Development
+temp/
+
+# VitePress
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+
+# Claude Code (local settings are personal, not shared)
+.claude/settings.local.json

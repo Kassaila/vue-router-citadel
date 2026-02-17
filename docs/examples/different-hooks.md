@@ -1,16 +1,25 @@
-/**
- * Global different hooks example - global outposts using beforeEach, beforeResolve, afterEach hooks
- */
+# 🔀 Outposts Across Hooks
+
+Global outposts using beforeEach, beforeResolve, and afterEach hooks.
+
+## 📋 Overview
+
+This example shows four global outposts, each using a different hook:
+
+- **auth** (`beforeEach`) — checks authentication
+- **data-loader** (`beforeResolve`) — loads async data
+- **analytics** (`afterEach`) — tracks page views
+- **page-title** (`afterEach`) — updates document title
+
+## 💻 Code
+
+```typescript
 import { createRouter, createWebHistory } from 'vue-router';
-import {
-  createNavigationCitadel,
-  NavigationOutpostScopes,
-  NavigationHooks,
-} from 'vue-router-citadel';
+import { createNavigationCitadel, NavigationHooks } from 'vue-router-citadel';
 
 // Auth outpost (beforeEach) - checks authentication on every navigation
+// scope defaults to 'global', so it can be omitted
 const authNavigationOutpost = {
-  scope: NavigationOutpostScopes.GLOBAL,
   name: 'auth',
   priority: 10,
   handler: ({ verdicts, to }) => {
@@ -26,7 +35,6 @@ const authNavigationOutpost = {
 
 // Data loader outpost (beforeResolve) - loads async data before component resolves
 const dataLoaderNavigationOutpost = {
-  scope: NavigationOutpostScopes.GLOBAL,
   name: 'data-loader',
   hooks: [NavigationHooks.BEFORE_RESOLVE],
   handler: async ({ verdicts, to }) => {
@@ -38,7 +46,6 @@ const dataLoaderNavigationOutpost = {
 
 // Analytics outpost (afterEach) - tracks page views after navigation completes
 const analyticsNavigationOutpost = {
-  scope: NavigationOutpostScopes.GLOBAL,
   name: 'analytics',
   hooks: [NavigationHooks.AFTER_EACH],
   handler: ({ verdicts, to }) => {
@@ -48,9 +55,8 @@ const analyticsNavigationOutpost = {
   },
 };
 
-// Page title outpost (afterEach) - updates document title after navigation completes
+// Page title outpost (afterEach) - updates document title after navigation
 const pageTitleNavigationOutpost = {
-  scope: NavigationOutpostScopes.GLOBAL,
   name: 'page-title',
   hooks: [NavigationHooks.AFTER_EACH],
   handler: ({ verdicts, to }) => {
@@ -82,16 +88,28 @@ const routes = [
   },
 ];
 
-// 1. Create router
 const router = createRouter({
   history: createWebHistory(),
   routes,
 });
 
-// 2. Create navigation citadel
-const citadel = createNavigationCitadel(router, { debug: true });
-
-// 3. Deploy navigation outposts
-citadel.deployOutpost(outposts);
+const citadel = createNavigationCitadel(router, {
+  outposts,
+  debug: true,
+});
 
 export { router, citadel };
+```
+
+## 🔄 Navigation Flow
+
+For a navigation to `/about`:
+
+| Phase      | Outpost       | Hook            | Action             |
+| ---------- | ------------- | --------------- | ------------------ |
+| 1. Before  | `auth`        | `beforeEach`    | Check auth         |
+| 2. Resolve | `data-loader` | `beforeResolve` | Load page data     |
+| 3. After   | `analytics`   | `afterEach`     | Track page view    |
+| 4. After   | `page-title`  | `afterEach`     | Set document title |
+
+Each hook phase processes only the outposts registered for that hook.

@@ -1,10 +1,20 @@
-/**
- * Nested routes example - route outposts inheritance from parent routes
- *
- * Route outposts are:
- * - Sorted by priority (lower = processed first)
- * - Deduplicated (same outpost in parent and child runs only once)
- */
+# 🪆 Nested Routes
+
+Route outposts inheritance from parent routes with priority sorting.
+
+## 📋 Overview
+
+This example shows three route outposts with different priorities:
+
+- **auth** (priority 10) — redirects unauthenticated users
+- **verified** (priority 20) — requires verified email
+- **premium** (priority 30) — requires premium subscription
+
+Outposts are inherited from parent routes and deduplicated.
+
+## 💻 Code
+
+```typescript
 import { createRouter, createWebHistory } from 'vue-router';
 import { createNavigationCitadel, NavigationOutpostScopes } from 'vue-router-citadel';
 
@@ -52,7 +62,7 @@ const premiumNavigationOutpost = {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     if (!user.isPremium) {
-      return { name: 'account-settings' }; // redirect to settings page to upgrade subscription
+      return { name: 'account-settings' };
     }
 
     return verdicts.ALLOW;
@@ -67,7 +77,7 @@ const routes = [
     path: '/account',
     component: () => import('./layouts/AccountLayout.vue'),
     meta: {
-      outposts: [authNavigationOutpost.name], // all child routes inherit auth outpost
+      outposts: [authNavigationOutpost.name], // all child routes inherit auth
     },
     children: [
       {
@@ -81,7 +91,7 @@ const routes = [
         name: 'account-settings',
         component: () => import('./pages/AccountSettings.vue'),
         meta: {
-          outposts: [verifiedNavigationOutpost.name], // inherits auth outpost, adds verified outpost
+          outposts: [verifiedNavigationOutpost.name], // inherits auth, adds verified
         },
       },
       {
@@ -89,23 +99,32 @@ const routes = [
         name: 'account-billing',
         component: () => import('./pages/AccountBilling.vue'),
         meta: {
-          outposts: [verifiedNavigationOutpost.name, premiumNavigationOutpost.name], // inherits auth outpost, adds verified and premium outposts
+          outposts: [verifiedNavigationOutpost.name, premiumNavigationOutpost.name],
+          // inherits auth, adds verified and premium
         },
       },
     ],
   },
 ];
 
-// 1. Create router
 const router = createRouter({
   history: createWebHistory(),
   routes,
 });
 
-// 2. Create navigation citadel
-const citadel = createNavigationCitadel(router);
-
-// 3. Deploy navigation outposts
-citadel.deployOutpost(outposts);
+const citadel = createNavigationCitadel(router, {
+  outposts,
+});
 
 export { router, citadel };
+```
+
+## 🔄 Route Outpost Resolution
+
+| Route               | Outposts (inherited + own)    |
+| ------------------- | ----------------------------- |
+| `/account`          | `auth`                        |
+| `/account/settings` | `auth`, `verified`            |
+| `/account/billing`  | `auth`, `verified`, `premium` |
+
+All outposts run in priority order regardless of where they were declared.

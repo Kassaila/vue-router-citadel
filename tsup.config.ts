@@ -10,6 +10,10 @@ export default defineConfig({
   treeshake: true,
   sourcemap: isDev,
   minify: !isDev,
-  external: ['vue-router'],
+  external: ['vue', 'vue-router'],
   target: 'es2020',
+  esbuildOptions(options) {
+    // Don't drop debugger statements - needed for debug mode
+    options.drop = [];
+  },
 });
