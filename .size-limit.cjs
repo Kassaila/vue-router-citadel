@@ -4,8 +4,8 @@ module.exports = [
     limit: '4 KB',
     ignore: ['vue', 'vue-router', '@vue/devtools-api'],
     modifyEsbuildConfig(config) {
-      config.format = 'esm'
-      return config
+      config.format = 'esm';
+      return config;
     },
   },
-]
+];

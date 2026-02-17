@@ -6,7 +6,17 @@ import tseslint from 'typescript-eslint';
 import localPlugin from './eslint-plugins/local';
 
 export default defineConfig(
-  { ignores: ['dist/**', 'coverage/**', 'docs/**', 'temp/**', 'eslint-plugins/**', '*.config.*'] },
+  {
+    ignores: [
+      'dist/**',
+      'coverage/**',
+      'docs/**',
+      'temp/**',
+      'eslint-plugins/**',
+      '*.config.*',
+      '.size-limit.cjs',
+    ],
+  },
 
   eslint.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
