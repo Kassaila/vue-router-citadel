@@ -1,6 +1,6 @@
 # 🤝 Contributing
 
-Thanks for your interest in contributing to vue-router-citadel!
+Thanks for your interest in contributing to Vue Router Citadel!
 
 ## 📋 Requirements
 

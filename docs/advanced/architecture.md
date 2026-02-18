@@ -1,6 +1,6 @@
 # ⚙️ Architecture
 
-Deep dive into how vue-router-citadel works internally.
+Deep dive into how Vue Router Citadel works internally.
 
 ## 🗄️ Registry Structure
 

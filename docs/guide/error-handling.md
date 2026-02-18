@@ -1,6 +1,6 @@
 # 🚨 Error Handling
 
-How vue-router-citadel handles errors thrown by outpost handlers, timeouts, and afterEach failures.
+How Vue Router Citadel handles errors thrown by outpost handlers, timeouts, and afterEach failures.
 
 ## 📊 Error Flow
 
