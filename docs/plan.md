@@ -74,10 +74,23 @@
 - [x] Contributing guide — code style, architecture guidelines, naming conventions with real examples
 - [x] Conventional Commits — commitlint + husky `commit-msg` hook
 - [x] API types docs aligned with source code (lazy generics, `install`, async return types)
+- [x] GoatCounter analytics — `docs/.vitepress/config.ts` ([dashboard](https://kassaila.goatcounter.com))
+- [x] Comparison page (`docs/guide/comparison.md`) — feature matrix (14 features) vs 4 Vue Router 4+ alternatives
 
 ---
 
 ## TODO
+
+### Priority 1 — Cleanup
+
+#### Fix ESLint Warnings
+
+25 warnings: `@typescript-eslint/no-non-null-assertion`
+
+- [ ] `src/navigationOutposts.ts` — 2 warnings (lines 223, 226)
+- [ ] `__tests__/devtools-inspector.test.ts` — 23 warnings
+
+---
 
 ### Priority 2 — Post-Release
 
@@ -116,15 +129,6 @@ Validate citadel and outpost configuration.
 
 - IDE validation in JSON/YAML configs
 - Runtime validation with `ajv` (optional)
-
----
-
-#### ~~GoatCounter Analytics (Docs)~~ ✅
-
-Script tag added to `docs/.vitepress/config.ts` (`kassaila.goatcounter.com`).
-
-**Dashboard:** [kassaila.goatcounter.com](https://kassaila.goatcounter.com) — page views,
-referrers, browsers, countries.
 
 ---
 

@@ -28,6 +28,8 @@ Multiple layers of control — just like a real fortress.
 
 - **Large-scale modular apps** — type-safe declarations per module, DI support
   ([advanced patterns](/advanced/modular-apps))
+- **Dynamic management** — deploy/abandon outposts and assign/revoke to routes at runtime
+  ([dynamic management](/guide/dynamic-management))
 
 **Navigation Logic:**
 
@@ -63,7 +65,4 @@ Lower number = earlier execution. This gives you fine-grained control over proce
 ## 🚀 Next Steps
 
 - [Getting Started](/guide/getting-started) — install and set up your first outpost
-- [Outpost Verdicts](/guide/verdicts) — handler return values
-- [Navigation Hooks](/guide/hooks) — beforeEach, beforeResolve, afterEach
-- [Outpost Scopes](/guide/scopes) — global vs route-scoped outposts
-- [API Reference](/api/) — full method documentation
+- [Comparison](/guide/comparison) — how Citadel compares to alternatives
