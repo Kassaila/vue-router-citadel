@@ -93,6 +93,7 @@ export default withMermaid(
             items: [
               { text: 'What is Citadel?', link: '/guide/' },
               { text: 'Getting Started', link: '/guide/getting-started' },
+              { text: 'Comparison', link: '/guide/comparison' },
             ],
           },
           {
@@ -107,6 +108,7 @@ export default withMermaid(
           {
             text: 'Features',
             items: [
+              { text: 'Dynamic Management', link: '/guide/dynamic-management' },
               { text: 'Outpost Timeout', link: '/guide/timeout' },
               { text: 'Lazy Outposts', link: '/guide/lazy-outposts' },
               { text: 'Type-Safe Outpost Names', link: '/guide/type-safety' },
