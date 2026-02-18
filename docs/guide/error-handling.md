@@ -71,35 +71,9 @@ If `onError` itself throws an error, the citadel falls back to the default behav
 
 ## ⏱️ Timeout Errors
 
-When an outpost exceeds its timeout, the flow is similar but uses `onTimeout`:
+Timeouts follow a similar flow — if `onTimeout` is provided, it controls the outcome; otherwise navigation is blocked with a warning.
 
-```mermaid
-flowchart TD
-    A[Handler exceeds timeout] --> B{Custom onTimeout?}
-
-    B -->|Yes| C["onTimeout(outpostName, ctx)"]
-    B -->|No| LOG1[🟡 log.warn: outpost timed out]
-
-    C --> D[normalizeOutcome]
-    D --> E{Valid?}
-    E -->|Yes| F[Return outcome]
-    E -->|Error| LOG1
-
-    LOG1 --> DBG1[🟣 debugger: timeout]
-    DBG1 --> G[🔴 Return BLOCK]
-```
-
-```typescript
-const citadel = createNavigationCitadel(router, {
-  defaultTimeout: 5000,
-  onTimeout: (outpostName, ctx) => {
-    console.warn(`${outpostName} timed out`);
-    return { name: 'error', query: { reason: 'timeout' } };
-  },
-});
-```
-
-See [Outpost Timeout](/guide/timeout) for configuration details.
+See [Outpost Timeout](/guide/timeout) for configuration, priority resolution, and examples.
 
 ## 🪝 afterEach Errors
 

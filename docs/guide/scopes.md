@@ -9,22 +9,45 @@ Outposts are organized into two scopes that determine when they are processed du
 | `GLOBAL` | Every navigation            | Yes              | Auth, maintenance, analytics |
 | `ROUTE`  | Only when assigned to route | Yes              | Route-specific permissions   |
 
+## 🔢 Priority
+
+Outposts within each scope are sorted by priority. Lower number = earlier execution.
+
+```typescript
+citadel.deployOutpost([
+  { name: 'analytics', handler: analyticsHandler, priority: 200 }, // runs third
+  { name: 'auth', handler: authHandler, priority: 10 }, // runs first
+  { name: 'permissions', handler: permHandler, priority: 50 }, // runs second
+]);
+```
+
+The default priority is `100` (configurable via `defaultPriority` option). Sorting happens at
+deploy time, not during navigation — so there is no runtime overhead.
+
+## 📊 Processing Order
+
 **Processing order:**
 
 1. Global outposts (sorted by priority, lower = first)
 2. Route outposts (sorted by priority, filtered by `meta.outposts`)
 
-## 📊 Scope Types Diagram
-
 ```mermaid
 flowchart LR
-    A[Navigation Start] --> B[Global Outposts<br/>sorted by priority]
-    B --> C{All ALLOW?}
-    C -->|Yes| D[Route Outposts<br/>from meta.outposts]
-    C -->|No| E[🔴 BLOCK / Redirect]
-    D --> F{All ALLOW?}
-    F -->|Yes| G[🟢 Navigation Completes]
-    F -->|No| E
+    A[Navigation Start] --> B
+
+    subgraph B[Global Scope]
+        B1[Outposts<br/>sorted by priority] --> B2{All ALLOW?}
+    end
+
+    B2 -->|Yes| D
+    B2 -->|No| E[🔴 BLOCK / Redirect]
+
+    subgraph D[Route Scope]
+        D1[Outposts<br/>sorted by priority] --> D2{All ALLOW?}
+    end
+
+    D2 -->|Yes| G[🟢 Navigation Completes]
+    D2 -->|No| E
 ```
 
 ## 🗺️ Route Outposts
