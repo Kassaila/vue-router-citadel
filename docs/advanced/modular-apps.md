@@ -94,24 +94,25 @@ export const guestOnlyHandler: NavigationOutpostHandler = ({ verdicts }) => {
 **Auth module — src/modules/auth/index.ts:**
 
 ```typescript
+import { NavigationOutpostScopes } from 'vue-router-citadel';
 import { citadel } from '@/core/citadel';
 import { authCheckHandler, requireLoginHandler, guestOnlyHandler } from './outposts';
 
 export function registerAuthModule() {
   citadel.deployOutpost([
     {
-      scope: 'global',
+      scope: NavigationOutpostScopes.GLOBAL,
       name: 'auth:check', // ✓ typed
       priority: 5,
       handler: authCheckHandler,
     },
     {
-      scope: 'route',
+      scope: NavigationOutpostScopes.ROUTE,
       name: 'auth:require-login', // ✓ typed
       handler: requireLoginHandler,
     },
     {
-      scope: 'route',
+      scope: NavigationOutpostScopes.ROUTE,
       name: 'auth:guest-only', // ✓ typed
       handler: guestOnlyHandler,
     },
@@ -202,7 +203,7 @@ export class CitadelService {
 
 ```typescript
 import { injectable, inject } from 'inversify';
-import type { NavigationOutpost } from 'vue-router-citadel';
+import { NavigationOutpostScopes, type NavigationOutpost } from 'vue-router-citadel';
 import { TOKENS } from '@/di/tokens';
 import type { AuthService } from '../services/auth.service';
 
@@ -213,7 +214,7 @@ export class AuthOutposts {
   getOutposts(): NavigationOutpost[] {
     return [
       {
-        scope: 'global',
+        scope: NavigationOutpostScopes.GLOBAL,
         name: 'auth:check', // ✓ typed
         priority: 5,
         handler: ({ verdicts }) => {
@@ -222,7 +223,7 @@ export class AuthOutposts {
         },
       },
       {
-        scope: 'route',
+        scope: NavigationOutpostScopes.ROUTE,
         name: 'auth:require-login', // ✓ typed
         handler: ({ verdicts, to }) => {
           if (!this.authService.isAuthenticated) {
