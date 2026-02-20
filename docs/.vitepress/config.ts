@@ -1,5 +1,12 @@
+import { createRequire } from 'node:module';
 import { defineConfig } from 'vitepress';
 import { withMermaid } from 'vitepress-plugin-mermaid';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../../package.json') as { version: string };
+
+const HOSTNAME = 'https://kassaila.github.io';
+const BASE = '/vue-router-citadel/';
 
 /** Strip emojis from heading text before generating anchor slugs */
 function slugify(str: string): string {
@@ -19,7 +26,13 @@ export default withMermaid(
   defineConfig({
     title: 'Vue Router Citadel',
     description: 'Structured navigation defense for Vue Router',
-    base: '/vue-router-citadel/',
+    base: BASE,
+    cleanUrls: true,
+    lastUpdated: true,
+
+    sitemap: {
+      hostname: `${HOSTNAME}${BASE}`,
+    },
 
     srcExclude: ['plan.md', 'release.md', '_snippets/**'],
 
@@ -27,8 +40,21 @@ export default withMermaid(
       anchor: { slugify },
     },
 
+    transformPageData(pageData) {
+      const canonicalUrl = `${HOSTNAME}${BASE}${pageData.relativePath}`
+        .replace(/index\.md$/, '')
+        .replace(/\.md$/, '');
+
+      pageData.frontmatter.head ??= [];
+      pageData.frontmatter.head.push(
+        ['link', { rel: 'canonical', href: canonicalUrl }],
+        ['meta', { property: 'og:url', content: canonicalUrl }],
+      );
+    },
+
     head: [
       ['link', { rel: 'icon', type: 'image/svg+xml', href: '/vue-router-citadel/logo.svg' }],
+      ['meta', { name: 'robots', content: 'index, follow' }],
       ['meta', { name: 'author', content: 'Kassaila' }],
       [
         'meta',
@@ -38,6 +64,9 @@ export default withMermaid(
             'vue, vue-router, middleware, navigation guard, route guard, typescript, vue3, vue plugin, RBAC, authorization',
         },
       ],
+      ['meta', { name: 'theme-color', content: '#10b981' }],
+      ['link', { rel: 'dns-prefetch', href: 'https://github.com' }],
+      ['link', { rel: 'dns-prefetch', href: 'https://gc.zgo.at' }],
       ['meta', { property: 'og:type', content: 'website' }],
       ['meta', { property: 'og:title', content: 'Vue Router Citadel' }],
       [
@@ -48,10 +77,26 @@ export default withMermaid(
             'Vue Router Citadel is a middleware-driven navigation control system for Vue Router that lets you build layered, predictable, and scalable route protection.',
         },
       ],
-      ['meta', { property: 'og:url', content: 'https://kassaila.github.io/vue-router-citadel/' }],
       ['meta', { property: 'og:site_name', content: 'Vue Router Citadel' }],
       ['meta', { property: 'og:locale', content: 'en_US' }],
-      ['meta', { name: 'twitter:card', content: 'summary' }],
+      [
+        'meta',
+        {
+          property: 'og:image',
+          content: `${HOSTNAME}${BASE}og_image.png`,
+        },
+      ],
+      ['meta', { property: 'og:image:width', content: '1200' }],
+      ['meta', { property: 'og:image:height', content: '630' }],
+      ['meta', { property: 'og:image:type', content: 'image/png' }],
+      [
+        'meta',
+        {
+          property: 'og:image:alt',
+          content: 'Vue Router Citadel — Structured navigation defense for Vue Router',
+        },
+      ],
+      ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
       ['meta', { name: 'twitter:title', content: 'Vue Router Citadel' }],
       [
         'meta',
@@ -60,6 +105,40 @@ export default withMermaid(
           content:
             'Vue Router Citadel is a middleware-driven navigation control system for Vue Router that lets you build layered, predictable, and scalable route protection.',
         },
+      ],
+      [
+        'meta',
+        {
+          name: 'twitter:image',
+          content: `${HOSTNAME}${BASE}og_image.png`,
+        },
+      ],
+      [
+        'meta',
+        {
+          name: 'twitter:image:alt',
+          content: 'Vue Router Citadel — Structured navigation defense for Vue Router',
+        },
+      ],
+      [
+        'script',
+        { type: 'application/ld+json' },
+        JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'SoftwareSourceCode',
+          'name': 'vue-router-citadel',
+          'description': 'Structured navigation defense for Vue Router',
+          'codeRepository': 'https://github.com/Kassaila/vue-router-citadel',
+          'programmingLanguage': 'TypeScript',
+          'runtimePlatform': 'Node.js',
+          'license': 'https://opensource.org/licenses/MIT',
+          'downloadUrl': 'https://www.npmjs.com/package/vue-router-citadel',
+          'softwareVersion': pkg.version,
+          'author': {
+            '@type': 'Person',
+            'name': 'Kassaila',
+          },
+        }),
       ],
       [
         'script',
