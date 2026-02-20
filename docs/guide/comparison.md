@@ -11,7 +11,7 @@ problem. Here's how they compare to **Vue Router Citadel**.
 | TypeScript (native)                             |   ✅    |      ✅       |       ❌        |      ✅      |     ✅      |
 | [Return-based API](/guide/verdicts)             |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
 | [Dynamic management](/guide/dynamic-management) |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
-| [Multiple hooks](/guide/hooks)                  |    3    |       1       |        3        |      1       |      1      |
+| [Multiple hooks](/guide/hooks)                  |    3    |       1       |        1        |      1       |      2      |
 | [Global scope](/guide/scopes)                   |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
 | [Route scope](/guide/scopes)                    |   ✅    |      ✅       |       ✅        |      ✅      |     ✅      |
 | [Priority ordering](/guide/scopes#priority)     |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
@@ -31,27 +31,30 @@ problem. Here's how they compare to **Vue Router Citadel**.
 ## 📦 Alternatives
 
 **[@this-dot/vue-route-guard](https://www.npmjs.com/package/@this-dot/vue-route-guard)**
-— From This Dot Labs. Angular-style guard configuration with `canActivate` / `canDeactivate`
-checks. Vue Router 4, TypeScript.
+— From This Dot Labs. Declarative authentication guard with token management and permission-based
+access control. Vue Router 4, TypeScript.
 
 ```js
-createRouteGuard({
-  routes: [{ path: '/dashboard', canActivate: [isAuthenticated] }],
+setupGuard({
+  router,
+  token: { name: 'AUTH_TOKEN', storage: StorageType.sessionStorage },
+  redirect: { noAuthentication: '/login', noPermission: '/forbidden' },
+  options: { fetchAuthentication: () => fetchUser() },
 });
+
+// Routes use meta fields:
+// { path: '/dashboard', meta: { requiresAuth: true, access: ['admin'] } }
 ```
 
-**[vue-router-shield](https://www.npmjs.com/package/vue-router-shield)** — Adds `beforeUpdate` and
-`beforeLeave` guards to Vue Router 4 via a plugin. Guards are defined in `route.meta.shield`. Plain
-JavaScript.
+**[vue-router-shield](https://www.npmjs.com/package/vue-router-shield)** — Provides `BeforeEach`,
+`BeforeEnter`, and `BeforeUpdate` guard types within a single `beforeEach` hook. Guards are defined
+in `route.meta.guard`. Plain JavaScript.
 
 ```js
 const route = {
   path: '/profile',
   meta: {
-    shield: {
-      beforeEach: [authMiddleware],
-      beforeUpdate: [trackMiddleware],
-    },
+    guard: [new BeforeEach(authMiddleware), new BeforeUpdate(trackMiddleware)],
   },
 };
 ```
