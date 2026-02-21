@@ -55,6 +55,13 @@ export default withMermaid(
     head: [
       ['link', { rel: 'icon', type: 'image/svg+xml', href: '/vue-router-citadel/logo.svg' }],
       ['meta', { name: 'robots', content: 'index, follow' }],
+      [
+        'meta',
+        {
+          name: 'google-site-verification',
+          content: 'jkEm04n1UJ6WDYKHuB-fx5U0vI9vLahOv3m7bi1zzF8',
+        },
+      ],
       ['meta', { name: 'author', content: 'Kassaila' }],
       [
         'meta',
