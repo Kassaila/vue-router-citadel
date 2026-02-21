@@ -23,6 +23,7 @@ const cloneMermaidSvg = (svg) => {
   clone.id = newId;
 
   const style = clone.querySelector('style');
+
   if (style) {
     style.textContent = style.textContent.replaceAll('#' + origId, '#' + newId);
   }
@@ -115,10 +116,8 @@ const initMermaidZoom = () => {
           if (pointers.size === 2) {
             // Pinch-to-zoom
             const dist = getPointerDist();
-            scale = Math.min(
-              5,
-              Math.max(0.25, pinchStartScale * (dist / pinchStartDist)),
-            );
+
+            scale = Math.min(5, Math.max(0.25, pinchStartScale * (dist / pinchStartDist)));
 
             applyTransform();
 

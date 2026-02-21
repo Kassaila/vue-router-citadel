@@ -49,7 +49,7 @@
   },
   "lint-staged": {
     "*.{ts,js}": "eslint --fix",
-    "*.{ts,js,json,md}": "prettier --write"
+    "*.{ts,js,json,md,vue,css}": "prettier --write"
   },
   "keywords": [
     "vue",
