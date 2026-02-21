@@ -1,3 +1,7 @@
+---
+description: Vue DevTools integration in Vue Router Citadel — custom inspector for viewing deployed outposts with tags, state panels, and settings.
+---
+
 # 🛠️ Vue DevTools
 
 Custom inspector for viewing deployed outposts. Enabled automatically in development.

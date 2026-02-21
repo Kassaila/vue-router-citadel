@@ -1,3 +1,7 @@
+---
+description: Organize outposts in large modular Vue apps — per-module type declarations, dynamic registration, and dependency injection patterns.
+---
+
 # 🔐 Modular Apps
 
 For basics, see [Type-Safe Outpost Names](/guide/type-safety).

@@ -1,3 +1,7 @@
+---
+description: All TypeScript types exported from Vue Router Citadel — NavigationOutpost, NavigationCitadelAPI, handler context, and more.
+---
+
 # 🏷️ Types
 
 All TypeScript types exported from `vue-router-citadel`.
