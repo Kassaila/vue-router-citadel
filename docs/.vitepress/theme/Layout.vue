@@ -54,6 +54,11 @@ function initMermaidZoom() {
         let startPanX = 0;
         let startPanY = 0;
 
+        // Pinch-to-zoom: track active pointers
+        const pointers = new Map();
+        let pinchStartDist = 0;
+        let pinchStartScale = 1;
+
         const dialog = document.createElement('dialog');
         dialog.className = 'mermaid-zoom-overlay';
 
@@ -80,22 +85,43 @@ function initMermaidZoom() {
           content.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
         }
 
-        function onMouseMove(e) {
+        function getPointerDist() {
+          const pts = [...pointers.values()];
+          const dx = pts[0].clientX - pts[1].clientX;
+          const dy = pts[0].clientY - pts[1].clientY;
+          return Math.hypot(dx, dy);
+        }
+
+        function onPointerMove(e) {
+          pointers.set(e.pointerId, e);
+
+          if (pointers.size === 2) {
+            // Pinch-to-zoom
+            const dist = getPointerDist();
+            const newScale = Math.min(5, Math.max(0.25, pinchStartScale * (dist / pinchStartDist)));
+            scale = newScale;
+            applyTransform();
+            return;
+          }
+
           if (!isDragging) return;
           panX = startPanX + (e.clientX - startX);
           panY = startPanY + (e.clientY - startY);
           applyTransform();
         }
 
-        function onMouseUp() {
+        function onPointerUp(e) {
+          pointers.delete(e.pointerId);
+
           if (!isDragging) return;
           isDragging = false;
           content.classList.remove('is-dragging');
         }
 
         function cleanup() {
-          document.removeEventListener('mousemove', onMouseMove);
-          document.removeEventListener('mouseup', onMouseUp);
+          document.removeEventListener('pointermove', onPointerMove);
+          document.removeEventListener('pointerup', onPointerUp);
+          document.removeEventListener('pointercancel', onPointerUp);
           dialog.remove();
           document.body.style.overflow = '';
         }
@@ -127,8 +153,20 @@ function initMermaidZoom() {
           dialog.close();
         });
 
-        content.addEventListener('mousedown', (e) => {
+        content.addEventListener('pointerdown', (e) => {
           if (e.button !== 0) return;
+          pointers.set(e.pointerId, e);
+          content.setPointerCapture(e.pointerId);
+
+          if (pointers.size === 2) {
+            // Start pinch — stop single-finger drag
+            isDragging = false;
+            content.classList.remove('is-dragging');
+            pinchStartDist = getPointerDist();
+            pinchStartScale = scale;
+            return;
+          }
+
           isDragging = true;
           startX = e.clientX;
           startY = e.clientY;
@@ -136,10 +174,6 @@ function initMermaidZoom() {
           startPanY = panY;
           content.classList.add('is-dragging');
           e.preventDefault();
-        });
-
-        dialog.addEventListener('click', (e) => {
-          if (e.target === dialog) dialog.close();
         });
 
         dialog.addEventListener(
@@ -162,8 +196,9 @@ function initMermaidZoom() {
           { passive: false },
         );
 
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+        document.addEventListener('pointermove', onPointerMove);
+        document.addEventListener('pointerup', onPointerUp);
+        document.addEventListener('pointercancel', onPointerUp);
 
         document.body.appendChild(dialog);
         dialog.showModal();
