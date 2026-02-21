@@ -1,3 +1,7 @@
+---
+description: Error handling in Vue Router Citadel — custom onError and onTimeout handlers, afterEach error behavior, and default fallback.
+---
+
 # 🚨 Error Handling
 
 How Vue Router Citadel handles errors thrown by outpost handlers, timeouts, and afterEach failures.

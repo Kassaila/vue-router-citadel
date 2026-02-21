@@ -1,3 +1,7 @@
+---
+description: Multi-hook outpost example — single outpost handling beforeResolve and afterEach hooks with role-based access control.
+---
+
 # 🪝 Multi-Hook Outpost
 
 Single route outpost handling multiple hooks with role-based access.

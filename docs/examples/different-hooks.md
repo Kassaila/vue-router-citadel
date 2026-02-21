@@ -1,3 +1,7 @@
+---
+description: Outposts across hooks example — auth on beforeEach, data loading on beforeResolve, analytics and page title on afterEach.
+---
+
 # 🔀 Outposts Across Hooks
 
 Global outposts using beforeEach, beforeResolve, and afterEach hooks.

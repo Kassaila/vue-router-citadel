@@ -53,7 +53,15 @@ export default withMermaid(
     },
 
     head: [
-      ['link', { rel: 'icon', type: 'image/svg+xml', href: '/vue-router-citadel/logo.svg' }],
+      [
+        'link',
+        { rel: 'icon', type: 'image/png', href: `${BASE}favicon-96x96.png`, sizes: '96x96' },
+      ],
+      ['link', { rel: 'icon', type: 'image/svg+xml', href: `${BASE}favicon.svg` }],
+      ['link', { rel: 'shortcut icon', href: `${BASE}favicon.ico` }],
+      ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: `${BASE}apple-touch-icon.png` }],
+      ['meta', { name: 'apple-mobile-web-app-title', content: 'Vue Router Citadel' }],
+      ['link', { rel: 'manifest', href: `${BASE}site.webmanifest` }],
       ['meta', { name: 'robots', content: 'index, follow' }],
       [
         'meta',
