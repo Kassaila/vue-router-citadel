@@ -1,3 +1,7 @@
+---
+description: Vue Router Citadel DevTools internals — settings priority resolution, localStorage persistence, and runtime state management.
+---
+
 # 🛠️ DevTools Internals
 
 Deep dive into how the DevTools settings panel resolves and persists logging configuration.

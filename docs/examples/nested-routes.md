@@ -1,3 +1,7 @@
+---
+description: Nested routes example — route outpost inheritance from parent routes with priority-based auth, verification, and premium checks.
+---
+
 # 🪆 Nested Routes
 
 Route outposts inheritance from parent routes with priority sorting.

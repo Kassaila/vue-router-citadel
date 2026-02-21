@@ -1,5 +1,6 @@
 ---
 layout: home
+description: Vue Router Citadel is a TypeScript middleware system for Vue Router that provides structured navigation defense through outpost-based route guards.
 
 hero:
   name: Vue Router Citadel

@@ -41,6 +41,9 @@ dialog.mermaid-zoom-overlay::backdrop {
   align-items: center;
   justify-content: center;
   cursor: grab;
+  touch-action: none;
+  border: 1px solid var(--vp-c-brand-3);
+  border-radius: 0.5rem;
 }
 
 .mermaid-zoom-content.is-dragging {

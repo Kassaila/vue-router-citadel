@@ -1,3 +1,7 @@
+---
+description: Enable TypeScript autocomplete and compile-time validation for outpost names using declaration merging in Vue Router Citadel.
+---
+
 # 🔒 Type-Safe Outpost Names
 
 Enable autocomplete and compile-time validation for outpost names using TypeScript declaration

@@ -1,3 +1,7 @@
+---
+description: Logging and debug configuration in Vue Router Citadel — custom logger, log events reference, debug breakpoints, and SSR examples.
+---
+
 # 📋 Logging & Debug
 
 ## ⚙️ Logging Options

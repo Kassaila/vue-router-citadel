@@ -1,3 +1,7 @@
+---
+description: Vue Router Citadel architecture internals — registry structure, outpost processing flow, timeout handling, and navigation sequence.
+---
+
 # ⚙️ Architecture
 
 Deep dive into how Vue Router Citadel works internally.
