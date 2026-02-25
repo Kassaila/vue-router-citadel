@@ -143,12 +143,12 @@ type DebugHandler = (name: DebugPoint) => void;
 
 type DebugPoint =
   | 'navigation-start'
-  | 'before-outpost'
-  | 'patrol-stopped'
-  | 'timeout'
-  | 'error-caught'
+  | 'outpost-enter'
+  | 'outpost-block'
+  | 'outpost-timeout'
+  | 'error-catch'
   | 'devtools-init'
-  | 'devtools-inspector';
+  | 'devtools-inspect';
 ```
 
 ## Type-Safe Outpost Names

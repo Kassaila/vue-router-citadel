@@ -33,8 +33,8 @@
 - [x] `log` / `logger` / `debug` options with colored output
 - [x] Custom logger support via `CitadelLogger` interface (`createDefaultLogger`)
 - [x] Critical events always logged (errors, timeouts, missing routes)
-- [x] Named debug breakpoints (navigation-start, before-outpost, patrol-stopped, timeout,
-      error-caught, devtools-init, devtools-inspector)
+- [x] Named debug breakpoints (navigation-start, outpost-enter, outpost-block, outpost-timeout,
+      error-catch, devtools-init, devtools-inspect)
 - [x] Custom `debugHandler` option (`createDefaultDebugHandler`)
 - [x] Default error handler (`console.error` + `BLOCK`)
 - [x] Timeout support (`defaultTimeout`, `timeout`, `onTimeout`)
@@ -44,18 +44,24 @@
 - [x] Optimized processing (sorting at deploy, direct registry calls)
 - [x] Type-safe outpost names (`GlobalOutpostRegistry` / `RouteOutpostRegistry`)
 - [x] Vue DevTools integration (`devtools` option, custom inspector, settings panel)
+- [x] DevTools — Route Assignments and Current Route inspector nodes
 - [x] Tree-shakeable devtools via dynamic import
 - [x] Vue Plugin API (`app.use(citadel)`)
+- [x] Debug points renamed to consistent `subject-verb` pattern (`outpost-enter`, `outpost-block`,
+      `outpost-timeout`, `error-catch`, `devtools-inspect`)
+- [x] Inspector consistency — `InspectorNodeTag` type, `createRouteDetailsState()`,
+      `ROUTE_ASSIGNMENT_NODE_REGEX`
 
 ### NPM Scripts
 
 - [x] `build`, `build:dev`
 - [x] `check:types`, `check:format`, `check:all`
+- [x] `size-limit` — exclude tree-shakeable devtools chunk from bundle size measurement
 - [x] `release:check`, `release:publish`, `release:publish:beta`
 
 ### Testing
 
-- [x] Vitest + happy-dom — 140 tests across 9 test files
+- [x] Vitest + happy-dom — 143 tests across 9 test files
 
 ### Documentation
 
@@ -85,10 +91,10 @@
 
 #### Fix ESLint Warnings
 
-25 warnings: `@typescript-eslint/no-non-null-assertion`
+38 warnings: `@typescript-eslint/no-non-null-assertion`
 
 - [ ] `src/navigationOutposts.ts` — 2 warnings (lines 223, 226)
-- [ ] `__tests__/devtools-inspector.test.ts` — 23 warnings
+- [ ] `__tests__/devtools-inspector.test.ts` — 36 warnings
 
 ---
 
