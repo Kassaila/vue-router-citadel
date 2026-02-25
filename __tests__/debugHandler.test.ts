@@ -37,15 +37,15 @@ describe('debugHandler', () => {
     it('should call logger.debug when debug is true', () => {
       const mockDebugHandler = vi.fn();
 
-      debugPoint(DebugPoints.BEFORE_OUTPOST, true, mockLogger, mockDebugHandler);
+      debugPoint(DebugPoints.OUTPOST_ENTER, true, mockLogger, mockDebugHandler);
 
-      expect(mockLogger.debug).toHaveBeenCalledWith(DebugPoints.BEFORE_OUTPOST);
+      expect(mockLogger.debug).toHaveBeenCalledWith(DebugPoints.OUTPOST_ENTER);
     });
 
     it('should NOT call logger.debug when debug is false', () => {
       const mockDebugHandler = vi.fn();
 
-      debugPoint(DebugPoints.BEFORE_OUTPOST, false, mockLogger, mockDebugHandler);
+      debugPoint(DebugPoints.OUTPOST_ENTER, false, mockLogger, mockDebugHandler);
 
       expect(mockLogger.debug).not.toHaveBeenCalled();
     });
@@ -65,10 +65,10 @@ describe('debugHandler', () => {
       const mockDebugHandler = vi.fn();
       const debugPoints = [
         DebugPoints.NAVIGATION_START,
-        DebugPoints.BEFORE_OUTPOST,
-        DebugPoints.PATROL_STOPPED,
-        DebugPoints.ERROR_CAUGHT,
-        DebugPoints.TIMEOUT,
+        DebugPoints.OUTPOST_ENTER,
+        DebugPoints.OUTPOST_BLOCK,
+        DebugPoints.ERROR_CATCH,
+        DebugPoints.OUTPOST_TIMEOUT,
       ];
 
       for (const point of debugPoints) {
@@ -125,9 +125,9 @@ describe('debugHandler', () => {
       };
 
       debugPoint(DebugPoints.NAVIGATION_START, true, mockLogger, customHandler);
-      debugPoint(DebugPoints.BEFORE_OUTPOST, true, mockLogger, customHandler);
+      debugPoint(DebugPoints.OUTPOST_ENTER, true, mockLogger, customHandler);
 
-      expect(traces).toEqual(['trace: navigation-start', 'trace: before-outpost']);
+      expect(traces).toEqual(['trace: navigation-start', 'trace: outpost-enter']);
     });
   });
 

@@ -171,7 +171,7 @@ export const createNavigationCitadel = (
        * Critical: always log
        */
       logger.error('Error in afterEach outpost:', error);
-      debugPoint(DebugPoints.ERROR_CAUGHT, runtimeState.debug, logger, debugHandler);
+      debugPoint(DebugPoints.ERROR_CATCH, runtimeState.debug, logger, debugHandler);
     }
   });
 
@@ -289,6 +289,7 @@ export const createNavigationCitadel = (
         mod.setupDevtools(
           app,
           registry,
+          router,
           logger,
           runtimeState,
           optionLog,
