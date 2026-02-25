@@ -5,6 +5,7 @@ module.exports = [
     ignore: ['vue', 'vue-router', '@vue/devtools-api'],
     modifyEsbuildConfig(config) {
       config.format = 'esm';
+      config.external = [...(config.external || []), './devtools-*'];
       return config;
     },
   },
