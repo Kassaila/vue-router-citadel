@@ -56,10 +56,16 @@ export default defineConfig(
     },
   },
 
-  // Disable type-checked rules for files not in tsconfig
+  // Tests: disable type-checked rules and allow non-null assertions
   {
     files: ['__tests__/**', 'eslint-plugins/**'],
     ...tseslint.configs.disableTypeChecked,
+  },
+  {
+    files: ['__tests__/**'],
+    rules: {
+      '@typescript-eslint/no-non-null-assertion': 'off',
+    },
   },
 
   // DevTools: DevToolsApi is intentionally `any` (type conflicts between @vue/devtools-api and @vue/devtools-kit)
