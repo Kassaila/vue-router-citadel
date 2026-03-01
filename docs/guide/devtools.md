@@ -1,5 +1,5 @@
 ---
-description: Vue DevTools integration in Vue Router Citadel — custom inspector for viewing deployed outposts with tags, state panels, and settings.
+description: Vue DevTools integration in Vue Router Citadel — custom inspector for viewing outposts, route assignments, current route execution order, and runtime settings.
 ---
 
 # 🛠️ Vue DevTools
@@ -28,12 +28,34 @@ const citadel = createNavigationCitadel(router, { devtools: false });
 
 ## 🔍 Inspector Features
 
-The custom inspector provides:
+The custom inspector has three sections:
 
-- **Tree view** — Global and Route outpost groups with expandable nodes
-- **Tags** — Each outpost shows priority badge and hooks count
-- **State panel** — Detailed view with name, scope, priority, hooks array, timeout value
-- **Auto-refresh** — Inspector updates automatically on deploy/abandon operations
+### Outposts
+
+Tree view of all deployed outposts grouped by scope (Global / Route).
+
+- **Tags** — Each outpost shows priority badge, hooks count, and `lazy` badge if applicable
+- **State panel** — Detailed view with name, scope, priority, hooks array, timeout value, lazy status
+
+### Route Assignments
+
+Shows routes that have `meta.outposts` assigned. Each route node displays its assigned outpost names as a tag.
+
+- **State panel** — Route name, path, and outposts array
+
+### Current Route
+
+Shows outposts that will execute on the current route, in `patrol()` execution order: all global outposts first (by priority), then route outposts (by priority).
+
+- **Tags** — Each outpost shows scope badge (`global` / `route`) and priority
+- **Auto-updates** — Refreshes automatically on navigation via `router.afterEach`
+
+### Auto-refresh
+
+Inspector updates automatically on:
+
+- **Deploy/abandon** — outpost changes
+- **Navigation** — current route changes
 
 ## ⚙️ Settings Panel
 

@@ -17,6 +17,8 @@ export const DEVTOOLS_INSPECTOR_ID = DEVTOOLS_PLUGIN_ID + '.inspector';
 export const INSPECTOR_NODE_ID_ROOT = 'citadel-root';
 export const INSPECTOR_NODE_ID_GLOBAL = 'citadel-' + NavigationOutpostScopes.GLOBAL;
 export const INSPECTOR_NODE_ID_ROUTE = 'citadel-' + NavigationOutpostScopes.ROUTE;
+export const INSPECTOR_NODE_ID_ROUTE_ASSIGNMENTS = 'citadel-route-assignments';
+export const INSPECTOR_NODE_ID_CURRENT_ROUTE = 'citadel-current-route';
 
 /**
  * Tag colors for DevTools inspector (hex format for devtools-kit)
@@ -42,6 +44,10 @@ export const TAG_COLOR_SCOPE_ROUTE_BG = 0xf59e0b;
  * Pink
  */
 export const TAG_COLOR_LAZY_BG = 0xec4899;
+/**
+ * Teal
+ */
+export const TAG_COLOR_CURRENT_ROUTE_BG = 0x14b8a6;
 
 /**
  * LocalStorage keys for DevTools settings

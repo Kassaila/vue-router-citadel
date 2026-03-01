@@ -1,4 +1,8 @@
-import type { CustomInspectorNode, CustomInspectorState } from '@vue/devtools-kit';
+import type {
+  CustomInspectorNode,
+  CustomInspectorState,
+  InspectorNodeTag,
+} from '@vue/devtools-kit';
 
 /**
  * DevTools API type
@@ -10,7 +14,7 @@ export type DevToolsApi = any;
 /**
  * Re-export types from devtools-kit for internal use
  */
-export type { CustomInspectorNode, CustomInspectorState };
+export type { CustomInspectorNode, CustomInspectorState, InspectorNodeTag };
 
 /**
  * Outpost node for DevTools inspector tree

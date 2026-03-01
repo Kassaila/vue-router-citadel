@@ -1,4 +1,5 @@
 import type { App } from 'vue';
+import type { Router } from 'vue-router';
 import { setupDevToolsPlugin } from '@vue/devtools-api';
 
 import type { NavigationRegistry, CitadelLogger, DebugHandler } from '../types';
@@ -18,6 +19,7 @@ let devtoolsApi: DevToolsApi | null = null;
  *
  * @param app - Vue application instance
  * @param registry - Navigation registry
+ * @param router - Vue Router instance
  * @param logger - Citadel logger
  * @param runtimeState - Mutable runtime state (log, debug)
  * @param optionLog - Original log option from citadel creation
@@ -28,6 +30,7 @@ let devtoolsApi: DevToolsApi | null = null;
 export const setupDevtools = (
   app: App,
   registry: NavigationRegistry,
+  router: Router,
   logger: CitadelLogger,
   runtimeState: CitadelRuntimeState,
   optionLog?: boolean,
@@ -47,7 +50,7 @@ export const setupDevtools = (
       label: DEVTOOLS_PLUGIN_LABEL,
       logo: DEVTOOLS_PLUGIN_LOGO,
       packageName: 'vue-router-citadel',
-      homepage: 'https://github.com/Kassaila/vue-router-citadel',
+      homepage: 'https://kassaila.github.io/vue-router-citadel',
       enableEarlyProxy: true,
       app,
       settings: createSettingsDefinition(runtimeState),
@@ -64,7 +67,7 @@ export const setupDevtools = (
         }
       });
 
-      setupInspector(api, registry, logger, runtimeState.debug, debugHandler);
+      setupInspector(api, registry, router, logger, runtimeState.debug, debugHandler);
     },
   );
 };

@@ -5,6 +5,7 @@ description: Global and route outpost scopes in Vue Router Citadel — priority 
 # ⭕ Outpost Scopes
 
 Outposts are organized into two scopes that determine when they are processed during navigation.
+The default scope is `GLOBAL` — if `scope` is omitted, the outpost runs on every navigation.
 
 ## 🌐 Scope Types
 

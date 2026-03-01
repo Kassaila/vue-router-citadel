@@ -166,7 +166,7 @@ export default withMermaid(
     ],
 
     themeConfig: {
-      logo: '/logo.svg',
+      logo: { src: '/logo.svg', alt: 'Vue Router Citadel' },
 
       nav: [
         { text: 'Guide', link: '/guide/' },
@@ -239,6 +239,7 @@ export default withMermaid(
               { text: 'Nested Routes', link: '/examples/nested-routes' },
               { text: 'Multi-Hook Outpost', link: '/examples/multiple-hooks' },
               { text: 'Outposts Across Hooks', link: '/examples/different-hooks' },
+              { text: 'Production Patterns', link: '/examples/production-patterns' },
             ],
           },
         ],
