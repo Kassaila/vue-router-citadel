@@ -32,7 +32,7 @@ Multiple layers of control — just like a real fortress.
 
 **Architecture:**
 
-- **Large-scale modular apps** — type-safe declarations per module, DI support
+- **Large-scale modular apps** — type-safe declarations per module
   ([advanced patterns](/advanced/modular-apps))
 - **Dynamic management** — deploy/abandon outposts and assign/revoke to routes at runtime
   ([dynamic management](/guide/dynamic-management))
@@ -41,6 +41,65 @@ Multiple layers of control — just like a real fortress.
 
 - **Complex auth flows** — SSO, MFA, session refresh, token validation
 - **Data preloading** — fetch data before navigation completes
+
+## 🔄 Before & After
+
+As an application grows, navigation logic tends to scatter across multiple `beforeEach` calls —
+each one independent, unordered, and hard to reason about:
+
+**Before — scattered guards:**
+
+```typescript
+// auth.ts
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth && !isAuthenticated()) {
+    return { name: 'login' };
+  }
+});
+
+// roles.ts
+router.beforeEach((to) => {
+  if (to.meta.role && getUser().role !== to.meta.role) {
+    return { name: 'forbidden' };
+  }
+});
+
+// onboarding.ts
+router.beforeEach((to) => {
+  if (to.meta.requiresOnboarding && !getUser().completedRegistration) {
+    return { name: 'onboarding' };
+  }
+});
+
+// analytics.ts
+router.afterEach((to) => {
+  trackPageView(to.path);
+});
+```
+
+No guaranteed execution order, no error handling, no timeouts, guards don't know about each other,
+removing a guard at runtime requires manual bookkeeping.
+
+**After — unified citadel:**
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  outposts: [
+    { name: 'auth', priority: 10, handler: authHandler },
+    { name: 'role-access', scope: 'route', priority: 20, handler: roleHandler },
+    { name: 'onboarding', scope: 'route', handler: onboardingHandler },
+    { name: 'analytics', hooks: ['afterEach'], handler: analyticsHandler },
+  ],
+  defaultTimeout: 5000,
+  onError: ({ error }) => {
+    reportError(error);
+    return verdicts.BLOCK;
+  },
+});
+```
+
+One entry point, explicit priority, scoped activation, timeout protection, structured error
+handling — all in a single declaration.
 
 ## 🔑 Key Concepts
 

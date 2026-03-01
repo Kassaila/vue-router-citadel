@@ -23,7 +23,7 @@ flowchart TD
     G -->|Yes| H[Return outcome]
     G -->|Error| LOG1
 
-    LOG1 --> DBG1[🟣 debugger: error-caught]
+    LOG1 --> DBG1[🟣 debugger: error-catch]
     DBG1 --> I[🔴 Return BLOCK]
 ```
 
@@ -32,7 +32,7 @@ flowchart TD
 When no `onError` handler is provided:
 
 1. Error is logged via `logger.error` (always — critical event)
-2. Debug breakpoint `error-caught` triggers (if `debug: true`)
+2. Debug breakpoint `error-catch` triggers (if `debug: true`)
 3. Navigation is **blocked** (`BLOCK`)
 
 ```typescript

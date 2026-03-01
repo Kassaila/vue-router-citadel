@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - unreleased
+
+### Added
+
+#### DevTools
+
+- **Route Assignments** inspector node — shows routes with `meta.outposts`, own vs inherited outpost
+  count
+- **Current Route** inspector node — shows outposts in `patrol()` execution order, auto-updates on
+  navigation
+- State panel for route assignment nodes — route name, path, own/inherited/resolved outposts
+
+#### Documentation
+
+- Production Patterns example page — route-scoped outposts for RBAC, onboarding, payment validation,
+  async account checks
+- Before & After comparison in Getting Started guide
+
+### Changed
+
+#### Debug Points (breaking)
+
+- `before-outpost` → `outpost-enter`
+- `patrol-stopped` → `outpost-block`
+- `timeout` → `outpost-timeout`
+- `error-caught` → `error-catch`
+- `devtools-inspector` → `devtools-inspect`
+
 ## [0.1.0] - 2026-02-17
 
 ### Added

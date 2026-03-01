@@ -42,7 +42,7 @@ How a single outpost is processed during patrol:
 
 ```mermaid
 flowchart TD
-    A[processOutpost called] --> DBG1[🟣 debugger: before-outpost]
+    A[processOutpost called] --> DBG1[🟣 debugger: outpost-enter]
     DBG1 --> T{Timeout configured?}
 
     T -->|Yes| RACE["Promise.race([handler, timeout])"]
@@ -56,7 +56,7 @@ flowchart TD
 
     TOH -->|Yes| TOC["onTimeout(name, ctx)"]
     TOH -->|No| TOLOG[🟡 log.warn: timed out]
-    TOLOG --> TODBG[🟣 debugger: timeout]
+    TOLOG --> TODBG[🟣 debugger: outpost-timeout]
     TODBG --> TOK[🔴 Return BLOCK]
 
     TOC --> TON[normalizeOutcome]
@@ -66,7 +66,7 @@ flowchart TD
 
     D -->|ALLOW| E[🟢 Return ALLOW]
     D -->|BLOCK/Redirect| LOG1[🟡 log.warn: patrol stopped]
-    LOG1 --> DBG2[🟣 debugger: patrol-stopped]
+    LOG1 --> DBG2[🟣 debugger: outpost-block]
     DBG2 --> F[Return outcome]
 
     D -->|Error thrown| G{Custom onError?}
@@ -79,7 +79,7 @@ flowchart TD
     J -->|Yes| F
     J -->|Error| LOG2
 
-    LOG2 --> DBG3[🟣 debugger: error-caught]
+    LOG2 --> DBG3[🟣 debugger: error-catch]
     DBG3 --> K[🔴 Return BLOCK]
 ```
 
@@ -108,7 +108,7 @@ sequenceDiagram
 
     loop Global Outposts
         Note over C: 🔵 log.info: Processing outpost "name"
-        Note over C: 🟣 debugger: before-outpost
+        Note over C: 🟣 debugger: outpost-enter
         C->>Reg: Get deployed outpost
         Reg-->>C: outpost
         C->>C: processOutpost → ALLOW
@@ -116,7 +116,7 @@ sequenceDiagram
 
     loop Route Outposts
         Note over C: 🔵 log.info: Processing outpost "name"
-        Note over C: 🟣 debugger: before-outpost
+        Note over C: 🟣 debugger: outpost-enter
         C->>Reg: Get assigned outpost
         Reg-->>C: outpost
         C->>C: processOutpost → ALLOW

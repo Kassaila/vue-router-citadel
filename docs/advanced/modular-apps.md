@@ -12,8 +12,8 @@ The patterns below are **not prescriptive solutions** — they demonstrate that 
 
 ## 📦 Modular Architecture
 
-For large applications with modular structure, each module can extend the registries in its own
-declaration file.
+For large applications with modular structure (modular monolith, feature-sliced design), each
+module can extend the registries in its own declaration file.
 
 **Project structure:**
 

@@ -35,7 +35,7 @@ import {
 | `NavigationOutpostScopes`   | `GLOBAL`, `ROUTE`                             | Outpost scope determining when it's processed |
 | `NavigationHooks`           | `BEFORE_EACH`, `BEFORE_RESOLVE`, `AFTER_EACH` | Vue Router navigation hooks                   |
 | `NavigationOutpostVerdicts` | `ALLOW`, `BLOCK`                              | Handler return verdicts                       |
-| `DebugPoints`               | `NAVIGATION_START`, `BEFORE_OUTPOST`, etc.    | Named debug breakpoint identifiers            |
+| `DebugPoints`               | `NAVIGATION_START`, `OUTPOST_ENTER`, etc.     | Named debug breakpoint identifiers            |
 
 ## 🏷️ Types
 

@@ -104,12 +104,12 @@ type OutpostNameByScope<S extends NavigationOutpostScope> = S extends 'global'
  */
 export const DebugPoints = {
   NAVIGATION_START: 'navigation-start',
-  BEFORE_OUTPOST: 'before-outpost',
-  PATROL_STOPPED: 'patrol-stopped',
-  ERROR_CAUGHT: 'error-caught',
-  TIMEOUT: 'timeout',
+  OUTPOST_ENTER: 'outpost-enter',
+  OUTPOST_BLOCK: 'outpost-block',
+  OUTPOST_TIMEOUT: 'outpost-timeout',
+  ERROR_CATCH: 'error-catch',
   DEVTOOLS_INIT: 'devtools-init',
-  DEVTOOLS_INSPECTOR: 'devtools-inspector',
+  DEVTOOLS_INSPECT: 'devtools-inspect',
 } as const;
 
 export type DebugPoint = (typeof DebugPoints)[keyof typeof DebugPoints];

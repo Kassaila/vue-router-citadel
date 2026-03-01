@@ -129,7 +129,7 @@ const processOutpost = async (
   const { router } = ctx;
   const timeout = outpost.timeout ?? defaultTimeout;
 
-  debugPoint(DebugPoints.BEFORE_OUTPOST, runtimeState.debug, logger, options.debugHandler);
+  debugPoint(DebugPoints.OUTPOST_ENTER, runtimeState.debug, logger, options.debugHandler);
 
   try {
     /**
@@ -156,7 +156,7 @@ const processOutpost = async (
        * Critical: always log
        */
       logger.warn(`Outpost "${outpost.name}" timed out after ${timeout}ms`);
-      debugPoint(DebugPoints.TIMEOUT, runtimeState.debug, logger, options.debugHandler);
+      debugPoint(DebugPoints.OUTPOST_TIMEOUT, runtimeState.debug, logger, options.debugHandler);
 
       if (onTimeout) {
         const timeoutOutcome = await onTimeout(outpost.name, ctx);
@@ -181,7 +181,7 @@ const processOutpost = async (
      * Critical: always log
      */
     logger.error(`Outpost "${outpost.name}" threw error:`, error);
-    debugPoint(DebugPoints.ERROR_CAUGHT, runtimeState.debug, logger, options.debugHandler);
+    debugPoint(DebugPoints.ERROR_CATCH, runtimeState.debug, logger, options.debugHandler);
 
     return NavigationOutpostVerdicts.BLOCK;
   }
@@ -260,7 +260,7 @@ export const patrol = async (
         logger.warn(`Patrol stopped by outpost "${name}":`, outcome);
       }
 
-      debugPoint(DebugPoints.PATROL_STOPPED, runtimeState.debug, logger, options.debugHandler);
+      debugPoint(DebugPoints.OUTPOST_BLOCK, runtimeState.debug, logger, options.debugHandler);
 
       return outcome;
     }
@@ -301,7 +301,7 @@ export const patrol = async (
         logger.warn(`Patrol stopped by outpost "${name}":`, outcome);
       }
 
-      debugPoint(DebugPoints.PATROL_STOPPED, runtimeState.debug, logger, options.debugHandler);
+      debugPoint(DebugPoints.OUTPOST_BLOCK, runtimeState.debug, logger, options.debugHandler);
 
       return outcome;
     }
