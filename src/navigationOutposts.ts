@@ -219,12 +219,16 @@ export const patrol = async (
   }
 
   let processedCount = 0;
-  const totalGlobal = registry.globalSorted.filter((name) =>
-    shouldRunOnHook(registry.global.get(name)!, hook),
-  ).length;
-  const totalRoute = registry.routeSorted.filter(
-    (name) => routeOutpostNames.has(name) && shouldRunOnHook(registry.route.get(name)!, hook),
-  ).length;
+  const totalGlobal = registry.globalSorted.filter((name) => {
+    const outpost = registry.global.get(name);
+
+    return outpost && shouldRunOnHook(outpost, hook);
+  }).length;
+  const totalRoute = registry.routeSorted.filter((name) => {
+    const outpost = registry.route.get(name);
+
+    return routeOutpostNames.has(name) && outpost && shouldRunOnHook(outpost, hook);
+  }).length;
   const totalCount = totalGlobal + totalRoute;
 
   if (totalCount === 0) {

@@ -51,6 +51,8 @@
       `outpost-timeout`, `error-catch`, `devtools-inspect`)
 - [x] Inspector consistency — `InspectorNodeTag` type, `createRouteDetailsState()`,
       `ROUTE_ASSIGNMENT_NODE_REGEX`
+- [x] Fix ESLint warnings — `@typescript-eslint/no-non-null-assertion` (38 warnings in
+      `src/navigationOutposts.ts` and `__tests__/devtools-inspector.test.ts`)
 
 ### NPM Scripts
 
@@ -86,17 +88,6 @@
 ---
 
 ## TODO
-
-### Priority 1 — Cleanup
-
-#### Fix ESLint Warnings
-
-38 warnings: `@typescript-eslint/no-non-null-assertion`
-
-- [ ] `src/navigationOutposts.ts` — 2 warnings (lines 223, 226)
-- [ ] `__tests__/devtools-inspector.test.ts` — 36 warnings
-
----
 
 ### Priority 2 — Post-Release
 
