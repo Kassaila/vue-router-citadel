@@ -95,5 +95,6 @@ dialog.mermaid-zoom-overlay::backdrop {
 }
 
 .mermaid-zoom-btn:hover {
-  background: var(--vp-c-bg-mute);
+  background: var(--vp-c-bg-alt);
+  border-color: var(--vp-c-brand-3);
 }
