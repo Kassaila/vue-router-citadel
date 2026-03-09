@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-03-09
+
 ### Fixed
 
 - Resolved 38 ESLint `@typescript-eslint/no-non-null-assertion` warnings in
