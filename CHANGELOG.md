@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.2] - 2026-03-17
+
+### Fixed
+
+- Timeout timer leak: `clearTimeout` is now always called in a `finally` block via the new
+  `raceWithTimeout` helper, preventing leaked timers when a handler resolves before the timeout
+  fires
+- `shouldRunOnHook` parameter type narrowed from `string` to `NavigationHook`, removing an
+  unnecessary type cast
 
 ## [0.2.1] - 2026-03-09
 
@@ -136,7 +144,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `__tests__/navigationCitadel.test.ts` — citadel creation, hooks, destroy
 - `__tests__/navigationRegistry.test.ts` — registry CRUD, priority sorting
 - `__tests__/navigationOutposts.test.ts` — patrol logic, verdicts, redirects
-- `__tests__/timeout.test.ts` — timeout handling, onTimeout callback
+- `__tests__/timeout.test.ts` — timeout handling, onTimeout callback, timer cleanup verification
 - `__tests__/integration.test.ts` — end-to-end navigation scenarios
 - `__tests__/lazy.test.ts` — lazy loading, caching, retry, timeout behavior
 - `__tests__/devtools-settings.test.ts` — DevTools settings, localStorage persistence

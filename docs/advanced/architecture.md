@@ -45,10 +45,11 @@ flowchart TD
     A[processOutpost called] --> DBG1[🟣 debugger: outpost-enter]
     DBG1 --> T{Timeout configured?}
 
-    T -->|Yes| RACE["Promise.race([handler, timeout])"]
+    T -->|Yes| RACE["raceWithTimeout(handler, ms)"]
     T -->|No| B[handler]
 
-    RACE --> TO{Timeout?}
+    RACE --> CLR["clearTimeout (finally)"]
+    CLR --> TO{Timeout?}
     TO -->|Yes| TOH{Custom onTimeout?}
     TO -->|No| C
 

@@ -63,11 +63,9 @@ eslint-plugins/                  # Custom ESLint rules (local plugin)
 │   ├── test/SKILL.md
 │   ├── build/SKILL.md
 │   ├── coverage/SKILL.md
-│   ├── feature/SKILL.md
 │   └── release-check/SKILL.md
 └── agents/                      # Custom subagents
     ├── test-runner.md
-    ├── code-reviewer.md
     └── docs-updater.md
 
 docs/                            # VitePress documentation site
@@ -164,7 +162,8 @@ npm run docs:preview   # VitePress preview built site
 
 - **Registry**: Maps for O(1) lookup, sorted arrays for iteration
 - **Sorting**: Done at deploy/abandon time, not during navigation
-- **Timeout**: Uses Promise.race() with symbol-based detection
+- **Timeout**: `raceWithTimeout` wraps `Promise.race()` with `clearTimeout` in `finally` — no leaked
+  timers; symbol-based detection identifies timeout errors
 - **Deduplication**: Route outposts deduplicated from nested matched routes
 
 ## Important Files for Changes
@@ -226,7 +225,7 @@ Key types: `GlobalOutpostRegistry`, `RouteOutpostRegistry`, `GlobalOutpostName`,
 
 ### Priority 1 — Before Release ✅
 
-- [x] **Testing**: vitest + happy-dom (140 tests, 9 files)
+- [x] **Testing**: vitest + happy-dom (145 tests, 9 files)
 - [x] **CI/CD**: GitHub Actions (ci.yml, release.yml)
 - [x] **Type-safe Outpost Names**: Declaration merging with
       GlobalOutpostRegistry/RouteOutpostRegistry
@@ -295,7 +294,6 @@ npm run docs:preview       # VitePress preview built site
 ### Custom Agents
 
 - **test-runner**: Runs tests and analyzes failures (haiku, fast)
-- **code-reviewer**: Reviews code for TypeScript/Vue Router patterns (sonnet)
 - **docs-updater**: Updates documentation after changes (sonnet)
 
 ## Current State

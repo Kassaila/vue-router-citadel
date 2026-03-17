@@ -13,6 +13,7 @@ import {
   NavigationHooks,
   NavigationOutpostVerdicts,
   DebugPoints,
+  type NavigationHook,
   type NavigationOutpostVerdict,
 } from './types';
 import { LOG_PREFIX } from './consts';
@@ -84,10 +85,10 @@ export const normalizeOutcome = (
 /**
  * Checks if outpost should run on the given hook
  */
-const shouldRunOnHook = (outpost: RegisteredNavigationOutpost, hook: string): boolean => {
+const shouldRunOnHook = (outpost: RegisteredNavigationOutpost, hook: NavigationHook): boolean => {
   const hooks = outpost.hooks ?? [NavigationHooks.BEFORE_EACH];
 
-  return hooks.includes(hook as typeof NavigationHooks.BEFORE_EACH);
+  return hooks.includes(hook);
 };
 
 /**
@@ -98,9 +99,11 @@ const TIMEOUT_SYMBOL = Symbol('timeout');
 /**
  * Creates a timeout promise that rejects after specified milliseconds
  */
-const createTimeoutPromise = (ms: number): Promise<never> =>
-  new Promise((_, reject) => {
-    setTimeout(() => {
+const createTimeoutPromise = (ms: number): { promise: Promise<never>; cancel: () => void } => {
+  let timerId: ReturnType<typeof setTimeout>;
+
+  const promise = new Promise<never>((_, reject) => {
+    timerId = setTimeout(() => {
       const error = new Error(`Timeout after ${ms}ms`);
 
       (error as Error & { [TIMEOUT_SYMBOL]: boolean })[TIMEOUT_SYMBOL] = true;
@@ -108,6 +111,22 @@ const createTimeoutPromise = (ms: number): Promise<never> =>
       reject(error);
     }, ms);
   });
+
+  return { promise, cancel: () => clearTimeout(timerId) };
+};
+
+/**
+ * Races a promise against a timeout, ensuring the timer is always cleaned up
+ */
+const raceWithTimeout = async <T>(promise: Promise<T> | T, ms: number): Promise<T> => {
+  const { promise: timeoutPromise, cancel } = createTimeoutPromise(ms);
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    cancel();
+  }
+};
 
 /**
  * Checks if error is a timeout error
@@ -142,9 +161,7 @@ const processOutpost = async (
     /**
      * 2. Execute handler (timeout applies only to execution)
      */
-    const outcome = timeout
-      ? await Promise.race([handler(ctx), createTimeoutPromise(timeout)])
-      : await handler(ctx);
+    const outcome = timeout ? await raceWithTimeout(handler(ctx), timeout) : await handler(ctx);
 
     return normalizeOutcome(outcome, router);
   } catch (error) {

@@ -1,10 +1,10 @@
 ---
-description: Complete list of all 140 test cases across 9 test files in Vue Router Citadel — registry, patrol, API, timeout, lazy, integration, and DevTools tests.
+description: Complete list of all 145 test cases across 9 test files in Vue Router Citadel — registry, patrol, API, timeout, lazy, integration, and DevTools tests.
 ---
 
 # 📝 Test Cases
 
-Complete list of all test cases across 9 test files (140 tests).
+Complete list of all test cases across 9 test files (145 tests).
 
 For testing setup, helpers, and how to write new tests, see the [Testing Guide](/contributing/testing).
 
@@ -168,17 +168,19 @@ Public API testing.
 
 ---
 
-## timeout.test.ts (5 tests)
+## timeout.test.ts (7 tests)
 
 Timeout functionality.
 
-| Test                                           | Description               |
-| ---------------------------------------------- | ------------------------- |
-| outpost times out and returns BLOCK by default | Default timeout behavior  |
-| onTimeout handler is called on timeout         | Custom handler invocation |
-| per-outpost timeout overrides defaultTimeout   | Priority of timeouts      |
-| no timeout if not configured                   | Disabled timeout          |
-| fast outpost completes before timeout          | No false positives        |
+| Test                                                   | Description                               |
+| ------------------------------------------------------ | ----------------------------------------- |
+| outpost times out and returns BLOCK by default         | Default timeout behavior                  |
+| onTimeout handler is called on timeout                 | Custom handler invocation                 |
+| per-outpost timeout overrides defaultTimeout           | Priority of timeouts                      |
+| no timeout if not configured                           | Disabled timeout                          |
+| fast outpost completes before timeout                  | No false positives                        |
+| timeout timer is cleaned up when handler resolves fast | `clearTimeout` called on early resolve    |
+| timeout timer is cleaned up when handler times out     | `clearTimeout` called after timeout fires |
 
 ---
 

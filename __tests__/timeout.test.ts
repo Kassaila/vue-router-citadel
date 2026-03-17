@@ -160,4 +160,51 @@ describe('timeout', () => {
 
     citadel.destroy();
   });
+
+  it('timeout timer is cleaned up when handler resolves fast', async () => {
+    const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
+
+    const citadel = createNavigationCitadel(router, {
+      log: false,
+      logger: mockLogger,
+      defaultTimeout: 5000,
+    });
+
+    citadel.deployOutpost({
+      scope: NavigationOutpostScopes.GLOBAL,
+      name: 'fast',
+      handler: createDelayedHandler(10, 'allow'),
+    });
+
+    await router.push('/dashboard');
+
+    expect(router.currentRoute.value.name).toBe('dashboard');
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+
+    clearTimeoutSpy.mockRestore();
+    citadel.destroy();
+  });
+
+  it('timeout timer is cleaned up when handler times out', async () => {
+    const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
+
+    const citadel = createNavigationCitadel(router, {
+      log: false,
+      logger: mockLogger,
+      defaultTimeout: 50,
+    });
+
+    citadel.deployOutpost({
+      scope: NavigationOutpostScopes.GLOBAL,
+      name: 'slow',
+      handler: createDelayedHandler(200),
+    });
+
+    await router.push('/dashboard').catch(() => {});
+
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+
+    clearTimeoutSpy.mockRestore();
+    citadel.destroy();
+  });
 });
