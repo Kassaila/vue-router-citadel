@@ -10,7 +10,7 @@ description: Testing guide for Vue Router Citadel — vitest setup, test helpers
 | -------------- | --------- |
 | Test Framework | Vitest    |
 | Environment    | happy-dom |
-| Total Tests    | 140       |
+| Total Tests    | 145       |
 | Test Files     | 9         |
 | Coverage       | 91%       |
 
@@ -36,7 +36,7 @@ __tests__/
 ├── navigationRegistry.test.ts      # Registry CRUD (12 tests)
 ├── navigationOutposts.test.ts      # Patrol logic (19 tests)
 ├── navigationCitadel.test.ts       # Public API (29 tests)
-├── timeout.test.ts                 # Timeout handling (5 tests)
+├── timeout.test.ts                 # Timeout handling (7 tests)
 ├── lazy.test.ts                    # Lazy loading (12 tests)
 ├── integration.test.ts             # Full navigation flows (13 tests)
 ├── devtools-settings.test.ts       # DevTools settings (19 tests)
@@ -136,7 +136,7 @@ expect(logger.calls.some((c) => c.level === 'warn' && c.args[0].includes('timed 
 
 ## 📝 Test Cases
 
-See the complete [Test Cases Reference](/contributing/test-cases) for a full list of all 140 tests
+See the complete [Test Cases Reference](/contributing/test-cases) for a full list of all 145 tests
 across 9 test files.
 
 ---
