@@ -63,11 +63,9 @@ eslint-plugins/                  # Custom ESLint rules (local plugin)
 │   ├── test/SKILL.md
 │   ├── build/SKILL.md
 │   ├── coverage/SKILL.md
-│   ├── feature/SKILL.md
 │   └── release-check/SKILL.md
 └── agents/                      # Custom subagents
     ├── test-runner.md
-    ├── code-reviewer.md
     └── docs-updater.md
 
 docs/                            # VitePress documentation site
@@ -295,7 +293,6 @@ npm run docs:preview       # VitePress preview built site
 ### Custom Agents
 
 - **test-runner**: Runs tests and analyzes failures (haiku, fast)
-- **code-reviewer**: Reviews code for TypeScript/Vue Router patterns (sonnet)
 - **docs-updater**: Updates documentation after changes (sonnet)
 
 ## Current State
