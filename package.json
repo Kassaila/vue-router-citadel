@@ -98,7 +98,7 @@
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.55.0",
     "vitepress": "^1.6.4",
-    "vitepress-plugin-mermaid": "^2.0.17",
+    "vitepress-mermaid-viewer": "file:../vitepress-mermaid-viewer",
     "vitest": "^4.0.18",
     "vue": "^3.5.27",
     "vue-router": "^5.0.2"
