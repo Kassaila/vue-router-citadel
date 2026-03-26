@@ -1,29 +1,20 @@
 import eslint from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import eslintConfigPrettier from 'eslint-config-prettier';
+import kassaila from 'eslint-plugin-kassaila';
 import tseslint from 'typescript-eslint';
-
-import localPlugin from './eslint-plugins/local';
 
 export default defineConfig(
   {
-    ignores: [
-      'dist/**',
-      'coverage/**',
-      'docs/**',
-      'temp/**',
-      'eslint-plugins/**',
-      '*.config.*',
-      '.size-limit.cjs',
-    ],
+    ignores: ['dist/**', 'coverage/**', 'docs/**', 'temp/**', '*.config.*', '.size-limit.cjs'],
   },
 
   eslint.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
+  kassaila.configs.recommended,
   eslintConfigPrettier,
 
   {
-    plugins: { local: localPlugin },
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -48,17 +39,12 @@ export default defineConfig(
       'eqeqeq': ['error', 'always', { null: 'ignore' }],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'curly': ['error', 'all'],
-
-      // Local rules
-      'local/switch-case-braces': 'error',
-      'local/jsdoc-comment-style': 'error',
-      'local/prefer-arrow-without-this': 'error',
     },
   },
 
   // Tests: disable type-checked rules and allow non-null assertions
   {
-    files: ['__tests__/**', 'eslint-plugins/**'],
+    files: ['__tests__/**'],
     ...tseslint.configs.disableTypeChecked,
   },
   {
