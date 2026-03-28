@@ -75,6 +75,7 @@ const buildOutpostNodes = (
 
   for (const name of sorted) {
     const outpost = map.get(name);
+
     if (outpost) {
       nodes.push(createOutpostNode(idPrefix, name, outpost, scope, tagsFn(outpost)));
     }
@@ -331,6 +332,7 @@ export const getNodeState = (
    * Outpost nodes (both Outposts section and Current Route section)
    */
   const outpostMatch = nodeId.match(OUTPOST_NODE_REGEX);
+
   if (outpostMatch) {
     const [, scope, name] = outpostMatch;
     const map = scope === NavigationOutpostScopes.GLOBAL ? registry.global : registry.route;
@@ -344,6 +346,7 @@ export const getNodeState = (
    */
   if (router) {
     const routeMatch = nodeId.match(ROUTE_ASSIGNMENT_NODE_REGEX);
+
     if (routeMatch) {
       const routeLabel = routeMatch[1];
       const route = router
@@ -378,6 +381,7 @@ export const setupInspector = (
     if (payload.inspectorId !== DEVTOOLS_INSPECTOR_ID) {
       return;
     }
+
     payload.rootNodes = createInspectorTree(registry, router);
   });
 
@@ -386,7 +390,9 @@ export const setupInspector = (
       if (payload.inspectorId !== DEVTOOLS_INSPECTOR_ID) {
         return;
       }
+
       const state = getNodeState(payload.nodeId, registry, router);
+
       if (state) {
         payload.state = state;
       }

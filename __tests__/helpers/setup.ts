@@ -28,10 +28,10 @@ export const createMockRouter = (routes: RouteRecordRaw[] = []) => {
  * Creates a mock logger that captures log calls
  */
 export const createMockLogger = (): CitadelLogger & {
-  calls: { level: string; args: unknown[] }[];
+  calls: Array<{ level: string; args: unknown[] }>;
   clear: () => void;
 } => {
-  const calls: { level: string; args: unknown[] }[] = [];
+  const calls: Array<{ level: string; args: unknown[] }> = [];
 
   return {
     calls,
@@ -105,6 +105,7 @@ export const createRegisteredOutpost = (options: {
   lazy?: boolean;
 }): RegisteredNavigationOutpost => {
   const { name, handler, priority, hooks, timeout, lazy = false } = options;
+
   return {
     name,
     priority,

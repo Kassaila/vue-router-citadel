@@ -38,6 +38,7 @@ const loadDevtools = async (): Promise<DevtoolsModule | null> => {
       devtoolsModule = await import('./devtools');
     } catch {
       devtoolsLoadFailed = true;
+
       return null;
     }
   }
@@ -202,6 +203,7 @@ export const createNavigationCitadel = (
        */
       if (!lazy) {
         cachedHandler = handler as NavigationOutpostHandler;
+
         return cachedHandler;
       }
 
@@ -214,7 +216,9 @@ export const createNavigationCitadel = (
             if (!mod.default || typeof mod.default !== 'function') {
               throw new Error(`Lazy outpost "${name}" must export default handler`);
             }
+
             cachedHandler = mod.default;
+
             return cachedHandler;
           })
           .catch((err) => {
@@ -306,7 +310,7 @@ export const createNavigationCitadel = (
     deployOutpost(
       opts:
         | NavigationOutpost<NavigationOutpostScope, boolean>
-        | NavigationOutpost<NavigationOutpostScope, boolean>[],
+        | Array<NavigationOutpost<NavigationOutpostScope, boolean>>,
     ): void {
       if (Array.isArray(opts)) {
         for (const opt of opts) {
@@ -415,8 +419,10 @@ export const createNavigationCitadel = (
       }
 
       cleanupFns.length = 0;
+
       registry.global.clear();
       registry.route.clear();
+
       registry.globalSorted.length = 0;
       registry.routeSorted.length = 0;
 

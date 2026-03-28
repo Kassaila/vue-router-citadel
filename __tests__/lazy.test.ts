@@ -176,9 +176,11 @@ describe('Lazy Outposts', () => {
       let callCount = 0;
       const loader = vi.fn().mockImplementation(() => {
         callCount++;
+
         if (callCount === 1) {
           return Promise.reject(new Error('Network error'));
         }
+
         return Promise.resolve({ default: handler });
       });
 
@@ -346,11 +348,13 @@ describe('Lazy Outposts', () => {
 
       const eagerHandler: NavigationOutpostHandler = () => {
         order.push('eager');
+
         return 'allow';
       };
 
       const lazyHandler: NavigationOutpostHandler = () => {
         order.push('lazy');
+
         return 'allow';
       };
 

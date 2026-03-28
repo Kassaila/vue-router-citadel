@@ -25,7 +25,8 @@ export const createDefaultLogger = (): CitadelLogger => ({
  * For reliable breakpoints, provide your own debugHandler in options.
  */
 export const createDefaultDebugHandler = (): DebugHandler => () => {
-  debugger; // eslint-disable-line no-debugger -- intentional debug feature
+  // eslint-disable-next-line no-debugger
+  debugger;
 };
 
 /**
