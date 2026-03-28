@@ -15,6 +15,7 @@ describe('navigationRegistry', () => {
 
   beforeEach(() => {
     registry = createRegistry();
+
     mockLogger.clear();
   });
 

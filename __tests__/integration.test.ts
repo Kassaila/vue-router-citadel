@@ -74,6 +74,7 @@ describe('integration', () => {
           if (to.name !== 'login') {
             return { name: 'login' };
           }
+
           return 'allow';
         },
       });
@@ -96,6 +97,7 @@ describe('integration', () => {
         priority: 30,
         handler: () => {
           order.push('third');
+
           return 'allow';
         },
       });
@@ -106,6 +108,7 @@ describe('integration', () => {
         priority: 10,
         handler: () => {
           order.push('first');
+
           return 'allow';
         },
       });
@@ -116,6 +119,7 @@ describe('integration', () => {
         priority: 20,
         handler: () => {
           order.push('second');
+
           return 'allow';
         },
       });
@@ -183,6 +187,7 @@ describe('integration', () => {
           if (ctx.to.name !== 'error') {
             return { name: 'error' };
           }
+
           return 'allow';
         },
       });
@@ -197,6 +202,7 @@ describe('integration', () => {
           if (to.name === 'dashboard') {
             throw new Error('Test error');
           }
+
           return 'allow';
         },
       });
@@ -222,6 +228,7 @@ describe('integration', () => {
         hooks: [NavigationHooks.BEFORE_EACH],
         handler: () => {
           beforeEachCalls.push('beforeEach');
+
           return 'allow';
         },
       });
@@ -232,6 +239,7 @@ describe('integration', () => {
         hooks: [NavigationHooks.BEFORE_RESOLVE],
         handler: () => {
           beforeResolveCalls.push('beforeResolve');
+
           return 'allow';
         },
       });
@@ -255,6 +263,7 @@ describe('integration', () => {
         hooks: [NavigationHooks.BEFORE_EACH, NavigationHooks.BEFORE_RESOLVE],
         handler: ({ hook }) => {
           calls.push(hook);
+
           return 'allow';
         },
       });
@@ -278,6 +287,7 @@ describe('integration', () => {
         hooks: [NavigationHooks.AFTER_EACH],
         handler: () => {
           calls.push('afterEach');
+
           return 'allow';
         },
       });
@@ -337,6 +347,7 @@ describe('integration', () => {
         name: 'route-guard',
         handler: () => {
           calls.push('route-guard');
+
           return 'allow';
         },
       });
@@ -361,6 +372,7 @@ describe('integration', () => {
         name: 'context-checker',
         handler: (ctx) => {
           capturedContext = ctx;
+
           return 'allow';
         },
       });

@@ -119,6 +119,7 @@ describe('navigationCitadel', () => {
       ]);
 
       const names = citadel.getOutpostNames('global');
+
       expect(names).toContain('auth');
       expect(names).toContain('logger');
 
@@ -235,6 +236,7 @@ describe('navigationCitadel', () => {
       expect(result).toBe(true);
 
       const route = findRouteByName('dashboard');
+
       expect(route?.meta.outposts).toContain('premium');
 
       citadel.destroy();
@@ -246,6 +248,7 @@ describe('navigationCitadel', () => {
       citadel.assignOutpostToRoute('dashboard', ['premium', 'verified']);
 
       const route = findRouteByName('dashboard');
+
       expect(route?.meta.outposts).toContain('premium');
       expect(route?.meta.outposts).toContain('verified');
 
@@ -259,6 +262,7 @@ describe('navigationCitadel', () => {
       citadel.assignOutpostToRoute('dashboard', 'premium');
 
       const route = findRouteByName('dashboard');
+
       expect(route?.meta.outposts?.filter((o) => o === 'premium')).toHaveLength(1);
 
       citadel.destroy();
@@ -293,6 +297,7 @@ describe('navigationCitadel', () => {
       expect(result).toBe(true);
 
       const route = findRouteByName('dashboard');
+
       expect(route?.meta.outposts).not.toContain('premium');
       expect(route?.meta.outposts).toContain('verified');
 
@@ -306,6 +311,7 @@ describe('navigationCitadel', () => {
       citadel.revokeOutpostFromRoute('dashboard', ['premium', 'verified']);
 
       const route = findRouteByName('dashboard');
+
       expect(route?.meta.outposts).not.toContain('premium');
       expect(route?.meta.outposts).not.toContain('verified');
       expect(route?.meta.outposts).toContain('analytics');
