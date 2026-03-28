@@ -252,7 +252,7 @@ export interface NavigationCitadelOptions {
   /**
    * Initial outposts to deploy on citadel creation
    */
-  outposts?: NavigationOutpost<NavigationOutpostScope, boolean>[];
+  outposts?: Array<NavigationOutpost<NavigationOutpostScope, boolean>>;
   /**
    * Enable logging for non-critical events. Default: __DEV__
    * Critical events (errors, timeouts) are always logged regardless of this setting.
@@ -363,7 +363,7 @@ export interface NavigationCitadelAPI {
    * Deploy one or multiple outposts
    */
   deployOutpost: <S extends NavigationOutpostScope = 'global', L extends boolean = false>(
-    options: NavigationOutpost<S, L> | NavigationOutpost<S, L>[],
+    options: NavigationOutpost<S, L> | Array<NavigationOutpost<S, L>>,
   ) => void;
 
   /**

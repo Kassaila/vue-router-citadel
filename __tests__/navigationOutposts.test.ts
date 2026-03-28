@@ -18,26 +18,31 @@ describe('navigationOutposts', () => {
 
     it('returns ALLOW as-is', () => {
       const result = normalizeOutcome(NavigationOutpostVerdicts.ALLOW, router);
+
       expect(result).toBe('allow');
     });
 
     it('returns BLOCK as-is', () => {
       const result = normalizeOutcome(NavigationOutpostVerdicts.BLOCK, router);
+
       expect(result).toBe('block');
     });
 
     it('validates RouteLocationRaw string path', () => {
       const result = normalizeOutcome('/login', router);
+
       expect(result).toBe('/login');
     });
 
     it('validates RouteLocationRaw object with name', () => {
       const result = normalizeOutcome({ name: 'login' }, router);
+
       expect(result).toEqual({ name: 'login' });
     });
 
     it('validates RouteLocationRaw object with path', () => {
       const result = normalizeOutcome({ path: '/login' }, router);
+
       expect(result).toEqual({ path: '/login' });
     });
 
@@ -47,6 +52,7 @@ describe('navigationOutposts', () => {
 
     it('throws Error outcome', () => {
       const error = new Error('Test error');
+
       expect(() => normalizeOutcome(error, router)).toThrow('Test error');
     });
 
@@ -68,6 +74,7 @@ describe('navigationOutposts', () => {
 
     it('returns RouteLocationRaw as-is', () => {
       const redirect = { name: 'login' };
+
       expect(toNavigationGuardReturn(redirect)).toBe(redirect);
     });
   });
@@ -100,6 +107,7 @@ describe('navigationOutposts', () => {
 
     it('returns ALLOW when no outposts', async () => {
       const result = await patrol(registry, ctx, {}, mockLogger, { log: false, debug: false });
+
       expect(result).toBe('allow');
     });
 
@@ -114,6 +122,7 @@ describe('navigationOutposts', () => {
           priority: 20,
           handler: () => {
             order.push('second');
+
             return 'allow';
           },
         }),
@@ -129,6 +138,7 @@ describe('navigationOutposts', () => {
           priority: 10,
           handler: () => {
             order.push('first');
+
             return 'allow';
           },
         }),
@@ -152,6 +162,7 @@ describe('navigationOutposts', () => {
           priority: 10,
           handler: () => {
             order.push('blocker');
+
             return 'block';
           },
         }),
@@ -167,6 +178,7 @@ describe('navigationOutposts', () => {
           priority: 20,
           handler: () => {
             order.push('after');
+
             return 'allow';
           },
         }),
@@ -208,6 +220,7 @@ describe('navigationOutposts', () => {
           hooks: [NavigationHooks.BEFORE_EACH],
           handler: () => {
             order.push('beforeEach');
+
             return 'allow';
           },
         }),
@@ -223,6 +236,7 @@ describe('navigationOutposts', () => {
           hooks: [NavigationHooks.BEFORE_RESOLVE],
           handler: () => {
             order.push('beforeResolve');
+
             return 'allow';
           },
         }),
@@ -270,6 +284,7 @@ describe('navigationOutposts', () => {
           priority: 10,
           handler: () => {
             order.push('global');
+
             return 'allow';
           },
         }),
@@ -285,6 +300,7 @@ describe('navigationOutposts', () => {
           priority: 10,
           handler: () => {
             order.push('route');
+
             return 'allow';
           },
         }),

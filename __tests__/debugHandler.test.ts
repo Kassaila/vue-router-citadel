@@ -76,6 +76,7 @@ describe('debugHandler', () => {
       }
 
       expect(mockDebugHandler).toHaveBeenCalledTimes(debugPoints.length);
+
       for (const point of debugPoints) {
         expect(mockDebugHandler).toHaveBeenCalledWith(point);
       }

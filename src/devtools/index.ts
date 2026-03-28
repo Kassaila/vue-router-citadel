@@ -41,6 +41,7 @@ export const setupDevtools = (
    * Initialize runtime state from localStorage → citadel options → defaults
    */
   const initialState = initializeRuntimeState(optionLog, optionDebug, __DEV__);
+
   runtimeState.log = initialState.log;
   runtimeState.debug = initialState.debug;
 

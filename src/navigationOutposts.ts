@@ -1,21 +1,19 @@
 import type { NavigationGuardReturn, Router } from 'vue-router';
 
-import type {
-  CitadelLogger,
-  NavigationOutpostContext,
-  NavigationCitadelOptions,
-  NavigationRegistry,
-  NavigationOutpostOutcome,
-  RegisteredNavigationOutpost,
-} from './types';
-import type { CitadelRuntimeState } from './devtools/types';
 import {
+  type CitadelLogger,
+  type NavigationOutpostContext,
+  type NavigationCitadelOptions,
+  type NavigationRegistry,
+  type NavigationOutpostOutcome,
+  type RegisteredNavigationOutpost,
   NavigationHooks,
   NavigationOutpostVerdicts,
   DebugPoints,
   type NavigationHook,
   type NavigationOutpostVerdict,
 } from './types';
+import type { CitadelRuntimeState } from './devtools/types';
 import { LOG_PREFIX } from './consts';
 import { debugPoint } from './helpers';
 

@@ -122,6 +122,7 @@ describe('DevTools Inspector', () => {
 
     it('should add route assignments and current route nodes when router provided', async () => {
       const router = createRouterWithOutposts();
+
       await router.push('/');
       await router.isReady();
 
@@ -136,6 +137,7 @@ describe('DevTools Inspector', () => {
   describe('createRouteAssignmentsNode', () => {
     it('should show only routes with outposts, using route name as label', async () => {
       const router = createRouterWithOutposts();
+
       await router.push('/');
       await router.isReady();
 
@@ -143,6 +145,7 @@ describe('DevTools Inspector', () => {
 
       expect(node.label).toBe('Route Assignments (2)');
       const labels = node.children!.map((c) => c.label);
+
       expect(labels).toContain('dashboard');
       expect(labels).toContain('admin');
       expect(labels).not.toContain('home');
@@ -150,6 +153,7 @@ describe('DevTools Inspector', () => {
 
     it('should show outpost count in tag', async () => {
       const router = createRouterWithOutposts();
+
       await router.push('/');
       await router.isReady();
 
@@ -168,6 +172,7 @@ describe('DevTools Inspector', () => {
           meta: { outposts: ['test'] },
         },
       ]);
+
       await router.push('/');
       await router.isReady();
 
@@ -178,6 +183,7 @@ describe('DevTools Inspector', () => {
 
     it('should show empty list when no routes have outposts', async () => {
       const router = createMockRouter();
+
       await router.push('/');
       await router.isReady();
 
@@ -191,6 +197,7 @@ describe('DevTools Inspector', () => {
   describe('createCurrentRouteNode', () => {
     it('should show global outposts first, then route outposts (patrol order)', async () => {
       const router = createRouterWithOutposts();
+
       await router.push('/dashboard');
       await router.isReady();
 
@@ -233,6 +240,7 @@ describe('DevTools Inspector', () => {
 
     it('should only include route outposts referenced in current route meta', async () => {
       const router = createRouterWithOutposts();
+
       await router.push('/dashboard');
       await router.isReady();
 
@@ -260,6 +268,7 @@ describe('DevTools Inspector', () => {
 
     it('should show only global outposts when route has no meta.outposts', async () => {
       const router = createRouterWithOutposts();
+
       await router.push('/');
       await router.isReady();
 
@@ -286,6 +295,7 @@ describe('DevTools Inspector', () => {
 
     it('should show lazy tag on lazy outposts', async () => {
       const router = createRouterWithOutposts();
+
       await router.push('/dashboard');
       await router.isReady();
 
@@ -352,6 +362,7 @@ describe('DevTools Inspector', () => {
 
     it('should return outpost details for current-route-outpost nodes', async () => {
       const router = createRouterWithOutposts();
+
       await router.push('/');
       await router.isReady();
 
@@ -372,6 +383,7 @@ describe('DevTools Inspector', () => {
 
     it('should return route details for route assignment nodes', async () => {
       const router = createRouterWithOutposts();
+
       await router.push('/');
       await router.isReady();
 
@@ -392,6 +404,7 @@ describe('DevTools Inspector', () => {
 
     it('should return null for non-existent route assignment', async () => {
       const router = createRouterWithOutposts();
+
       await router.push('/');
       await router.isReady();
 
@@ -427,6 +440,7 @@ describe('DevTools Inspector', () => {
         null;
 
       const mockApi = createMockApi();
+
       mockApi.on.getInspectorTree = vi.fn((cb) => {
         treeCallback = cb;
       });
@@ -434,6 +448,7 @@ describe('DevTools Inspector', () => {
       setupInspector(mockApi, registry, mockRouter, mockLogger);
 
       const payload = { inspectorId: DEVTOOLS_INSPECTOR_ID, rootNodes: [] as unknown[] };
+
       treeCallback!(payload);
 
       expect(payload.rootNodes).toHaveLength(3);
@@ -447,6 +462,7 @@ describe('DevTools Inspector', () => {
         null;
 
       const mockApi = createMockApi();
+
       mockApi.on.getInspectorTree = vi.fn((cb) => {
         treeCallback = cb;
       });
@@ -454,6 +470,7 @@ describe('DevTools Inspector', () => {
       setupInspector(mockApi, registry, mockRouter, mockLogger);
 
       const payload = { inspectorId: 'other-inspector', rootNodes: [] as unknown[] };
+
       treeCallback!(payload);
 
       expect(payload.rootNodes).toHaveLength(0);

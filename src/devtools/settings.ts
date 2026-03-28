@@ -70,14 +70,15 @@ const optionsToLogLevel = (
  */
 export const logLevelToState = (level: LogLevel): CitadelRuntimeState => {
   switch (level) {
-    case LOG_LEVELS.OFF: {
-      return { log: false, debug: false };
-    }
     case LOG_LEVELS.LOG: {
       return { log: true, debug: false };
     }
     case LOG_LEVELS.DEBUG: {
       return { log: true, debug: true };
+    }
+    case LOG_LEVELS.OFF:
+    default: {
+      return { log: false, debug: false };
     }
   }
 };
@@ -131,6 +132,7 @@ export const updateRuntimeState = (state: CitadelRuntimeState, value: LogLevel):
 
   state.log = newState.log;
   state.debug = newState.debug;
+
   setStoredLogLevel(value);
 };
 
