@@ -63,7 +63,7 @@
 
 ### Testing
 
-- [x] Vitest + happy-dom — 143 tests across 9 test files
+- [x] Vitest + happy-dom — 145 tests across 9 test files
 
 ### Documentation
 
@@ -90,6 +90,38 @@
 ## TODO
 
 ### Priority 2 — Post-Release
+
+#### Per-Outpost `onError` / `onTimeout`
+
+Currently `onError` and `onTimeout` are configured only at the citadel level. Allow overriding them
+per outpost for granular error/timeout handling (e.g. send `auth` failures to Sentry but silently
+`ALLOW` on `preload` timeout).
+
+```typescript
+citadel.deployOutpost({
+  name: 'auth',
+  handler: authCheck,
+  onError: (error, ctx) => {
+    sentry.captureException(error);
+    return { name: 'login' };
+  },
+  onTimeout: (_name, ctx) => ctx.verdicts.BLOCK,
+});
+```
+
+**Semantics to decide:**
+
+- Per-outpost handler **replaces** the global one (simpler, recommended)
+- Both run in sequence (more complex, unclear precedence)
+
+**Implementation:**
+
+- Add optional `onError` / `onTimeout` fields to `NavigationOutpost` type
+- In `processOutpost`: check outpost-level handler first, fall back to options-level
+- Tests: per-outpost handler takes precedence, falls through when absent
+- Docs: extend `error-handling.md` and `timeout.md` with per-outpost examples
+
+---
 
 #### Metrics
 
