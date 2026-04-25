@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**vue-router-citadel** is a TypeScript middleware system for Vue Router 4 that provides structured
+**vue-router-citadel** is a TypeScript middleware system for Vue Router that provides structured
 navigation defense through a hierarchical outpost-based architecture. It offers type-safe route
 guards with a return-based API.
 
