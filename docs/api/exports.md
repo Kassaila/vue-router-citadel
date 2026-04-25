@@ -30,12 +30,12 @@ import {
 } from 'vue-router-citadel';
 ```
 
-| Constant                    | Values                                        | Description                                   |
-| --------------------------- | --------------------------------------------- | --------------------------------------------- |
-| `NavigationOutpostScopes`   | `GLOBAL`, `ROUTE`                             | Outpost scope determining when it's processed |
-| `NavigationHooks`           | `BEFORE_EACH`, `BEFORE_RESOLVE`, `AFTER_EACH` | Vue Router navigation hooks                   |
-| `NavigationOutpostVerdicts` | `ALLOW`, `BLOCK`                              | Handler return verdicts                       |
-| `DebugPoints`               | `NAVIGATION_START`, `OUTPOST_ENTER`, etc.     | Named debug breakpoint identifiers            |
+| Constant                    | Values                                                                                                                      | Description                                   |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| `NavigationOutpostScopes`   | `GLOBAL`, `ROUTE`                                                                                                           | Outpost scope determining when it's processed |
+| `NavigationHooks`           | `BEFORE_EACH`, `BEFORE_RESOLVE`, `AFTER_EACH`                                                                               | Vue Router navigation hooks                   |
+| `NavigationOutpostVerdicts` | `ALLOW`, `BLOCK`                                                                                                            | Handler return verdicts                       |
+| `DebugPoints`               | `NAVIGATION_START`, `OUTPOST_ENTER`, `OUTPOST_BLOCK`, `OUTPOST_TIMEOUT`, `ERROR_CATCH`, `DEVTOOLS_INIT`, `DEVTOOLS_INSPECT` | Named debug breakpoint identifiers            |
 
 ## 🏷️ Types
 

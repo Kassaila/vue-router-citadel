@@ -46,10 +46,15 @@ flowchart TD
 
 ## 🔑 Key Behavior
 
-- Module loading has **no timeout** — network latency is unpredictable
-- `timeout` applies **only to handler execution** after loading
-- If load fails, error is passed to `onError` and **retry is allowed** on next navigation
-- After first successful load, handler is **cached** — subsequent calls are instant
+- The `timeout` option does **not** cover module loading — it applies **only to handler execution**
+  after the module is loaded. Network latency of dynamic `import()` is intentionally left
+  unconstrained.
+- Module loading itself therefore cannot fail with a timeout error; it can only fail if `import()`
+  itself rejects (e.g. network error, chunk not found).
+- If load fails, the error is passed to `onError` and **retry is allowed** on the next navigation
+  (no failed result is cached).
+- After the first successful load, the handler is **cached** — subsequent calls are instant and
+  bypass the loader entirely.
 
 ## 💡 Example: Lazy Outpost with Heavy Dependencies
 
