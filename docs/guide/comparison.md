@@ -10,27 +10,28 @@ problem. Here's how they compare to **Vue Router Citadel**.
 
 ## 📊 Feature Matrix
 
-| Feature                                         | Citadel | [route-guard] | [router-shield] | [easy-route] | [programic] |
-| ----------------------------------------------- | :-----: | :-----------: | :-------------: | :----------: | :---------: |
-| TypeScript (native)                             |   ✅    |      ✅       |       ❌        |      ✅      |     ✅      |
-| [Return-based API](/guide/verdicts)             |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
-| [Dynamic management](/guide/dynamic-management) |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
-| [Multiple hooks](/guide/hooks)                  |    3    |       1       |        1        |      1       |      2      |
-| [Global scope](/guide/scopes)                   |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
-| [Route scope](/guide/scopes)                    |   ✅    |      ✅       |       ✅        |      ✅      |     ✅      |
-| [Priority ordering](/guide/scopes#priority)     |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
-| [Timeout control](/guide/timeout)               |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
-| [Lazy loading](/guide/lazy-outposts)            |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
-| [Type-safe names](/guide/type-safety)           |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
-| [Error handling](/guide/error-handling)         |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
-| [Vue DevTools](/guide/devtools)                 |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
-| [Logging & debug](/advanced/logging)            |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |
-| Bundle size (brotli)                            |  ≤4 KB  |     ~3 KB     |      ~1 KB      |    ~3 KB     |    ~1 KB    |
+| Feature                                         | Citadel | [route-guard] | [router-shield] | [easy-route] | [programic] | [vite-mw] |
+| ----------------------------------------------- | :-----: | :-----------: | :-------------: | :----------: | :---------: | :-------: |
+| TypeScript (native)                             |   ✅    |      ✅       |       ❌        |      ✅      |     ✅      |    ✅     |
+| [Return-based API](/guide/verdicts)             |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ✅     |
+| [Dynamic management](/guide/dynamic-management) |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ❌     |
+| [Multiple hooks](/guide/hooks)                  |    3    |       1       |        1        |      1       |      2      |     1     |
+| [Global scope](/guide/scopes)                   |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ✅     |
+| [Route scope](/guide/scopes)                    |   ✅    |      ✅       |       ✅        |      ✅      |     ✅      |    ✅     |
+| [Priority ordering](/guide/scopes#priority)     |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ✅     |
+| [Timeout control](/guide/timeout)               |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ❌     |
+| [Lazy loading](/guide/lazy-outposts)            |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ❌     |
+| [Type-safe names](/guide/type-safety)           |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ✅     |
+| [Error handling](/guide/error-handling)         |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ❌     |
+| [Vue DevTools](/guide/devtools)                 |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ❌     |
+| [Logging & debug](/advanced/logging)            |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ❌     |
+| Bundle size (brotli)                            |  ≤4 KB  |     ~3 KB     |      ~1 KB      |    ~3 KB     |    ~1 KB    |   ~1 KB   |
 
 [route-guard]: https://www.npmjs.com/package/@this-dot/vue-route-guard
 [router-shield]: https://www.npmjs.com/package/vue-router-shield
 [easy-route]: https://www.npmjs.com/package/@warhsn/easy-route-vue
 [programic]: https://www.npmjs.com/package/@programic/vue-router-middleware
+[vite-mw]: https://www.npmjs.com/package/vite-plugin-vue-middleware
 
 ## 📦 Alternatives
 
@@ -84,6 +85,27 @@ const route = {
   meta: {
     middleware: [authMiddleware],
   },
+};
+```
+
+**[vite-plugin-vue-middleware](https://www.npmjs.com/package/vite-plugin-vue-middleware)** — File-based
+middleware system powered by Vite.
+
+```js
+// src/middleware/01.auth.global.ts
+export default defineMiddleware((to, from) => {
+  if (!isLoggedIn()) return '/login';
+});
+
+// src/middleware/admin.ts
+export default defineMiddleware((to, from) => {
+  if (!isAdmin()) return '/forbidden';
+});
+
+// route definition
+const route = {
+  path: '/admin',
+  meta: { middleware: ['admin'] }, // type-checked via generated .d.ts
 };
 ```
 
