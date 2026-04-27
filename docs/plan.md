@@ -84,6 +84,7 @@
 - [x] API types docs aligned with source code (lazy generics, `install`, async return types)
 - [x] GoatCounter analytics — `docs/.vitepress/config.ts` ([dashboard](https://kassaila.goatcounter.com))
 - [x] Comparison page (`docs/guide/comparison.md`) — feature matrix (14 features) vs 4 Vue Router 4+ alternatives
+- [x] LLM SEO — `/llms.txt`, `.md` twins, `<link rel="alternate">`, hidden hint div, `robots.txt` generated in `buildEnd`
 
 ---
 
