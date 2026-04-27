@@ -1,4 +1,6 @@
+import { copyFile, mkdir, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
 import { defineConfig } from 'vitepress';
 import { withMermaid } from 'vitepress-mermaid-viewer';
 
@@ -7,10 +9,72 @@ const pkg = require('../../package.json') as { version: string };
 
 const HOSTNAME = 'https://kassaila.github.io';
 const BASE = '/vue-router-citadel/';
+const SITE_URL = `${HOSTNAME}${BASE}`;
+const REPO_URL = 'https://github.com/Kassaila/vue-router-citadel';
+const CHANGELOG_URL = `${REPO_URL}/blob/main/CHANGELOG.md`;
+const OG_IMAGE_URL = `${SITE_URL}og_image.png`;
+const OG_IMAGE_ALT = 'Vue Router Citadel — Structured navigation defense for Vue Router';
+const MARKETING_DESCRIPTION =
+  'Vue Router Citadel is a middleware-driven navigation control system for Vue Router that lets you build layered, predictable, and scalable route protection.';
 
-/** Strip emojis from heading text before generating anchor slugs */
-function slugify(str: string): string {
-  return str
+const LLMS_INTRO =
+  'Vue Router Citadel is a small (~4 KB brotli) layer on top of Vue Router 4 & 5 that turns navigation guards into prioritized, scoped, return-based middleware. Each link below has a clean Markdown version optimized for LLM consumption.';
+
+const ROBOTS_TXT = `User-agent: *
+Allow: /
+
+Sitemap: ${SITE_URL}sitemap.xml
+`;
+
+const LLMS_SECTION_ORDER = ['/guide/', '/api/', '/advanced/', '/examples/'] as const;
+const LLMS_OPTIONAL_SECTION = '/contributing/';
+const LLMS_OPTIONAL_EXTRAS: ReadonlyArray<LlmsExtraLink> = [
+  {
+    text: 'Changelog',
+    link: CHANGELOG_URL,
+    description: 'Version history.',
+  },
+];
+
+interface SidebarItem {
+  text: string;
+  link: string;
+}
+
+interface SidebarGroup {
+  text: string;
+  items: ReadonlyArray<SidebarItem>;
+}
+
+interface LlmsExtraLink {
+  text: string;
+  link: string;
+  description: string;
+}
+
+type SidebarConfig = Record<string, ReadonlyArray<SidebarGroup>>;
+
+const pageDescriptionMap = new Map<string, string>();
+
+const toRelativePath = (link: string): string => {
+  const trimmed = link.replace(/^\//, '');
+
+  return trimmed === '' || trimmed.endsWith('/') ? `${trimmed}index.md` : `${trimmed}.md`;
+};
+
+const toMarkdownUrl = (link: string): string => {
+  if (/^https?:/.test(link)) {
+    return link;
+  }
+
+  return `${SITE_URL}${toRelativePath(link)}`;
+};
+
+/**
+ * Strip emojis from heading text before generating anchor slugs
+ */
+const slugify = (str: string): string =>
+  str
     .replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '')
     .normalize('NFKD')
     .trim()
@@ -20,7 +84,6 @@ function slugify(str: string): string {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
-}
 
 export default withMermaid(
   defineConfig({
@@ -31,7 +94,7 @@ export default withMermaid(
     lastUpdated: true,
 
     sitemap: {
-      hostname: `${HOSTNAME}${BASE}`,
+      hostname: SITE_URL,
     },
 
     srcExclude: ['plan.md', 'release.md', '_snippets/**'],
@@ -41,15 +104,90 @@ export default withMermaid(
     },
 
     transformPageData(pageData) {
-      const canonicalUrl = `${HOSTNAME}${BASE}${pageData.relativePath}`
-        .replace(/index\.md$/, '')
-        .replace(/\.md$/, '');
+      const markdownUrl = `${SITE_URL}${pageData.relativePath}`;
+      const canonicalUrl = markdownUrl.replace(/index\.md$/, '').replace(/\.md$/, '');
+
+      const { description } = pageData.frontmatter;
+
+      if (typeof description === 'string' && description.length > 0) {
+        pageDescriptionMap.set(pageData.relativePath, description);
+      }
 
       pageData.frontmatter.head ??= [];
+
       pageData.frontmatter.head.push(
         ['link', { rel: 'canonical', href: canonicalUrl }],
         ['meta', { property: 'og:url', content: canonicalUrl }],
+        [
+          'link',
+          {
+            rel: 'alternate',
+            type: 'text/markdown',
+            title: 'Markdown version',
+            href: markdownUrl,
+          },
+        ],
       );
+    },
+
+    async buildEnd(siteConfig) {
+      await Promise.all(
+        siteConfig.pages.map(async (pagePath) => {
+          const src = join(siteConfig.srcDir, pagePath);
+          const dest = join(siteConfig.outDir, pagePath);
+
+          await mkdir(dirname(dest), { recursive: true });
+          await copyFile(src, dest);
+        }),
+      );
+
+      const sidebar = siteConfig.site.themeConfig.sidebar as SidebarConfig;
+
+      const renderItem = (item: SidebarItem, fallbackDescription?: string): string => {
+        const description =
+          pageDescriptionMap.get(toRelativePath(item.link)) ?? fallbackDescription ?? '';
+        const suffix = description.length > 0 ? `: ${description}` : '';
+
+        return `- [${item.text}](${toMarkdownUrl(item.link)})${suffix}`;
+      };
+
+      const lines: string[] = [
+        `# ${siteConfig.site.title}`,
+        '',
+        `> ${siteConfig.site.description}`,
+        '',
+        LLMS_INTRO,
+        '',
+      ];
+
+      for (const sectionPath of LLMS_SECTION_ORDER) {
+        for (const group of sidebar[sectionPath] ?? []) {
+          lines.push(`## ${group.text}`, '');
+
+          for (const item of group.items) {
+            lines.push(renderItem(item));
+          }
+
+          lines.push('');
+        }
+      }
+
+      lines.push('## Optional', '');
+
+      for (const group of sidebar[LLMS_OPTIONAL_SECTION] ?? []) {
+        for (const item of group.items) {
+          lines.push(renderItem(item));
+        }
+      }
+
+      for (const extra of LLMS_OPTIONAL_EXTRAS) {
+        lines.push(renderItem({ text: extra.text, link: extra.link }, extra.description));
+      }
+
+      lines.push('');
+
+      await writeFile(join(siteConfig.outDir, 'llms.txt'), lines.join('\n'), 'utf8');
+      await writeFile(join(siteConfig.outDir, 'robots.txt'), ROBOTS_TXT, 'utf8');
     },
 
     head: [
@@ -84,57 +222,19 @@ export default withMermaid(
       ['link', { rel: 'dns-prefetch', href: 'https://gc.zgo.at' }],
       ['meta', { property: 'og:type', content: 'website' }],
       ['meta', { property: 'og:title', content: 'Vue Router Citadel' }],
-      [
-        'meta',
-        {
-          property: 'og:description',
-          content:
-            'Vue Router Citadel is a middleware-driven navigation control system for Vue Router that lets you build layered, predictable, and scalable route protection.',
-        },
-      ],
+      ['meta', { property: 'og:description', content: MARKETING_DESCRIPTION }],
       ['meta', { property: 'og:site_name', content: 'Vue Router Citadel' }],
       ['meta', { property: 'og:locale', content: 'en_US' }],
-      [
-        'meta',
-        {
-          property: 'og:image',
-          content: `${HOSTNAME}${BASE}og_image.png`,
-        },
-      ],
+      ['meta', { property: 'og:image', content: OG_IMAGE_URL }],
       ['meta', { property: 'og:image:width', content: '1200' }],
       ['meta', { property: 'og:image:height', content: '630' }],
       ['meta', { property: 'og:image:type', content: 'image/png' }],
-      [
-        'meta',
-        {
-          property: 'og:image:alt',
-          content: 'Vue Router Citadel — Structured navigation defense for Vue Router',
-        },
-      ],
+      ['meta', { property: 'og:image:alt', content: OG_IMAGE_ALT }],
       ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
       ['meta', { name: 'twitter:title', content: 'Vue Router Citadel' }],
-      [
-        'meta',
-        {
-          name: 'twitter:description',
-          content:
-            'Vue Router Citadel is a middleware-driven navigation control system for Vue Router that lets you build layered, predictable, and scalable route protection.',
-        },
-      ],
-      [
-        'meta',
-        {
-          name: 'twitter:image',
-          content: `${HOSTNAME}${BASE}og_image.png`,
-        },
-      ],
-      [
-        'meta',
-        {
-          name: 'twitter:image:alt',
-          content: 'Vue Router Citadel — Structured navigation defense for Vue Router',
-        },
-      ],
+      ['meta', { name: 'twitter:description', content: MARKETING_DESCRIPTION }],
+      ['meta', { name: 'twitter:image', content: OG_IMAGE_URL }],
+      ['meta', { name: 'twitter:image:alt', content: OG_IMAGE_ALT }],
       [
         'script',
         { type: 'application/ld+json' },
@@ -143,7 +243,7 @@ export default withMermaid(
           '@type': 'SoftwareSourceCode',
           'name': 'vue-router-citadel',
           'description': 'Structured navigation defense for Vue Router',
-          'codeRepository': 'https://github.com/Kassaila/vue-router-citadel',
+          'codeRepository': REPO_URL,
           'programmingLanguage': 'TypeScript',
           'runtimePlatform': 'Node.js',
           'license': 'https://opensource.org/licenses/MIT',
@@ -166,6 +266,7 @@ export default withMermaid(
     ],
 
     themeConfig: {
+      siteUrl: SITE_URL,
       logo: { src: '/logo.svg', alt: 'Vue Router Citadel' },
 
       nav: [
@@ -176,7 +277,7 @@ export default withMermaid(
         { text: 'Contributing', link: '/contributing/' },
         {
           text: 'Changelog',
-          link: 'https://github.com/Kassaila/vue-router-citadel/blob/main/CHANGELOG.md',
+          link: CHANGELOG_URL,
         },
       ],
 
@@ -255,7 +356,7 @@ export default withMermaid(
         ],
       },
 
-      socialLinks: [{ icon: 'github', link: 'https://github.com/Kassaila/vue-router-citadel' }],
+      socialLinks: [{ icon: 'github', link: REPO_URL }],
 
       search: {
         provider: 'local',

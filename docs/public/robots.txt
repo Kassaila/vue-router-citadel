@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://kassaila.github.io/vue-router-citadel/sitemap.xml
