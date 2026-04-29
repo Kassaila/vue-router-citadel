@@ -1,4 +1,5 @@
 ---
+title: Outpost Scopes
 description: Global and route outpost scopes in Vue Router Citadel — priority sorting, processing order, nested route deduplication.
 ---
 

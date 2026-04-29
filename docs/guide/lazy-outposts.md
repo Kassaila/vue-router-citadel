@@ -1,4 +1,5 @@
 ---
+title: Lazy Outposts
 description: Lazy-load heavy outpost handlers on demand for better code splitting and faster initial page load in Vue Router Citadel.
 ---
 

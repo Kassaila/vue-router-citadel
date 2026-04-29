@@ -1,4 +1,5 @@
 ---
+title: Outposts Across Hooks
 description: Outposts across hooks example — auth on beforeEach, data loading on beforeResolve, analytics and page title on afterEach.
 ---
 

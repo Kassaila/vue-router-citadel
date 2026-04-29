@@ -1,4 +1,5 @@
 ---
+title: Testing Guide
 description: Testing guide for Vue Router Citadel — vitest setup, test helpers, coverage, and patterns for writing navigation guard tests.
 ---
 

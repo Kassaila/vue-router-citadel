@@ -107,17 +107,29 @@ export default withMermaid(
       const markdownUrl = `${SITE_URL}${pageData.relativePath}`;
       const canonicalUrl = markdownUrl.replace(/index\.md$/, '').replace(/\.md$/, '');
 
-      const { description } = pageData.frontmatter;
+      const { description: frontmatterDescription } = pageData.frontmatter;
 
-      if (typeof description === 'string' && description.length > 0) {
-        pageDescriptionMap.set(pageData.relativePath, description);
+      if (typeof frontmatterDescription === 'string' && frontmatterDescription.length > 0) {
+        pageDescriptionMap.set(pageData.relativePath, frontmatterDescription);
       }
+
+      const isHome = pageData.frontmatter.layout === 'home';
+      const siteTitle = 'Vue Router Citadel';
+      const title = isHome || !pageData.title ? siteTitle : `${pageData.title} | ${siteTitle}`;
+      const description =
+        typeof frontmatterDescription === 'string' && frontmatterDescription.length > 0
+          ? frontmatterDescription
+          : MARKETING_DESCRIPTION;
 
       pageData.frontmatter.head ??= [];
 
       pageData.frontmatter.head.push(
         ['link', { rel: 'canonical', href: canonicalUrl }],
         ['meta', { property: 'og:url', content: canonicalUrl }],
+        ['meta', { property: 'og:title', content: title }],
+        ['meta', { property: 'og:description', content: description }],
+        ['meta', { name: 'twitter:title', content: title }],
+        ['meta', { name: 'twitter:description', content: description }],
         [
           'link',
           {
@@ -221,8 +233,6 @@ export default withMermaid(
       ['link', { rel: 'dns-prefetch', href: 'https://github.com' }],
       ['link', { rel: 'dns-prefetch', href: 'https://gc.zgo.at' }],
       ['meta', { property: 'og:type', content: 'website' }],
-      ['meta', { property: 'og:title', content: 'Vue Router Citadel' }],
-      ['meta', { property: 'og:description', content: MARKETING_DESCRIPTION }],
       ['meta', { property: 'og:site_name', content: 'Vue Router Citadel' }],
       ['meta', { property: 'og:locale', content: 'en_US' }],
       ['meta', { property: 'og:image', content: OG_IMAGE_URL }],
@@ -231,8 +241,6 @@ export default withMermaid(
       ['meta', { property: 'og:image:type', content: 'image/png' }],
       ['meta', { property: 'og:image:alt', content: OG_IMAGE_ALT }],
       ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
-      ['meta', { name: 'twitter:title', content: 'Vue Router Citadel' }],
-      ['meta', { name: 'twitter:description', content: MARKETING_DESCRIPTION }],
       ['meta', { name: 'twitter:image', content: OG_IMAGE_URL }],
       ['meta', { name: 'twitter:image:alt', content: OG_IMAGE_ALT }],
       [

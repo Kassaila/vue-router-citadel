@@ -1,4 +1,5 @@
 ---
+title: Contributing
 description: Contributing guide for Vue Router Citadel — setup, development commands, code style, naming conventions, and pull request process.
 ---
 

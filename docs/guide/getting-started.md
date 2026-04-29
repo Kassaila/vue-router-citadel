@@ -1,4 +1,5 @@
 ---
+title: Getting Started
 description: Install Vue Router Citadel and set up your first navigation outpost with a step-by-step quick start guide.
 ---
 

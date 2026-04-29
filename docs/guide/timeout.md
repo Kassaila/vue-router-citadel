@@ -1,4 +1,5 @@
 ---
+title: Outpost Timeout
 description: Configure global and per-outpost timeouts in Vue Router Citadel to prevent navigation from hanging on slow handlers.
 ---
 

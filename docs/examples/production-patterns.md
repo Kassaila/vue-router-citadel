@@ -1,4 +1,5 @@
 ---
+title: Production Patterns
 description: Production patterns — route-scoped outposts for RBAC, onboarding, payment validation, and async account checks with meta-driven configuration.
 ---
 
