@@ -1,4 +1,5 @@
 ---
+title: Outpost Verdicts
 description: Outpost handler return values — ALLOW, BLOCK, and redirect verdicts that control navigation flow in Vue Router Citadel.
 ---
 

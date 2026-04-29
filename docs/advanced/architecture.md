@@ -1,4 +1,5 @@
 ---
+title: Architecture
 description: Vue Router Citadel architecture internals — registry structure, outpost processing flow, timeout handling, and navigation sequence.
 ---
 

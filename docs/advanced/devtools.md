@@ -1,4 +1,5 @@
 ---
+title: DevTools Internals
 description: Vue Router Citadel DevTools internals — settings priority resolution, localStorage persistence, and runtime state management.
 ---
 

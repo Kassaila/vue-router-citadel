@@ -1,4 +1,5 @@
 ---
+title: Vue DevTools
 description: Vue DevTools integration in Vue Router Citadel — custom inspector for viewing outposts, route assignments, current route execution order, and runtime settings.
 ---
 

@@ -1,4 +1,5 @@
 ---
+title: Exports
 description: All public exports from Vue Router Citadel — constants, types, and utility functions with import examples.
 ---
 

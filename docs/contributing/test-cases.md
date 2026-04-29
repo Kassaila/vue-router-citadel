@@ -1,4 +1,5 @@
 ---
+title: Test Cases
 description: Complete list of all 145 test cases across 9 test files in Vue Router Citadel — registry, patrol, API, timeout, lazy, integration, and DevTools tests.
 ---
 
