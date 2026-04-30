@@ -1,4 +1,5 @@
 ---
+title: Navigation Hooks
 description: Vue Router Citadel navigation hooks — beforeEach, beforeResolve, and afterEach lifecycle integration with handler context.
 ---
 

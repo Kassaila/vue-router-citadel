@@ -1,4 +1,5 @@
 ---
+title: Auth Guard
 description: Auth guard example — global outposts with maintenance mode and authentication checks using BLOCK and redirect verdicts.
 ---
 

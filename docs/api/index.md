@@ -1,4 +1,5 @@
 ---
+title: API Methods
 description: Vue Router Citadel API reference — createNavigationCitadel, deployOutpost, abandonOutpost, and all public methods with examples.
 ---
 

@@ -1,4 +1,5 @@
 ---
+title: What is Citadel?
 description: Learn what Vue Router Citadel is — a middleware-driven navigation control system for Vue Router with layered outpost-based route protection.
 ---
 

@@ -1,4 +1,5 @@
 ---
+title: Modular Apps
 description: Organize outposts in large modular Vue apps — per-module type declarations, dynamic registration, and dependency injection patterns.
 ---
 

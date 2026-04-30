@@ -1,4 +1,5 @@
 ---
+title: Dynamic Management
 description: Deploy, abandon, assign, and revoke outposts at runtime — dynamic navigation guard management in Vue Router Citadel.
 ---
 
