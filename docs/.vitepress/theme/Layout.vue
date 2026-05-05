@@ -1,6 +1,7 @@
-<script setup>
-import DefaultTheme from 'vitepress/theme';
+<script setup lang="ts">
 import { useData } from 'vitepress';
+import DefaultTheme from 'vitepress/theme';
+import type { DefaultTheme as VPDefaultTheme } from 'vitepress/theme';
 import { computed } from 'vue';
 
 import './root.css';
@@ -8,9 +9,9 @@ import './hero-fullscreen.css';
 import './llm-hint.css';
 
 const { Layout } = DefaultTheme;
-const { theme, page } = useData();
+const { theme, page } = useData<VPDefaultTheme.Config & { siteUrl?: string }>();
 
-const mdUrl = computed(() => `${theme.value.siteUrl}${page.value.relativePath}`);
+const mdUrl = computed(() => `${theme.value.siteUrl ?? ''}${page.value.relativePath}`);
 </script>
 
 <template>

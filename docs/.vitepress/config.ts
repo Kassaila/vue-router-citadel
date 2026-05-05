@@ -1,7 +1,7 @@
 import { copyFile, mkdir, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
-import { defineConfig } from 'vitepress';
+import { defineConfig, type SiteConfig } from 'vitepress';
 import { withMermaid } from 'vitepress-mermaid-viewer';
 
 const require = createRequire(import.meta.url);
@@ -54,7 +54,19 @@ interface LlmsExtraLink {
 
 type SidebarConfig = Record<string, ReadonlyArray<SidebarGroup>>;
 
-const pageDescriptionMap = new Map<string, string>();
+const pageDescriptions = new Map<string, string>();
+
+const copyMarkdownSources = async (siteConfig: SiteConfig): Promise<void> => {
+  const destDirs = new Set(
+    siteConfig.pages.map((pagePath) => dirname(join(siteConfig.outDir, pagePath))),
+  );
+  await Promise.all([...destDirs].map((dir) => mkdir(dir, { recursive: true })));
+  await Promise.all(
+    siteConfig.pages.map((pagePath) =>
+      copyFile(join(siteConfig.srcDir, pagePath), join(siteConfig.outDir, pagePath)),
+    ),
+  );
+};
 
 const toRelativePath = (link: string): string => {
   const trimmed = link.replace(/^\//, '');
@@ -110,12 +122,19 @@ export default withMermaid(
       const { description: frontmatterDescription } = pageData.frontmatter;
 
       if (typeof frontmatterDescription === 'string' && frontmatterDescription.length > 0) {
-        pageDescriptionMap.set(pageData.relativePath, frontmatterDescription);
+        pageDescriptions.set(
+          pageData.relativePath,
+          frontmatterDescription.replace(/[\r\n]+/g, ' ').trim(),
+        );
       }
 
       const isHome = pageData.frontmatter.layout === 'home';
       const siteTitle = 'Vue Router Citadel';
-      const title = isHome || !pageData.title ? siteTitle : `${pageData.title} | ${siteTitle}`;
+      const title = !pageData.title
+        ? siteTitle
+        : isHome
+          ? pageData.title
+          : `${pageData.title} | ${siteTitle}`;
       const description =
         typeof frontmatterDescription === 'string' && frontmatterDescription.length > 0
           ? frontmatterDescription
@@ -143,21 +162,13 @@ export default withMermaid(
     },
 
     async buildEnd(siteConfig) {
-      await Promise.all(
-        siteConfig.pages.map(async (pagePath) => {
-          const src = join(siteConfig.srcDir, pagePath);
-          const dest = join(siteConfig.outDir, pagePath);
-
-          await mkdir(dirname(dest), { recursive: true });
-          await copyFile(src, dest);
-        }),
-      );
+      await copyMarkdownSources(siteConfig);
 
       const sidebar = siteConfig.site.themeConfig.sidebar as SidebarConfig;
 
       const renderItem = (item: SidebarItem, fallbackDescription?: string): string => {
         const description =
-          pageDescriptionMap.get(toRelativePath(item.link)) ?? fallbackDescription ?? '';
+          pageDescriptions.get(toRelativePath(item.link)) ?? fallbackDescription ?? '';
         const suffix = description.length > 0 ? `: ${description}` : '';
 
         return `- [${item.text}](${toMarkdownUrl(item.link)})${suffix}`;
