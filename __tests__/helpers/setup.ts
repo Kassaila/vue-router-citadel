@@ -1,7 +1,9 @@
 import { createRouter, createMemoryHistory, type RouteRecordRaw } from 'vue-router';
 import type {
   CitadelLogger,
+  NavigationOutpostErrorHandler,
   NavigationOutpostHandler,
+  NavigationOutpostTimeoutHandler,
   RegisteredNavigationOutpost,
   NavigationHook,
 } from '../../src/types';
@@ -103,8 +105,10 @@ export const createRegisteredOutpost = (options: {
   hooks?: NavigationHook[];
   timeout?: number;
   lazy?: boolean;
+  onError?: NavigationOutpostErrorHandler;
+  onTimeout?: NavigationOutpostTimeoutHandler;
 }): RegisteredNavigationOutpost => {
-  const { name, handler, priority, hooks, timeout, lazy = false } = options;
+  const { name, handler, priority, hooks, timeout, lazy = false, onError, onTimeout } = options;
 
   return {
     name,
@@ -112,6 +116,8 @@ export const createRegisteredOutpost = (options: {
     hooks,
     timeout,
     lazy,
+    onError,
+    onTimeout,
     getHandler: () => Promise.resolve(handler),
   };
 };

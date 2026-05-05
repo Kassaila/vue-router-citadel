@@ -63,7 +63,7 @@
 
 ### Testing
 
-- [x] Vitest + happy-dom — 145 tests across 9 test files
+- [x] Vitest + happy-dom
 
 ### Documentation
 
@@ -85,44 +85,13 @@
 - [x] GoatCounter analytics — `docs/.vitepress/config.ts` ([dashboard](https://kassaila.goatcounter.com))
 - [x] Comparison page (`docs/guide/comparison.md`) — feature matrix (14 features) vs 4 Vue Router 4+ alternatives
 - [x] LLM SEO — `/llms.txt`, `.md` twins, `<link rel="alternate">`, hidden hint div, `robots.txt` generated in `buildEnd`
+- [x] Per-outpost `onError` / `onTimeout` — outpost-level handler replaces citadel-level when set, falls back to global, then default `BLOCK`
 
 ---
 
 ## TODO
 
 ### Priority 2 — Post-Release
-
-#### Per-Outpost `onError` / `onTimeout`
-
-Currently `onError` and `onTimeout` are configured only at the citadel level. Allow overriding them
-per outpost for granular error/timeout handling (e.g. send `auth` failures to Sentry but silently
-`ALLOW` on `preload` timeout).
-
-```typescript
-citadel.deployOutpost({
-  name: 'auth',
-  handler: authCheck,
-  onError: (error, ctx) => {
-    sentry.captureException(error);
-    return { name: 'login' };
-  },
-  onTimeout: (_name, ctx) => ctx.verdicts.BLOCK,
-});
-```
-
-**Semantics to decide:**
-
-- Per-outpost handler **replaces** the global one (simpler, recommended)
-- Both run in sequence (more complex, unclear precedence)
-
-**Implementation:**
-
-- Add optional `onError` / `onTimeout` fields to `NavigationOutpost` type
-- In `processOutpost`: check outpost-level handler first, fall back to options-level
-- Tests: per-outpost handler takes precedence, falls through when absent
-- Docs: extend `error-handling.md` and `timeout.md` with per-outpost examples
-
----
 
 #### Metrics
 

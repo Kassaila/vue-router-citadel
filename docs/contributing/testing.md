@@ -11,7 +11,7 @@ description: Testing guide for Vue Router Citadel — vitest setup, test helpers
 | -------------- | --------- |
 | Test Framework | Vitest    |
 | Environment    | happy-dom |
-| Total Tests    | 145       |
+| Total Tests    | 155       |
 | Test Files     | 9         |
 | Coverage       | 91%       |
 
@@ -49,16 +49,16 @@ __tests__/
 
 Located in `__tests__/helpers/setup.ts`:
 
-| Helper                              | Description                                   |
-| ----------------------------------- | --------------------------------------------- |
-| `createMockRouter(routes?)`         | Creates vue-router with memory history        |
-| `createMockLogger()`                | Logger that captures calls for assertions     |
-| `createAllowHandler()`              | Returns `'allow'` verdict                     |
-| `createBlockHandler()`              | Returns `'block'` verdict                     |
-| `createRedirectHandler(to)`         | Returns redirect location                     |
-| `createDelayedHandler(ms, outcome)` | Async handler with delay (for timeout tests)  |
-| `createErrorHandler(message)`       | Throws error with message                     |
-| `createRegisteredOutpost(options)`  | Creates RegisteredNavigationOutpost for tests |
+| Helper                              | Description                                                                                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createMockRouter(routes?)`         | Creates vue-router with memory history                                                                                                      |
+| `createMockLogger()`                | Logger that captures calls for assertions                                                                                                   |
+| `createAllowHandler()`              | Returns `'allow'` verdict                                                                                                                   |
+| `createBlockHandler()`              | Returns `'block'` verdict                                                                                                                   |
+| `createRedirectHandler(to)`         | Returns redirect location                                                                                                                   |
+| `createDelayedHandler(ms, outcome)` | Async handler with delay (for timeout tests)                                                                                                |
+| `createErrorHandler(message)`       | Throws error with message                                                                                                                   |
+| `createRegisteredOutpost(options)`  | Creates `RegisteredNavigationOutpost` for tests — accepts `name`, `handler`, `priority`, `hooks`, `timeout`, `lazy`, `onError`, `onTimeout` |
 
 ### Example Usage
 
@@ -137,7 +137,7 @@ expect(logger.calls.some((c) => c.level === 'warn' && c.args[0].includes('timed 
 
 ## 📝 Test Cases
 
-See the complete [Test Cases Reference](/contributing/test-cases) for a full list of all 145 tests
+See the complete [Test Cases Reference](/contributing/test-cases) for a full list of all 155 tests
 across 9 test files.
 
 ---

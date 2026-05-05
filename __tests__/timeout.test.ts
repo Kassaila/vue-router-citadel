@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { createNavigationCitadel } from '../src/navigationCitadel';
-import { NavigationOutpostScopes, NavigationHooks } from '../src/types';
+import { NavigationOutpostScopes, NavigationOutpostVerdicts, NavigationHooks } from '../src/types';
 import { createMockRouter, createMockLogger, createDelayedHandler } from './helpers/setup';
 
 describe('timeout', () => {
@@ -183,6 +183,139 @@ describe('timeout', () => {
 
     clearTimeoutSpy.mockRestore();
     citadel.destroy();
+  });
+
+  describe('per-outpost onTimeout', () => {
+    it('per-outpost onTimeout takes precedence over options.onTimeout', async () => {
+      const optionsOnTimeout = vi.fn().mockReturnValue(NavigationOutpostVerdicts.ALLOW);
+      const outpostOnTimeout = vi.fn().mockReturnValue(NavigationOutpostVerdicts.ALLOW);
+
+      const citadel = createNavigationCitadel(router, {
+        log: false,
+        logger: mockLogger,
+        defaultTimeout: 50,
+        onTimeout: optionsOnTimeout,
+      });
+
+      citadel.deployOutpost({
+        scope: NavigationOutpostScopes.GLOBAL,
+        name: 'slow',
+        handler: createDelayedHandler(200),
+        onTimeout: outpostOnTimeout,
+      });
+
+      await router.push('/dashboard');
+
+      expect(outpostOnTimeout).toHaveBeenCalledOnce();
+      expect(optionsOnTimeout).not.toHaveBeenCalled();
+
+      citadel.destroy();
+    });
+
+    it('falls back to options.onTimeout when outpost has no onTimeout', async () => {
+      const optionsOnTimeout = vi.fn().mockReturnValue(NavigationOutpostVerdicts.ALLOW);
+
+      const citadel = createNavigationCitadel(router, {
+        log: false,
+        logger: mockLogger,
+        defaultTimeout: 50,
+        onTimeout: optionsOnTimeout,
+      });
+
+      citadel.deployOutpost({
+        scope: NavigationOutpostScopes.GLOBAL,
+        name: 'slow',
+        handler: createDelayedHandler(200),
+      });
+
+      await router.push('/dashboard');
+
+      expect(optionsOnTimeout).toHaveBeenCalledOnce();
+
+      citadel.destroy();
+    });
+
+    it('blocks with default behavior when neither handler is set', async () => {
+      const citadel = createNavigationCitadel(router, {
+        log: false,
+        logger: mockLogger,
+        defaultTimeout: 50,
+      });
+
+      citadel.deployOutpost({
+        scope: NavigationOutpostScopes.GLOBAL,
+        name: 'slow',
+        handler: createDelayedHandler(200),
+      });
+
+      await router.push('/dashboard').catch(() => {});
+
+      expect(router.currentRoute.value.name).toBe('home');
+      expect(
+        mockLogger.calls.some(
+          (c) => c.level === 'warn' && (c.args[0] as string).includes('timed out'),
+        ),
+      ).toBe(true);
+
+      citadel.destroy();
+    });
+
+    it('falls back to BLOCK when onTimeout itself throws', async () => {
+      const onTimeout = vi.fn().mockImplementation(() => {
+        throw new Error('handler exploded');
+      });
+
+      const citadel = createNavigationCitadel(router, {
+        log: false,
+        logger: mockLogger,
+        defaultTimeout: 50,
+      });
+
+      citadel.deployOutpost({
+        scope: NavigationOutpostScopes.GLOBAL,
+        name: 'slow',
+        handler: createDelayedHandler(200),
+        onTimeout,
+      });
+
+      await router.push('/dashboard').catch(() => {});
+
+      expect(onTimeout).toHaveBeenCalledOnce();
+      expect(router.currentRoute.value.name).toBe('home');
+      expect(
+        mockLogger.calls.some(
+          (c) => c.level === 'error' && (c.args[0] as string).includes('Recovery handler'),
+        ),
+      ).toBe(true);
+
+      citadel.destroy();
+    });
+
+    it('passes hook context to per-outpost onTimeout', async () => {
+      const outpostOnTimeout = vi.fn().mockReturnValue(NavigationOutpostVerdicts.ALLOW);
+
+      const citadel = createNavigationCitadel(router, {
+        log: false,
+        logger: mockLogger,
+        defaultTimeout: 50,
+      });
+
+      citadel.deployOutpost({
+        scope: NavigationOutpostScopes.GLOBAL,
+        name: 'slow',
+        handler: createDelayedHandler(200),
+        onTimeout: outpostOnTimeout,
+      });
+
+      await router.push('/dashboard');
+
+      expect(outpostOnTimeout).toHaveBeenCalledWith(
+        'slow',
+        expect.objectContaining({ hook: NavigationHooks.BEFORE_EACH }),
+      );
+
+      citadel.destroy();
+    });
   });
 
   it('timeout timer is cleaned up when handler times out', async () => {

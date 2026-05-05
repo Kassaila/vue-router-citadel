@@ -51,17 +51,20 @@ flowchart TD
 
     RACE --> CLR["clearTimeout (finally)"]
     CLR --> TO{Timeout?}
-    TO -->|Yes| TOH{Custom onTimeout?}
+    TO -->|Yes| TOH{outpost.onTimeout<br/>set?}
     TO -->|No| C
 
     B --> C[normalizeOutcome]
 
-    TOH -->|Yes| TOC["onTimeout(name, ctx)"]
-    TOH -->|No| TOLOG[🟡 log.warn: timed out]
+    TOH -->|Yes| TOC["outpost.onTimeout(name, ctx)"]
+    TOH -->|No| TOG{citadel.onTimeout<br/>set?}
+    TOG -->|Yes| TOC2["citadel.onTimeout(name, ctx)"]
+    TOG -->|No| TOLOG[🟡 log.warn: timed out]
     TOLOG --> TODBG[🟣 debugger: outpost-timeout]
     TODBG --> TOK[🔴 Return BLOCK]
 
     TOC --> TON[normalizeOutcome]
+    TOC2 --> TON
     TON --> F
 
     C --> D{Valid outcome?}
@@ -71,12 +74,15 @@ flowchart TD
     LOG1 --> DBG2[🟣 debugger: outpost-block]
     DBG2 --> F[Return outcome]
 
-    D -->|Error thrown| G{Custom onError?}
+    D -->|Error thrown| G{outpost.onError<br/>set?}
 
-    G -->|Yes| H["onError(error, ctx)"]
-    G -->|No| LOG2[🔴 log.error]
+    G -->|Yes| H["outpost.onError(error, ctx)"]
+    G -->|No| GG{citadel.onError<br/>set?}
+    GG -->|Yes| H2["citadel.onError(error, ctx)"]
+    GG -->|No| LOG2[🔴 log.error]
 
     H --> I[normalizeOutcome]
+    H2 --> I
     I --> J{Valid?}
     J -->|Yes| F
     J -->|Error| LOG2

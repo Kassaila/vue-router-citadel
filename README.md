@@ -28,8 +28,8 @@ Think of it as turning your router into a fortress.
 - 📋 **Priority-based execution** — deterministic outpost ordering with numeric priorities
 - 🪝 **All navigation hooks** — beforeEach, beforeResolve, afterEach support per outpost
 - 🔄 **Dynamic management** — deploy, abandon, and reassign outposts at runtime
-- ⏱️ **Timeout control & error handling** — global and per-outpost timeout configuration. Custom
-  timeout and error handlers with redirect or block verdicts.
+- ⏱️ **Timeout control & error handling** — global and per-outpost timeout and error handlers.
+  Override citadel-level handlers per outpost with redirect or block verdicts.
 - 🔒 **Type-safe** — full TypeScript support with declaration merging for outpost names. IDE
   autocomplete and compile-time validation.
 - 🦥 **Lazy outposts** — dynamic imports with automatic caching for code splitting

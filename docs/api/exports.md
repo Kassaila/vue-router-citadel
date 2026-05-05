@@ -52,6 +52,10 @@ import type {
   CitadelLogger,
   // Lazy loading
   LazyOutpostLoader,
+  // Error and timeout handlers
+  NavigationOutpostErrorHandler,
+  NavigationOutpostTimeoutHandler,
+  OutpostBehaviorOptions,
   // Debug types
   DebugHandler,
   DebugPoint,

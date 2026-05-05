@@ -198,9 +198,57 @@ export type NavigationOutpostHandler = (
 ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
 
 /**
+ * Error handler signature — called when an outpost handler throws.
+ * Used for citadel-level `onError` and per-outpost `onError`.
+ */
+export type NavigationOutpostErrorHandler = (
+  error: Error,
+  ctx: NavigationOutpostContext,
+) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
+
+/**
+ * Timeout handler signature — called when an outpost exceeds its timeout.
+ * Used for citadel-level `onTimeout` and per-outpost `onTimeout`.
+ */
+export type NavigationOutpostTimeoutHandler = (
+  outpostName: string,
+  ctx: NavigationOutpostContext,
+) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
+
+/**
  * Lazy outpost loader — returns a module with default export
  */
 export type LazyOutpostLoader = () => Promise<{ default: NavigationOutpostHandler }>;
+
+/**
+ * Shared optional behavior for outposts. Used by both `NavigationOutpost` (deployment input)
+ * and `RegisteredNavigationOutpost` (runtime form).
+ */
+export interface OutpostBehaviorOptions {
+  /**
+   * Priority for outposts (lower = processed first). Default: 100
+   */
+  priority?: number;
+  /**
+   * Hooks this outpost should run on. Default: ['beforeEach']
+   */
+  hooks?: NavigationHook[];
+  /**
+   * Timeout for this outpost in milliseconds. Overrides defaultTimeout.
+   * Note: For lazy outposts, timeout applies only to handler execution, not module loading.
+   */
+  timeout?: number;
+  /**
+   * Per-outpost error handler. Replaces the citadel-level `onError` for this outpost.
+   * If absent, falls back to the citadel-level `onError`, then to the default behavior (BLOCK).
+   */
+  onError?: NavigationOutpostErrorHandler;
+  /**
+   * Per-outpost timeout handler. Replaces the citadel-level `onTimeout` for this outpost.
+   * If absent, falls back to the citadel-level `onTimeout`, then to the default behavior (BLOCK).
+   */
+  onTimeout?: NavigationOutpostTimeoutHandler;
+}
 
 /**
  * Navigation outpost configuration.
@@ -210,7 +258,7 @@ export type LazyOutpostLoader = () => Promise<{ default: NavigationOutpostHandle
 export interface NavigationOutpost<
   S extends NavigationOutpostScope = 'global',
   L extends boolean = false,
-> {
+> extends OutpostBehaviorOptions {
   /**
    * Outpost scope. Default: 'global'
    */
@@ -225,19 +273,6 @@ export interface NavigationOutpost<
    * When lazy: false (default), must be a NavigationOutpostHandler.
    */
   handler: L extends true ? LazyOutpostLoader : NavigationOutpostHandler;
-  /**
-   * Priority for outposts (lower = processed first). Default: 100
-   */
-  priority?: number;
-  /**
-   * Hooks this outpost should run on. Default: ['beforeEach']
-   */
-  hooks?: NavigationHook[];
-  /**
-   * Timeout for this outpost in milliseconds. Overrides defaultTimeout.
-   * Note: For lazy outposts, timeout applies only to handler execution, not module loading.
-   */
-  timeout?: number;
   /**
    * Mark handler as lazy-loaded. Default: false.
    * When true, handler must return Promise<{ default: NavigationOutpostHandler }>.
@@ -297,10 +332,7 @@ export interface NavigationCitadelOptions {
   /**
    * Global error handler
    */
-  onError?: (
-    error: Error,
-    ctx: NavigationOutpostContext,
-  ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
+  onError?: NavigationOutpostErrorHandler;
   /**
    * Default priority for outposts. Default: 100
    */
@@ -312,32 +344,21 @@ export interface NavigationCitadelOptions {
   /**
    * Handler called when outpost times out
    */
-  onTimeout?: (
-    outpostName: string,
-    ctx: NavigationOutpostContext,
-  ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
+  onTimeout?: NavigationOutpostTimeoutHandler;
 }
 
 /**
- * Registered navigation outpost structure (after deployment)
+ * Registered navigation outpost structure (after deployment).
+ *
+ * Note: `priority` here is the raw value passed at deploy time — `undefined` if the
+ * caller did not specify one. The effective priority used for ordering is resolved
+ * against `defaultPriority` inside the registry's sorted arrays, not on this struct.
  */
-export interface RegisteredNavigationOutpost {
+export interface RegisteredNavigationOutpost extends OutpostBehaviorOptions {
   /**
    * Unique outpost name
    */
   name: string;
-  /**
-   * Priority for outposts (lower = processed first)
-   */
-  priority?: number;
-  /**
-   * Hooks this outpost should run on
-   */
-  hooks?: NavigationHook[];
-  /**
-   * Timeout for this outpost in milliseconds
-   */
-  timeout?: number;
   /**
    * Whether this outpost is lazy-loaded
    */
