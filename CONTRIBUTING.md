@@ -4,7 +4,7 @@ Thanks for your interest in contributing to vue-router-citadel!
 
 ## Requirements
 
-- Node.js >= 22.0.0
+- Node.js >= 24.0.0
 - npm >= 9.0.0
 
 ## Setup

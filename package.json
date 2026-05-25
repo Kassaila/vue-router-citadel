@@ -1,6 +1,6 @@
 {
   "name": "vue-router-citadel",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Structured navigation defense for Vue Router",
   "type": "module",
   "sideEffects": false,
@@ -62,9 +62,6 @@
   ],
   "author": "Kassaila",
   "license": "MIT",
-  "engines": {
-    "node": ">=22.0.0"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Kassaila/vue-router-citadel.git"

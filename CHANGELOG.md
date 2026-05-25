@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-25
+
 ### Added
 
 - Per-outpost `onError` and `onTimeout` handlers on `NavigationOutpost`. When set, they replace the
