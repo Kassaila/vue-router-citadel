@@ -28,17 +28,19 @@ problem. Here's how they compare to **Vue Router Citadel**.
 | [Logging & debug](/advanced/logging)            |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ❌     |
 | Bundle size (brotli)                            |  ≤3 KB  |     ~3 KB     |      ~1 KB      |    ~3 KB     |    ~1 KB    |   ~1 KB   |
 
-[route-guard]: https://www.npmjs.com/package/@this-dot/vue-route-guard
-[router-shield]: https://www.npmjs.com/package/vue-router-shield
-[easy-route]: https://www.npmjs.com/package/@warhsn/easy-route-vue
-[programic]: https://www.npmjs.com/package/@programic/vue-router-middleware
-[vite-mw]: https://www.npmjs.com/package/vite-plugin-vue-middleware
+[route-guard]: #vue-route-guard
+[router-shield]: #vue-router-shield
+[easy-route]: #easy-route-vue
+[programic]: #programic-middleware
+[vite-mw]: #vite-plugin-vue-middleware
 
 ## 📦 Alternatives
 
-**[@this-dot/vue-route-guard](https://www.npmjs.com/package/@this-dot/vue-route-guard)**
-— From This Dot Labs. Declarative authentication guard with token management and permission-based
-access control. Vue Router 4, TypeScript.
+### @this-dot/vue-route-guard {#vue-route-guard}
+
+[npm](https://www.npmjs.com/package/@this-dot/vue-route-guard) — From This Dot Labs. Declarative
+authentication guard with token management and permission-based access control. Vue Router 4,
+TypeScript.
 
 ```js
 setupGuard({
@@ -52,9 +54,11 @@ setupGuard({
 // { path: '/dashboard', meta: { requiresAuth: true, access: ['admin'] } }
 ```
 
-**[vue-router-shield](https://www.npmjs.com/package/vue-router-shield)** — Provides `BeforeEach`,
-`BeforeEnter`, and `BeforeUpdate` guard types within a single `beforeEach` hook. Guards are defined
-in `route.meta.guard`. Plain JavaScript.
+### vue-router-shield {#vue-router-shield}
+
+[npm](https://www.npmjs.com/package/vue-router-shield) — Provides `BeforeEach`, `BeforeEnter`, and
+`BeforeUpdate` guard types within a single `beforeEach` hook. Guards are defined in
+`route.meta.guard`. Plain JavaScript.
 
 ```js
 const route = {
@@ -65,8 +69,10 @@ const route = {
 };
 ```
 
-**[@warhsn/easy-route-vue](https://www.npmjs.com/package/@warhsn/easy-route-vue)** — Laravel-inspired
-middleware system. Supports TypeScript and Vue Router 4.
+### @warhsn/easy-route-vue {#easy-route-vue}
+
+[npm](https://www.npmjs.com/package/@warhsn/easy-route-vue) — Laravel-inspired middleware system.
+Supports TypeScript and Vue Router 4.
 
 ```js
 const route = {
@@ -77,8 +83,10 @@ const route = {
 };
 ```
 
-**[@programic/vue-router-middleware](https://www.npmjs.com/package/@programic/vue-router-middleware)** — Modern
-middleware abstraction for Vue Router 4. Built with Vite and vitest. Native TypeScript.
+### @programic/vue-router-middleware {#programic-middleware}
+
+[npm](https://www.npmjs.com/package/@programic/vue-router-middleware) — Modern middleware
+abstraction for Vue Router 4. Built with Vite and vitest. Native TypeScript.
 
 ```js
 const route = {
@@ -89,8 +97,10 @@ const route = {
 };
 ```
 
-**[vite-plugin-vue-middleware](https://www.npmjs.com/package/vite-plugin-vue-middleware)** — File-based
-middleware system powered by Vite.
+### vite-plugin-vue-middleware {#vite-plugin-vue-middleware}
+
+[npm](https://www.npmjs.com/package/vite-plugin-vue-middleware) — File-based middleware system
+powered by Vite.
 
 ```js
 // src/middleware/01.auth.global.ts
