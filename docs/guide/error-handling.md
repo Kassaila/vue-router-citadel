@@ -74,6 +74,45 @@ The `onError` handler receives:
 If `onError` itself throws an error, the citadel falls back to the default behavior — log and `BLOCK`.
 :::
 
+## 🎯 Per-Outpost `onError`
+
+Override the citadel-level handler for a single outpost — useful when error policies differ between outposts (e.g. report `auth` failures to Sentry but silently allow `preload` errors).
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  onError: (_, ctx) => ({ name: 'error' }),
+});
+
+citadel.deployOutpost({
+  name: 'auth',
+  handler: authCheck,
+  onError: (error, ctx) => {
+    sentry.captureException(error);
+    return { name: 'login' };
+  },
+});
+
+citadel.deployOutpost({
+  name: 'preload',
+  handler: preloadData,
+  onError: (_, ctx) => ctx.verdicts.ALLOW,
+});
+```
+
+Resolution order:
+
+```mermaid
+flowchart TD
+    A[Handler throws Error] --> B{outpost.onError<br/>set?}
+    B -->|Yes| C["outpost.onError(error, ctx)"]
+    B -->|No| D{citadel.onError<br/>set?}
+    D -->|Yes| E["citadel.onError(error, ctx)"]
+    D -->|No| LOG[🔴 log.error: outpost threw error]
+    LOG --> F[🔴 Return BLOCK]
+    C --> G[Return outcome]
+    E --> G
+```
+
 ## ⏱️ Timeout Errors
 
 Timeouts follow a similar flow — if `onTimeout` is provided, it controls the outcome; otherwise navigation is blocked with a warning.

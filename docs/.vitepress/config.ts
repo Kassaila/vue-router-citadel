@@ -18,7 +18,7 @@ const MARKETING_DESCRIPTION =
   'Vue Router Citadel is a middleware-driven navigation control system for Vue Router that lets you build layered, predictable, and scalable route protection.';
 
 const LLMS_INTRO =
-  'Vue Router Citadel is a small (~4 KB brotli) layer on top of Vue Router 4 & 5 that turns navigation guards into prioritized, scoped, return-based middleware. Each link below has a clean Markdown version optimized for LLM consumption.';
+  'Vue Router Citadel is a small (~3 KB brotli) layer on top of Vue Router 4 & 5 that turns navigation guards into prioritized, scoped, return-based middleware. Each link below has a clean Markdown version optimized for LLM consumption.';
 
 const ROBOTS_TXT = `User-agent: *
 Allow: /

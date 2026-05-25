@@ -1,11 +1,11 @@
 ---
 title: Test Cases
-description: Complete list of all 145 test cases across 9 test files in Vue Router Citadel — registry, patrol, API, timeout, lazy, integration, and DevTools tests.
+description: Complete list of all 155 test cases across 9 test files in Vue Router Citadel — registry, patrol, API, timeout, lazy, integration, and DevTools tests.
 ---
 
 # 📝 Test Cases
 
-Complete list of all test cases across 9 test files (145 tests).
+Complete list of all test cases across 9 test files (155 tests).
 
 For testing setup, helpers, and how to write new tests, see the [Testing Guide](/contributing/testing).
 
@@ -49,7 +49,7 @@ Registry management functions.
 
 ---
 
-## navigationOutposts.test.ts (19 tests)
+## navigationOutposts.test.ts (24 tests)
 
 Outcome normalization and patrol logic.
 
@@ -86,6 +86,16 @@ Outcome normalization and patrol logic.
 | processes route outposts after global               | Execution order             |
 | warns on duplicate route outposts                   | Nested route deduplication  |
 | silently skips route outposts not found in registry | Missing outpost handling    |
+
+### per-outpost onError
+
+| Test                                                      | Description                         |
+| --------------------------------------------------------- | ----------------------------------- |
+| per-outpost onError takes precedence over options.onError | Outpost handler has higher priority |
+| falls back to options.onError when outpost has no onError | Citadel-level fallback              |
+| blocks with default behavior when neither handler is set  | BLOCK when no handler configured    |
+| coerces non-Error throws and still calls onError          | Non-Error values wrapped in Error   |
+| falls back to BLOCK when onError itself throws            | Recovery handler failure handling   |
 
 ---
 
@@ -169,7 +179,7 @@ Public API testing.
 
 ---
 
-## timeout.test.ts (7 tests)
+## timeout.test.ts (12 tests)
 
 Timeout functionality.
 
@@ -182,6 +192,16 @@ Timeout functionality.
 | fast outpost completes before timeout                  | No false positives                        |
 | timeout timer is cleaned up when handler resolves fast | `clearTimeout` called on early resolve    |
 | timeout timer is cleaned up when handler times out     | `clearTimeout` called after timeout fires |
+
+### per-outpost onTimeout
+
+| Test                                                          | Description                         |
+| ------------------------------------------------------------- | ----------------------------------- |
+| per-outpost onTimeout takes precedence over options.onTimeout | Outpost handler has higher priority |
+| falls back to options.onTimeout when outpost has no onTimeout | Citadel-level fallback              |
+| blocks with default behavior when neither handler is set      | BLOCK when no handler configured    |
+| falls back to BLOCK when onTimeout itself throws              | Recovery handler failure handling   |
+| passes hook context to per-outpost onTimeout                  | Context passed to handler correctly |
 
 ---
 

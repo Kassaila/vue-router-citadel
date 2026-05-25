@@ -133,20 +133,51 @@ const isTimeoutError = (error: unknown): boolean =>
   error instanceof Error && TIMEOUT_SYMBOL in error;
 
 /**
+ * Subset of citadel options consumed by `processOutpost` and `patrol`.
+ * Decouples these functions from the full public API surface.
+ */
+export type ProcessOutpostConfig = Pick<
+  NavigationCitadelOptions,
+  'defaultTimeout' | 'onError' | 'onTimeout' | 'debugHandler'
+>;
+
+/**
+ * Coerces a thrown value into an Error instance so user handlers always receive one.
+ */
+const toError = (value: unknown): Error =>
+  value instanceof Error ? value : new Error(String(value));
+
+/**
  * Processes a single outpost and returns normalized outcome
  */
 const processOutpost = async (
   outpost: RegisteredNavigationOutpost,
   ctx: NavigationOutpostContext,
-  options: NavigationCitadelOptions,
+  options: ProcessOutpostConfig,
   logger: CitadelLogger,
   runtimeState: CitadelRuntimeState,
 ): Promise<NavigationOutpostOutcome> => {
-  const { onError, defaultTimeout, onTimeout } = options;
   const { router } = ctx;
-  const timeout = outpost.timeout ?? defaultTimeout;
+  const timeout = outpost.timeout ?? options.defaultTimeout;
 
   debugPoint(DebugPoints.OUTPOST_ENTER, runtimeState.debug, logger, options.debugHandler);
+
+  /**
+   * Wraps a recovery handler so its own throws don't leak past `processOutpost`.
+   * `normalizeOutcome` throws are caught here too and fall back to BLOCK.
+   */
+  const runRecoveryHandler = async (
+    invokeHandler: () => Promise<NavigationOutpostOutcome> | NavigationOutpostOutcome,
+  ): Promise<NavigationOutpostOutcome> => {
+    try {
+      return normalizeOutcome(await invokeHandler(), router);
+    } catch (handlerError) {
+      logger.error(`Recovery handler for "${outpost.name}" threw error:`, handlerError);
+      debugPoint(DebugPoints.ERROR_CATCH, runtimeState.debug, logger, options.debugHandler);
+
+      return NavigationOutpostVerdicts.BLOCK;
+    }
+  };
 
   try {
     /**
@@ -173,27 +204,30 @@ const processOutpost = async (
       logger.warn(`Outpost "${outpost.name}" timed out after ${timeout}ms`);
       debugPoint(DebugPoints.OUTPOST_TIMEOUT, runtimeState.debug, logger, options.debugHandler);
 
-      if (onTimeout) {
-        const timeoutOutcome = await onTimeout(outpost.name, ctx);
+      const onTimeout = outpost.onTimeout ?? options.onTimeout;
 
-        return normalizeOutcome(timeoutOutcome, router);
+      if (onTimeout) {
+        return runRecoveryHandler(() => onTimeout(outpost.name, ctx));
       }
 
       return NavigationOutpostVerdicts.BLOCK;
     }
 
     /**
-     * Handle error with custom handler or default behavior
+     * Handle error with custom handler or default behavior.
+     * Non-Error throws are coerced so user handlers always receive an Error.
      */
-    if (onError && error instanceof Error) {
-      const errorOutcome = await onError(error, ctx);
+    const onError = outpost.onError ?? options.onError;
 
-      return normalizeOutcome(errorOutcome, router);
+    if (onError) {
+      const normalizedError = toError(error);
+
+      return runRecoveryHandler(() => onError(normalizedError, ctx));
     }
 
     /**
-     * Default error handler: log error and block navigation
-     * Critical: always log
+     * Default: log and BLOCK.
+     * Critical: always log.
      */
     logger.error(`Outpost "${outpost.name}" threw error:`, error);
     debugPoint(DebugPoints.ERROR_CATCH, runtimeState.debug, logger, options.debugHandler);
@@ -213,7 +247,7 @@ const processOutpost = async (
 export const patrol = async (
   registry: NavigationRegistry,
   ctx: NavigationOutpostContext,
-  options: NavigationCitadelOptions,
+  options: ProcessOutpostConfig,
   logger: CitadelLogger,
   runtimeState: CitadelRuntimeState,
 ): Promise<NavigationOutpostOutcome> => {
