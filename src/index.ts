@@ -30,6 +30,15 @@ export type {
    * Lazy loading
    */
   LazyOutpostLoader,
+  /**
+   * Error and timeout handlers
+   */
+  NavigationOutpostErrorHandler,
+  NavigationOutpostTimeoutHandler,
+  /**
+   * Shared outpost behavior options
+   */
+  OutpostBehaviorOptions,
 } from './types';
 
 /**

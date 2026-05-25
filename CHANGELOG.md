@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Per-outpost `onError` and `onTimeout` handlers on `NavigationOutpost`. When set, they replace the
+  citadel-level handler for that outpost; otherwise the citadel-level handler (or default `BLOCK`)
+  applies. Enables per-outpost error policies (e.g. report `auth` failures to Sentry but silently
+  allow on `preload` errors)
+- `OutpostBehaviorOptions` interface exported — shared optional fields (`priority`, `hooks`,
+  `timeout`, `onError`, `onTimeout`) used by both `NavigationOutpost` and
+  `RegisteredNavigationOutpost`
+- `NavigationOutpostErrorHandler` and `NavigationOutpostTimeoutHandler` types exported — handler
+  signatures for citadel-level and per-outpost error/timeout callbacks
+
+### Changed
+
+- `onError` is now invoked for non-`Error` throws. Previously the handler was skipped when an
+  outpost threw a non-`Error` value (string, object, etc.) and navigation fell through to the
+  default `BLOCK`. Such values are now wrapped via `new Error(String(value))` before being passed to
+  `onError`
+- Throws from inside `onError` / `onTimeout` are now caught. Previously they propagated out of the
+  guard. They are now logged and the outpost resolves to `BLOCK`. The same applies if the verdict
+  returned by these handlers fails `normalizeOutcome` validation
+
 ## [0.2.2] - 2026-03-17
 
 ### Fixed
@@ -103,7 +127,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `check:lint` — ESLint check (alias)
 - `check:types` — TypeScript type checking (`tsc --noEmit`)
 - `check:format` — format check alias
-- `check:size` — bundle size check ([size-limit](https://github.com/ai/size-limit), ≤4 KB)
+- `check:size` — bundle size check ([size-limit](https://github.com/ai/size-limit))
 - `check:all` — full validation chain (format + lint + types + tests + build + size)
 - `release:check` — pre-release verification (check:all + pack --dry-run)
 - `release:publish` — publish to npm with full checks
@@ -181,4 +205,4 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - `eslint-config-prettier` for conflict-free coexistence with Prettier
   - 3 custom local rules: `switch-case-braces`, `jsdoc-comment-style`, `prefer-arrow-without-this`
   - npm scripts: `lint`, `lint:fix`, `check:lint`; integrated into `check:all` and `lint-staged`
-- [size-limit](https://github.com/ai/size-limit) — bundle size control (≤4 KB, minified + brotli)
+- [size-limit](https://github.com/ai/size-limit) — bundle size control

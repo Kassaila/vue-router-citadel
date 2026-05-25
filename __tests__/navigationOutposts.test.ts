@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { normalizeOutcome, patrol, toNavigationGuardReturn } from '../src/navigationOutposts';
 import { createRegistry, register } from '../src/navigationRegistry';
@@ -360,6 +360,135 @@ describe('navigationOutposts', () => {
           (c) => c.level === 'warn' && (c.args[0] as string).includes('Duplicate'),
         ),
       ).toBe(true);
+    });
+
+    describe('per-outpost onError', () => {
+      it('per-outpost onError takes precedence over options.onError', async () => {
+        const optionsOnError = vi.fn().mockReturnValue(NavigationOutpostVerdicts.ALLOW);
+        const outpostOnError = vi.fn().mockReturnValue(NavigationOutpostVerdicts.ALLOW);
+
+        register(
+          registry,
+          'global',
+          createRegisteredOutpost({
+            name: 'thrower',
+            handler: () => {
+              throw new Error('boom');
+            },
+            onError: outpostOnError,
+          }),
+          100,
+          mockLogger,
+        );
+
+        await patrol(registry, ctx, { onError: optionsOnError }, mockLogger, {
+          log: false,
+          debug: false,
+        });
+
+        expect(outpostOnError).toHaveBeenCalledOnce();
+        expect(optionsOnError).not.toHaveBeenCalled();
+      });
+
+      it('falls back to options.onError when outpost has no onError', async () => {
+        const optionsOnError = vi.fn().mockReturnValue(NavigationOutpostVerdicts.ALLOW);
+
+        register(
+          registry,
+          'global',
+          createRegisteredOutpost({
+            name: 'thrower',
+            handler: () => {
+              throw new Error('boom');
+            },
+          }),
+          100,
+          mockLogger,
+        );
+
+        await patrol(registry, ctx, { onError: optionsOnError }, mockLogger, {
+          log: false,
+          debug: false,
+        });
+
+        expect(optionsOnError).toHaveBeenCalledOnce();
+      });
+
+      it('blocks with default behavior when neither handler is set', async () => {
+        register(
+          registry,
+          'global',
+          createRegisteredOutpost({
+            name: 'thrower',
+            handler: () => {
+              throw new Error('boom');
+            },
+          }),
+          100,
+          mockLogger,
+        );
+
+        const result = await patrol(registry, ctx, {}, mockLogger, { log: false, debug: false });
+
+        expect(result).toBe(NavigationOutpostVerdicts.BLOCK);
+        expect(mockLogger.calls.some((c) => c.level === 'error')).toBe(true);
+      });
+
+      it('coerces non-Error throws and still calls onError', async () => {
+        const onError = vi.fn().mockReturnValue(NavigationOutpostVerdicts.ALLOW);
+
+        register(
+          registry,
+          'global',
+          createRegisteredOutpost({
+            name: 'thrower',
+            handler: () => {
+              throw 'plain string';
+            },
+            onError,
+          }),
+          100,
+          mockLogger,
+        );
+
+        await patrol(registry, ctx, {}, mockLogger, { log: false, debug: false });
+
+        expect(onError).toHaveBeenCalledOnce();
+        const [errorArg] = onError.mock.calls[0];
+
+        expect(errorArg).toBeInstanceOf(Error);
+        expect((errorArg as Error).message).toBe('plain string');
+      });
+
+      it('falls back to BLOCK when onError itself throws', async () => {
+        const onError = vi.fn().mockImplementation(() => {
+          throw new Error('handler exploded');
+        });
+
+        register(
+          registry,
+          'global',
+          createRegisteredOutpost({
+            name: 'thrower',
+            handler: () => {
+              throw new Error('boom');
+            },
+            onError,
+          }),
+          100,
+          mockLogger,
+        );
+
+        const result = await patrol(registry, ctx, {}, mockLogger, { log: false, debug: false });
+
+        expect(onError).toHaveBeenCalledOnce();
+        expect(result).toBe(NavigationOutpostVerdicts.BLOCK);
+        expect(
+          mockLogger.calls.some(
+            (c) => c.level === 'error' && (c.args[0] as string).includes('Recovery handler'),
+          ),
+        ).toBe(true);
+      });
     });
 
     it('silently skips route outposts not found in registry', async () => {
