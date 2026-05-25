@@ -182,7 +182,17 @@ export const createNavigationCitadel = (
    * Deploy a single outpost
    */
   const deployOne = (opts: NavigationOutpost<NavigationOutpostScope, boolean>): void => {
-    const { scope = 'global', name, handler, priority, hooks, timeout, lazy = false } = opts;
+    const {
+      scope = 'global',
+      name,
+      handler,
+      priority,
+      hooks,
+      timeout,
+      lazy = false,
+      onError,
+      onTimeout,
+    } = opts;
 
     /**
      * Create getHandler wrapper
@@ -240,7 +250,16 @@ export const createNavigationCitadel = (
     register(
       registry,
       scope,
-      { name, getHandler, lazy, priority, hooks, timeout },
+      {
+        name,
+        getHandler,
+        lazy,
+        priority,
+        hooks,
+        timeout,
+        onError,
+        onTimeout,
+      },
       defaultPriority,
       logger,
     );

@@ -47,6 +47,43 @@ Loader function for lazy outposts — must return a module with `default` export
 type LazyOutpostLoader = () => Promise<{ default: NavigationOutpostHandler }>;
 ```
 
+## NavigationOutpostErrorHandler
+
+Error handler signature — used for citadel-level `onError` and per-outpost `onError`:
+
+```typescript
+type NavigationOutpostErrorHandler = (
+  error: Error,
+  ctx: NavigationOutpostContext,
+) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
+```
+
+## NavigationOutpostTimeoutHandler
+
+Timeout handler signature — used for citadel-level `onTimeout` and per-outpost `onTimeout`:
+
+```typescript
+type NavigationOutpostTimeoutHandler = (
+  outpostName: string,
+  ctx: NavigationOutpostContext,
+) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
+```
+
+## OutpostBehaviorOptions
+
+Shared optional fields used by both `NavigationOutpost` (deployment input) and
+`RegisteredNavigationOutpost` (runtime form):
+
+```typescript
+interface OutpostBehaviorOptions {
+  priority?: number; // Default: 100
+  hooks?: NavigationHook[]; // Default: ['beforeEach']
+  timeout?: number; // Overrides defaultTimeout
+  onError?: NavigationOutpostErrorHandler; // Replaces citadel-level onError when set
+  onTimeout?: NavigationOutpostTimeoutHandler; // Replaces citadel-level onTimeout when set
+}
+```
+
 ## NavigationOutpost
 
 Configuration for deploying an outpost. Generic `S` constrains name by scope, generic `L` switches handler type for lazy loading:
@@ -55,13 +92,10 @@ Configuration for deploying an outpost. Generic `S` constrains name by scope, ge
 interface NavigationOutpost<
   S extends NavigationOutpostScope = 'global',
   L extends boolean = false,
-> {
+> extends OutpostBehaviorOptions {
   scope?: S; // Default: 'global'
   name: OutpostNameByScope<S>; // Type-safe when registries extended
   handler: L extends true ? LazyOutpostLoader : NavigationOutpostHandler;
-  priority?: number; // Default: 100
-  hooks?: NavigationHook[]; // Default: ['beforeEach']
-  timeout?: number; // Overrides defaultTimeout
   lazy?: L; // Default: false
 }
 ```
@@ -80,14 +114,8 @@ interface NavigationCitadelOptions {
   devtools?: boolean; // Default: __DEV__
   defaultPriority?: number; // Default: 100
   defaultTimeout?: number; // Default: undefined (no timeout)
-  onError?: (
-    error: Error,
-    ctx: NavigationOutpostContext,
-  ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
-  onTimeout?: (
-    outpostName: string,
-    ctx: NavigationOutpostContext,
-  ) => NavigationOutpostOutcome | Promise<NavigationOutpostOutcome>;
+  onError?: NavigationOutpostErrorHandler;
+  onTimeout?: NavigationOutpostTimeoutHandler;
 }
 ```
 

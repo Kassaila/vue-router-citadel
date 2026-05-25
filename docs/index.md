@@ -2,7 +2,7 @@
 layout: home
 title: Vue Router Citadel — TypeScript Middleware & Route Guards
 titleTemplate: false
-description: Middleware-driven navigation control for Vue Router with outpost-based route guards. Layered, type-safe defense in ≤4 KB. No next() chains.
+description: Middleware-driven navigation control for Vue Router with outpost-based route guards. Layered, type-safe defense in ≤3 KB. No next() chains.
 
 hero:
   name: Vue Router Citadel
@@ -39,7 +39,7 @@ features:
   - icon: "\u26A1"
     title: Performance First
     details:
-      '≤4 KB (minified + brotli). Outposts sorted at deploy time, not during navigation. Lazy loading
+      '≤3 KB (minified + brotli). Outposts sorted at deploy time, not during navigation. Lazy loading
       support for code splitting heavy handlers.'
   - icon: "\U0001F50F"
     title: Type-Safe

@@ -136,4 +136,43 @@ citadel.deployOutpost({
 });
 ```
 
+### Per-Outpost `onTimeout`
+
+Override the citadel-level timeout handler for a specific outpost — useful when one outpost should hard-block while another should silently allow.
+
+```typescript
+const citadel = createNavigationCitadel(router, {
+  defaultTimeout: 5000,
+  onTimeout: (_, ctx) => ({ name: 'error' }), // global default: redirect
+});
+
+citadel.deployOutpost({
+  name: 'auth',
+  handler: authCheck,
+  // Hard-block on auth timeout, ignoring global redirect
+  onTimeout: (_, ctx) => ctx.verdicts.BLOCK,
+});
+
+citadel.deployOutpost({
+  name: 'preload',
+  handler: preloadData,
+  // Allow navigation even if preload times out
+  onTimeout: (_, ctx) => ctx.verdicts.ALLOW,
+});
+```
+
+Resolution order:
+
+```mermaid
+flowchart TD
+    A[Outpost timed out] --> LOG1[🟡 log.warn: outpost timed out]
+    LOG1 --> B{outpost.onTimeout<br/>set?}
+    B -->|Yes| C["outpost.onTimeout(name, ctx)"]
+    B -->|No| D{citadel.onTimeout<br/>set?}
+    D -->|Yes| E["citadel.onTimeout(name, ctx)"]
+    D -->|No| F[🔴 Return BLOCK]
+    C --> G[Return outcome]
+    E --> G
+```
+
 <!--@include: ../_snippets/legend.md-->
