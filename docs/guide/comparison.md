@@ -26,7 +26,7 @@ problem. Here's how they compare to **Vue Router Citadel**.
 | [Error handling](/guide/error-handling)         |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ❌     |
 | [Vue DevTools](/guide/devtools)                 |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ❌     |
 | [Logging & debug](/advanced/logging)            |   ✅    |      ❌       |       ❌        |      ❌      |     ❌      |    ❌     |
-| Bundle size (brotli)                            |  ≤4 KB  |     ~3 KB     |      ~1 KB      |    ~3 KB     |    ~1 KB    |   ~1 KB   |
+| Bundle size (brotli)                            |  ≤3 KB  |     ~3 KB     |      ~1 KB      |    ~3 KB     |    ~1 KB    |   ~1 KB   |
 
 [route-guard]: https://www.npmjs.com/package/@this-dot/vue-route-guard
 [router-shield]: https://www.npmjs.com/package/vue-router-shield
@@ -125,7 +125,7 @@ Vue Router Citadel is designed for applications that outgrow simple guard combin
 - **Error handling** — structured `onError` / `onTimeout` handlers with context and custom outcomes
 - **Vue DevTools** — custom inspector for viewing and debugging deployed outposts
 - **Logging & debug** — customizable logger, debug breakpoints, runtime log level control
-- **≤4 KB** — minimal footprint (minified + brotli)
+- **≤3 KB** — minimal footprint (minified + brotli)
 
 ::: tip
 See the [Getting Started](/guide/getting-started) guide to set up your first outpost in under 5

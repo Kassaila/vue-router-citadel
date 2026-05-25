@@ -127,7 +127,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `check:lint` — ESLint check (alias)
 - `check:types` — TypeScript type checking (`tsc --noEmit`)
 - `check:format` — format check alias
-- `check:size` — bundle size check ([size-limit](https://github.com/ai/size-limit), ≤4 KB)
+- `check:size` — bundle size check ([size-limit](https://github.com/ai/size-limit))
 - `check:all` — full validation chain (format + lint + types + tests + build + size)
 - `release:check` — pre-release verification (check:all + pack --dry-run)
 - `release:publish` — publish to npm with full checks
@@ -205,4 +205,4 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - `eslint-config-prettier` for conflict-free coexistence with Prettier
   - 3 custom local rules: `switch-case-braces`, `jsdoc-comment-style`, `prefer-arrow-without-this`
   - npm scripts: `lint`, `lint:fix`, `check:lint`; integrated into `check:all` and `lint-staged`
-- [size-limit](https://github.com/ai/size-limit) — bundle size control (≤4 KB, minified + brotli)
+- [size-limit](https://github.com/ai/size-limit) — bundle size control
