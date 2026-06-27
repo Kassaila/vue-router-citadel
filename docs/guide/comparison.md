@@ -1,13 +1,14 @@
 ---
-title: Comparison
-description: Compare Vue Router Citadel with alternative Vue Router middleware libraries — feature matrix, code examples, and key differences.
+title: Vue Router Middleware Comparison
+description: Compare 6 Vue Router middleware libraries — feature matrix, bundle sizes, and code examples. See how Vue Router Citadel differs on hooks, scopes, timeouts, and types.
 ---
 
-# ⚔️ Comparison
+# ⚔️ Vue Router Middleware Comparison
 
 **Vue Router** provides built-in navigation guards (`beforeEach`, `beforeResolve`, `afterEach`), but as
-applications grow, managing multiple guards becomes complex. Several libraries attempt to solve this
-problem. Here's how they compare to **Vue Router Citadel**.
+applications grow, managing multiple guards becomes complex. Several **Vue Router middleware
+libraries** attempt to solve this — here's how the main alternatives compare to **Vue Router
+Citadel**.
 
 ## 📊 Feature Matrix
 
