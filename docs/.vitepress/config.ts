@@ -292,7 +292,7 @@ export default withMermaid(
         { text: 'Guide', link: '/guide/' },
         { text: 'API', link: '/api/' },
         { text: 'Advanced', link: '/advanced/architecture' },
-        { text: 'Examples', link: '/examples/auth' },
+        { text: 'Examples', link: '/examples/' },
         { text: 'Contributing', link: '/contributing/' },
         {
           text: 'Changelog',
@@ -355,6 +355,7 @@ export default withMermaid(
           {
             text: 'Examples',
             items: [
+              { text: 'Overview', link: '/examples/' },
               { text: 'Auth Guard', link: '/examples/auth' },
               { text: 'Nested Routes', link: '/examples/nested-routes' },
               { text: 'Multi-Hook Outpost', link: '/examples/multiple-hooks' },

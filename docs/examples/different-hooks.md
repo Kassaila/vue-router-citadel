@@ -118,3 +118,9 @@ For a navigation to `/about`:
 | 4. After   | `page-title`  | `afterEach`     | Set document title |
 
 Each hook phase processes only the outposts registered for that hook.
+
+## 🔗 See Also
+
+- [Navigation Hooks](/guide/hooks) — `beforeEach`, `beforeResolve`, `afterEach`
+- [Multi-Hook Outpost](/examples/multiple-hooks) — one outpost across several hooks
+- [Auth Guard](/examples/auth) — authentication on `beforeEach`

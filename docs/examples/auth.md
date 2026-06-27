@@ -84,3 +84,9 @@ export { router, citadel };
 - **BLOCK** cancels navigation entirely
 - **Redirect** sends user to another route with query params
 - **Scope** defaults to `'global'` — runs on every navigation
+
+## 🔗 See Also
+
+- [Outpost Verdicts](/guide/verdicts) — `ALLOW`, `BLOCK`, and redirect return values
+- [Nested Routes](/examples/nested-routes) — route-scoped inheritance
+- [Production Patterns](/examples/production-patterns) — RBAC and meta-driven config

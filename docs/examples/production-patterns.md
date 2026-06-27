@@ -155,3 +155,9 @@ export { router, citadel };
 - **Meta-driven config** — routes pass data (`role`, `paymentMethod`, `redirect`) to outposts through `meta`
 - **Fallback redirect** — `to.meta.redirect ?? { name: 'dashboard' }` provides per-route redirect override
 - **Async handlers** — `account-setup` loads store data before checking, works seamlessly with sync outposts
+
+## 🔗 See Also
+
+- [Outpost Scopes](/guide/scopes) — route scope and priority ordering
+- [Nested Routes](/examples/nested-routes) — outpost inheritance across parent routes
+- [Multi-Hook Outpost](/examples/multiple-hooks) — handling multiple hooks in one outpost

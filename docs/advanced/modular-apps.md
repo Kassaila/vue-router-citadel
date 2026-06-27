@@ -8,7 +8,7 @@ description: Organize outposts in large modular Vue apps — per-module type dec
 For basics, see [Type-Safe Outpost Names](/guide/type-safety).
 
 ::: info
-The patterns below are **not prescriptive solutions** — they demonstrate that `vue-router-citadel` is flexible enough to integrate with modular architectures and DI containers. Adapt them to your project's conventions.
+The patterns below are **not prescriptive solutions** — they demonstrate that `vue-router-citadel` is flexible enough to integrate with modular architectures and DI containers. Adapt them to your project's conventions. For the internals these patterns build on, see [Architecture](/advanced/architecture).
 :::
 
 ## 📦 Modular Architecture

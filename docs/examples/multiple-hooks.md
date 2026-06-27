@@ -108,3 +108,9 @@ export { router, citadel };
 - Use the `hook` property from context to branch logic per hook
 - `afterEach` handler return values are ignored (post-navigation, can't block)
 - `switch` on `hook` is the recommended pattern for multi-hook outposts
+
+## 🔗 See Also
+
+- [Navigation Hooks](/guide/hooks) — `beforeEach`, `beforeResolve`, `afterEach`
+- [Outposts Across Hooks](/examples/different-hooks) — one outpost per hook
+- [Production Patterns](/examples/production-patterns) — RBAC and meta-driven config
