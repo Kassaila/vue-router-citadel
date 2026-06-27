@@ -143,3 +143,8 @@ citadel.destroy();
 ```
 
 Returns `void`. After calling `destroy()`, the citadel instance should not be used.
+
+## 🔗 See Also
+
+- [Exports](/api/exports) — all public constants, types, and utility functions with imports
+- [Types](/api/types) — every exported TypeScript type

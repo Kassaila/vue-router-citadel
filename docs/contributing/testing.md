@@ -5,6 +5,8 @@ description: Testing guide for Vue Router Citadel — vitest setup, test helpers
 
 # 🧪 Testing Guide
 
+Part of the [Contributing guide](/contributing/). For project setup and conventions, start there.
+
 ## 📋 Overview
 
 | Metric         | Value     |

@@ -133,3 +133,9 @@ export { router, citadel };
 | `/account/billing`  | `auth`, `verified`, `premium` |
 
 All outposts run in priority order regardless of where they were declared.
+
+## 🔗 See Also
+
+- [Outpost Scopes](/guide/scopes) — global vs route scope and nested deduplication
+- [Auth Guard](/examples/auth) — global authentication outposts
+- [Production Patterns](/examples/production-patterns) — meta-driven route outposts

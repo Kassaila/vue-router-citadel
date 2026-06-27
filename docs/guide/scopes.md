@@ -28,7 +28,8 @@ citadel.deployOutpost([
 ```
 
 The default priority is `100` (configurable via `defaultPriority` option). Sorting happens at
-deploy time, not during navigation — so there is no runtime overhead.
+deploy time, not during navigation — so there is no runtime overhead. See
+[Architecture](/advanced/architecture) for how the registry stores and sorts outposts internally.
 
 ## 📊 Processing Order
 

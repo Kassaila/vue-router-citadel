@@ -131,4 +131,4 @@ Lower number = earlier execution. This gives you fine-grained control over proce
 ## 🚀 Next Steps
 
 - [Getting Started](/guide/getting-started) — install and set up your first outpost
-- [Comparison](/guide/comparison) — how Citadel compares to alternatives
+- [Vue Router middleware comparison](/guide/comparison) — Citadel vs 5 alternative libraries, feature by feature

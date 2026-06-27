@@ -17,6 +17,27 @@ export default [
     },
   },
 
+  // Ops scripts: standalone Node utilities outside the src tsconfig — lint without
+  // type-aware rules (no project service)
+  {
+    files: ['scripts/**'],
+    ...tseslint.configs.disableTypeChecked,
+  },
+  {
+    files: ['scripts/**'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        fetch: 'readonly',
+      },
+    },
+    rules: {
+      // CLI utilities legitimately write progress to stdout
+      'no-console': 'off',
+    },
+  },
+
   // Tests: disable type-checked rules and allow non-null assertions
   {
     files: ['__tests__/**'],

@@ -8,6 +8,7 @@ description: Complete list of all 155 test cases across 9 test files in Vue Rout
 Complete list of all test cases across 9 test files (155 tests).
 
 For testing setup, helpers, and how to write new tests, see the [Testing Guide](/contributing/testing).
+This page is part of the [Contributing guide](/contributing/).
 
 ---
 
