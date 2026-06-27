@@ -45,7 +45,8 @@
     "prepublishOnly": "npm run check:types && npm run test:run",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "docs:indexnow": "node scripts/indexnow.mjs"
   },
   "lint-staged": {
     "*.{ts,js}": "eslint --fix",
