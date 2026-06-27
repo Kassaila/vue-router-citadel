@@ -80,4 +80,4 @@ and the user isn't authenticated, they're redirected to the login page.
 - [Outpost Verdicts](/guide/verdicts) — handler return values
 - [Navigation Hooks](/guide/hooks) — beforeEach, beforeResolve, afterEach
 - [Outpost Scopes](/guide/scopes) — global vs route-scoped outposts
-- [Examples](/examples/auth) — more usage patterns
+- [Examples](/examples/) — more usage patterns
