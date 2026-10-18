@@ -92,8 +92,8 @@ app.mount('#app');
 
 ## 📖 Documentation
 
-**[View full documentation](https://vue-router-citadel.symonov.com/)** — guides, API
-reference, examples, and advanced patterns.
+**[View full documentation](https://vue-router-citadel.symonov.com/)** — guides, API reference,
+examples, and advanced patterns.
 
 ## 🤝 Contributing
 
