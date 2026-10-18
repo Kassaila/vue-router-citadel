@@ -32,4 +32,4 @@ npm run check:all      # Full validation (format + lint + types + tests + build 
 
 For detailed contributing guide, workflow, architecture guidelines, testing setup, and all test
 cases, see the
-[Contributing Documentation](https://kassaila.github.io/vue-router-citadel/contributing/).
+[Contributing Documentation](https://vue-router-citadel.symonov.com/contributing/).

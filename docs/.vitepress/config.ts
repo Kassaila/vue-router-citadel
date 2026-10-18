@@ -7,8 +7,8 @@ import { withMermaid } from 'vitepress-mermaid-viewer';
 const require = createRequire(import.meta.url);
 const pkg = require('../../package.json') as { version: string };
 
-const HOSTNAME = 'https://kassaila.github.io';
-const BASE = '/vue-router-citadel/';
+const HOSTNAME = 'https://vue-router-citadel.symonov.com';
+const BASE = '/';
 const SITE_URL = `${HOSTNAME}${BASE}`;
 const REPO_URL = 'https://github.com/Kassaila/vue-router-citadel';
 const CHANGELOG_URL = `${REPO_URL}/blob/main/CHANGELOG.md`;

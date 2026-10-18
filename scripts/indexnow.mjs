@@ -17,8 +17,8 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-const HOST = 'kassaila.github.io';
-const BASE = '/vue-router-citadel/';
+const HOST = 'vue-router-citadel.symonov.com';
+const BASE = '/';
 const SITE_URL = `https://${HOST}${BASE}`;
 const PUBLIC_DIR = 'docs/public';
 const ENDPOINT = 'https://api.indexnow.org/indexnow';
