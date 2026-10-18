@@ -70,7 +70,7 @@
   "bugs": {
     "url": "https://github.com/Kassaila/vue-router-citadel/issues"
   },
-  "homepage": "https://kassaila.github.io/vue-router-citadel/",
+  "homepage": "https://vue-router-citadel.symonov.com/",
   "peerDependencies": {
     "vue": "^3.0.0",
     "vue-router": "^4.0.0 || ^5.0.0"

@@ -51,7 +51,7 @@ export const setupDevtools = (
       label: DEVTOOLS_PLUGIN_LABEL,
       logo: DEVTOOLS_PLUGIN_LOGO,
       packageName: 'vue-router-citadel',
-      homepage: 'https://kassaila.github.io/vue-router-citadel',
+      homepage: 'https://vue-router-citadel.symonov.com',
       enableEarlyProxy: true,
       app,
       settings: createSettingsDefinition(runtimeState),
