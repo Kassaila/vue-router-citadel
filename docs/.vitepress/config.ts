@@ -231,6 +231,13 @@ export default withMermaid(
           content: 'jkEm04n1UJ6WDYKHuB-fx5U0vI9vLahOv3m7bi1zzF8',
         },
       ],
+      [
+        'meta',
+        {
+          name: 'google-site-verification',
+          content: 'dKLUomYTmIJtwO2DHQtND0ZQ2HXz1s2-i9kHzAHLiJ0',
+        },
+      ],
       ['meta', { name: 'author', content: 'Kassaila' }],
       [
         'meta',
